@@ -14,7 +14,9 @@ export default function Page() {
       {/* Intro card, centered */}
       <section className="card mx-auto max-w-screen-lg">
         <h1 className="text-2xl font-semibold">🛠️ PocketTool</h1>
-        <p className="text-neutral-300 mt-1">A Swiss-army knife of fast, private web tools. Everything runs in your browser — we never upload your files.</p>
+        <p className="text-neutral-300 mt-1">
+          A Swiss-army knife of fast, private web tools. Everything runs in your browser — we never upload your files.
+        </p>
       </section>
 
       {/* Ad slot */}

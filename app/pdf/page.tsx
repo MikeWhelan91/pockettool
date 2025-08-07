@@ -2,16 +2,18 @@
 
 import { useEffect, useState } from 'react';
 import { PDFDocument } from 'pdf-lib';
-import { getDocument, GlobalWorkerOptions } from 'pdfjs-dist';
 import AdSlot from '@/components/AdSlot';
-
-// Serve the PDF.js worker from public
-GlobalWorkerOptions.workerSrc = '/pdfjs/pdf.worker.min.js';
 
 // Base scale for HD previews
 const PREVIEW_BASE_SCALE = 0.6;
 
 type Operation = 'merge' | 'split' | 'compress';
+
+async function loadPdfJs() {
+  const pdfjs = await import('pdfjs-dist');
+  pdfjs.GlobalWorkerOptions.workerSrc = '/pdfjs/pdf.worker.min.js';
+  return pdfjs;
+}
 
 export default function PDFToolsPage() {
   const [files, setFiles] = useState<File[]>([]);
@@ -33,9 +35,10 @@ export default function PDFToolsPage() {
   async function generateMergePreviews(selection: File[]) {
     const urls: string[] = [];
     const dpr = window.devicePixelRatio || 1;
+    const pdfjs = await loadPdfJs();
     for (const f of selection) {
       const data = await f.arrayBuffer();
-      const pdf = await getDocument({ data }).promise;
+      const pdf = await pdfjs.getDocument({ data }).promise;
       const page = await pdf.getPage(1);
       const viewport = page.getViewport({ scale: PREVIEW_BASE_SCALE * dpr });
       const canvas = document.createElement('canvas');
@@ -51,7 +54,8 @@ export default function PDFToolsPage() {
   async function generateSplitPreviews(file: File) {
     const urls: string[] = [];
     const data = await file.arrayBuffer();
-    const pdf = await getDocument({ data }).promise;
+    const pdfjs = await loadPdfJs();
+    const pdf = await pdfjs.getDocument({ data }).promise;
     const totalPages = pdf.numPages;
     const pageIndices: number[] = [];
 
@@ -115,7 +119,10 @@ export default function PDFToolsPage() {
         pages.forEach(p => pdfDoc.addPage(p));
       }
       const out = await pdfDoc.save({ useObjectStreams: operation === 'compress' });
-      setOutputUrl(URL.createObjectURL(new Blob([out], { type: 'application/pdf' })));
+      const blob = new Blob([out.buffer as ArrayBuffer], {
+        type: 'application/pdf',
+      });
+      setOutputUrl(URL.createObjectURL(blob));
     } catch (e) {
       console.error(e);
     } finally {

@@ -4,7 +4,7 @@
 This is a minimal Next.js + TypeScript + Tailwind scaffold with two tools ready:
 
 - **/qr** — QR / Wi‑Fi QR generator (PNG/SVG downloads)
-- **/heic-to-jpg** — HEIC → JPG converter (client‑side with `heic2any`)
+- **/image-converter** — HEIC → JPG converter (client‑side with `heic2any`)
 
 Ads are gated behind a simple consent banner. Replace the AdSense client and slot IDs before launch.
 

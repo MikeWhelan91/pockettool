@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
+    "prebuild": "node scripts/copy-ffmpeg.js",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
@@ -11,10 +12,12 @@
     "postinstall": "node scripts/copy-ffmpeg.js"
   },
   "dependencies": {
+    "@ffmpeg/core": "^0.10.0",
+    "@ffmpeg/ffmpeg": "^0.11.6",
     "clsx": "^2.1.0",
     "git": "^0.1.5",
     "heic2any": "^0.0.4",
-    "next": "14.2.5",
+    "next": "^15.4.6",
     "pdf-lib": "^1.17.1",
     "pdfjs-dist": "^5.4.54",
     "qrcode": "^1.5.3",

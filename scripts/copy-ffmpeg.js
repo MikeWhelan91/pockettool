@@ -1,7 +1,9 @@
 const fs = require('fs');
 const path = require('path');
 
-const srcDir = path.join(process.cwd(), 'node_modules', '@ffmpeg', 'core', 'dist', 'umd');
+const baseDir = path.join(process.cwd(), 'node_modules', '@ffmpeg', 'core', 'dist');
+const umdDir = path.join(baseDir, 'umd');
+const srcDir = fs.existsSync(umdDir) ? umdDir : baseDir;
 const destDir = path.join(process.cwd(), 'public', 'ffmpeg');
 
 if (!fs.existsSync(srcDir)) {
@@ -23,4 +25,4 @@ for (const file of expectedFiles) {
   }
 }
 
-console.log('Copied @ffmpeg/core UMD files to public/ffmpeg');
+console.log('Copied @ffmpeg/core files to public/ffmpeg');

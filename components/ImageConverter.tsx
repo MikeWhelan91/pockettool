@@ -56,12 +56,15 @@ export default function ImageConverter({
         }
 
         const bitmap = await decodeImage(srcBlob);
-        const blob = await encodeBitmap(bitmap, fmt, quality, bg);
-
-        const targetExt = fmt === 'image/jpeg' ? 'jpg' : fmt === 'image/png' ? 'png' : 'webp';
-        const base = f.name.replace(/\.[^.]+$/, '');
-        const url = URL.createObjectURL(blob);
-        setResults((prev) => [...prev, { name: `${base}.${targetExt}`, url }]);
+        try {
+          const blob = await encodeBitmap(bitmap, fmt, quality, bg);
+          const targetExt = fmt === 'image/jpeg' ? 'jpg' : fmt === 'image/png' ? 'png' : 'webp';
+          const base = f.name.replace(/\.[^.]+$/, '');
+          const url = URL.createObjectURL(blob);
+          setResults((prev) => [...prev, { name: `${base}.${targetExt}`, url }]);
+        } finally {
+          bitmap.close();
+        }
       } catch (e: any) {
         addLog(`❌ ${f.name}: ${e?.message || e}`);
         console.error(e);

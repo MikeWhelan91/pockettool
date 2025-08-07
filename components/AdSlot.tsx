@@ -2,7 +2,8 @@
 'use client'
 import { useEffect, useRef } from 'react'
 
-type Props = { slotId: string, style?: React.CSSProperties }
+type Props = { slotId: string, style?: React.CSSProperties
+ }
 
 export default function AdSlot({ slotId, style }: Props) {
   const ref = useRef<HTMLDivElement>(null)

@@ -23,7 +23,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <nav className="ml-auto flex gap-4 text-sm">
               <Link href="/qr" className="hover:underline">QR</Link>
               <Link href="/image-converter" className="hover:underline">Images</Link>
-              <Link href="/video-to-gif" className="hover:underline">Video→GIF</Link>
               <Link href="/pdf" className="hover:underline">PDF Editor</Link>
             </nav>
           </div>

@@ -60,8 +60,16 @@ export default function VideoToGifPage() {
             setVideo(e.target.files?.[0] || null)
             setGifUrl('')
           }}
-          className="mb-4"
+          className="mb-2"
         />
+
+        <p className="text-sm text-neutral-500 mb-4">
+          {!ready
+            ? 'Loading FFmpeg…'
+            : video
+            ? `Selected: ${video.name} (${(video.size / 1024 / 1024).toFixed(1)} MB)`
+            : 'No file selected'}
+        </p>
 
         <div className="flex flex-wrap gap-4 mb-4">
           <label className="flex flex-col text-sm">
@@ -97,7 +105,13 @@ export default function VideoToGifPage() {
         </div>
 
         <button onClick={convert} disabled={!ready || !video || busy} className="btn w-full">
-          {busy ? 'Converting…' : 'Convert to GIF'}
+          {busy
+            ? 'Converting…'
+            : !ready
+            ? 'Loading FFmpeg…'
+            : !video
+            ? 'Select an MP4 file'
+            : 'Convert to GIF'}
         </button>
 
         {gifUrl && (

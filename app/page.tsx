@@ -1,21 +1,25 @@
-import Link from 'next/link'
-import AdSlot from '@/components/AdSlot'
+import Link from 'next/link';
+import AdSlot from '@/components/AdSlot';
 
 const tools = [
-  { href: '/qr', title: 'QR / Wi-Fi QR', desc: 'Generate QR codes and Wi-Fi share cards.' },
-  { href: '/image-converter', title: 'Images (JPG / PNG / WEBP + HEIC)', desc: 'Convert images privately in your browser.' },
-  { href: '/pdf', title: 'PDF Editor', desc: 'Merge, split, and compress PDFs without uploading.' },
-
-]
+  { href: '/random', title: 'Password & Random Generators', desc: 'Create secure passwords, UUIDs, colors, lorem text, and more.' },
+  { href: '/qr', title: 'Wi-Fi QR & QR Codes', desc: 'Share your Wi-Fi or generate any QR code in seconds.' },
+  { href: '/pdf', title: 'PDF Tools', desc: 'Merge, split, and compress PDFs directly in your browser.' },
+  { href: '/image-converter', title: 'Image Converter (JPG / PNG / WEBP + HEIC)', desc: 'Convert images privately and instantly in your browser.' },
+  { href: '/case-converter', title: 'Case Converter', desc: 'Switch text between upper, lower, title, and sentence case.' },
+  { href: '/format', title: 'JSON / XML Formatter', desc: 'Cleanly format and validate JSON or XML files.' },
+  { href: '/base64', title: 'Base64 Encoder/Decoder', desc: 'Convert text or files to/from Base64 encoding.' },
+  { href: '/diff', title: 'Text Diff Checker', desc: 'Spot differences between two blocks of text easily.' }
+];
 
 export default function Page() {
   return (
     <div className="space-y-8">
       {/* Intro card, centered */}
       <section className="card mx-auto max-w-screen-lg">
-        <h1 className="text-2xl font-semibold">🛠️ PocketTool</h1>
+        <h1 className="text-2xl font-semibold">🧰 PocketKit</h1>
         <p className="text-neutral-300 mt-1">
-          A Swiss-army knife of fast, private web tools. Everything runs in your browser — we never upload your files.
+          Fast, private web tools — everything runs in your browser. No tracking, no uploads, just instant productivity.
         </p>
       </section>
 
@@ -35,5 +39,5 @@ export default function Page() {
         ))}
       </section>
     </div>
-  )
+  );
 }

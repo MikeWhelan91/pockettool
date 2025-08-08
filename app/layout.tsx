@@ -1,92 +1,55 @@
-// app/layout.tsx
-
 import "./globals.css";
 import Link from "next/link";
 import type { Metadata } from "next";
 import ConsentBanner from "../components/ConsentBanner";
 import { Suspense } from "react";
+import ToolMenuWrapper from "../components/ToolMenuWrapper";
 
 export const metadata: Metadata = {
-  title: "PocketTool — Quick Swiss-Army Web Tools",
-  description: "Fast, private, ad-light tools that run in your browser.",
+  title: "PocketKit — All-in-One Web Toolkit",
+  description: "Quick, private web tools including QR, password, PDF and image utilities.",
   manifest: "/manifest.json",
-  themeColor: "#B22222",
+  themeColor: "#3B82F6",
 };
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
-      <body className="bg-neutral-950 text-white" suppressHydrationWarning>
-        <header className="sticky top-0 z-40 backdrop-blur border-b border-neutral-800 bg-neutral-950/80">
-          <div className="container flex items-center gap-4 py-3">
-            <Link href="/" className="font-semibold tracking-tight text-lg">
-              🛠️ PocketTool
-            </Link>
-            <nav className="ml-auto flex gap-4 text-sm">
-              <nav className="ml-auto flex flex-wrap gap-4 text-sm">
-                <Link href="/qr" className="hover:underline">
-                  QR
-                </Link>
-                <Link href="/image-converter" className="hover:underline">
-                  Images
-                </Link>
-                <Link href="/pdf" className="hover:underline">
-                  PDF
-                </Link>
-                <Link href="/case-converter" className="hover:underline">
-                  Case
-                </Link>
-                <Link href="/format" className="hover:underline">
-                  Format
-                </Link>
-                <Link href="/base64" className="hover:underline">
-                  Base64
-                </Link>
-                <Link href="/diff" className="hover:underline">
-                  Diff
-                </Link>
-                <Link href="/random" className="hover:underline">
-                  Random
-                </Link>
-              </nav>
-            </nav>
-          </div>
-        </header>
+      <body suppressHydrationWarning className="bg-neutral-950 text-white">
+        {/* ✅ Client-side floating sidebar */}
+        <ToolMenuWrapper />
 
-        <main className="container py-6">
-          <ConsentBanner />
-          {children}
-        </main>
+        <div className="min-h-screen flex flex-col items-center">
+          <header className="sticky top-0 z-30 backdrop-blur border-b border-neutral-800 bg-neutral-950/80 w-full">
+            <div className="flex items-center gap-4 py-3 px-4 max-w-screen-lg mx-auto">
+              <Link href="/" className="font-semibold tracking-tight text-lg ml-2">
+                🧰 PocketKit
+              </Link>
+            </div>
+          </header>
 
-        <footer className="container py-6 text-sm text-neutral-400">
-          <div className="flex flex-wrap gap-4">
-            <Suspense fallback={<span>© PocketTool</span>}>
-              <DynamicCopyright />
-            </Suspense>
-            <Link href="/privacy" className="hover:underline">
-              Privacy
-            </Link>
-            <Link href="/terms" className="hover:underline">
-              Terms
-            </Link>
-            <Link href="/cookies" className="hover:underline">
-              Cookies
-            </Link>
-          </div>
-        </footer>
+          <main className="flex-1 py-6 px-4 w-full max-w-screen-lg">
+            <ConsentBanner />
+            {children}
+          </main>
+
+          <footer className="px-4 py-6 text-sm text-neutral-400 w-full max-w-screen-lg">
+            <div className="flex flex-wrap gap-4">
+              <Suspense fallback={<span>© PocketKit</span>}>
+                <DynamicCopyright />
+              </Suspense>
+              <Link href="/privacy" className="hover:underline">Privacy</Link>
+              <Link href="/terms" className="hover:underline">Terms</Link>
+              <Link href="/cookies" className="hover:underline">Cookies</Link>
+            </div>
+          </footer>
+        </div>
       </body>
     </html>
   );
 }
 
-// This must be a client-only component
 function DynamicCopyright() {
   if (typeof window === "undefined") return null;
-  return <span>© {new Date().getFullYear()} PocketTool</span>;
+  return <span>© {new Date().getFullYear()} PocketKit</span>;
 }
-// This component is used to dynamically render the current year in the footer
-// It ensures that the copyright year is always up-to-date without needing a server-side render

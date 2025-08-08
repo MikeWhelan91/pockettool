@@ -24,6 +24,9 @@ export default function PDFToolsPage() {
   const [outputUrl, setOutputUrl] = useState<string>('');
   const [previews, setPreviews] = useState<string[]>([]);
   const [selectedPreview, setSelectedPreview] = useState<number | null>(null);
+  const [showFirefoxWarning, setShowFirefoxWarning] = useState(
+    typeof navigator !== 'undefined' && navigator.userAgent.includes('Firefox')
+  );
 
   // Regenerate previews
   useEffect(() => {
@@ -134,6 +137,17 @@ export default function PDFToolsPage() {
       <div className="card w-full max-w-screen-md">
         <h1 className="text-xl font-semibold mb-4">PDF Merge / Split / Compress</h1>
 
+        {showFirefoxWarning && (
+          <div className="bg-yellow-100 border border-yellow-300 text-yellow-900 text-sm px-4 py-2 rounded mb-4 flex justify-between items-center">
+            <span>
+              ⚠️ PDF merging in Firefox may freeze on some systems due to hardware acceleration. Try disabling it in settings if needed.
+            </span>
+            <button onClick={() => setShowFirefoxWarning(false)} className="ml-4 text-xs underline">
+              Dismiss
+            </button>
+          </div>
+        )}
+
         <input
           type="file"
           accept="application/pdf"
@@ -192,7 +206,6 @@ export default function PDFToolsPage() {
           <>
             <div className="grid grid-cols-4 gap-2 mb-4">
               {previews.map((url, i) => (
-                // eslint-disable-next-line @next/next/no-img-element
                 <img
                   key={i}
                   src={url}
@@ -207,7 +220,6 @@ export default function PDFToolsPage() {
                 className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50"
                 onClick={() => setSelectedPreview(null)}
               >
-                {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={previews[selectedPreview]}
                   alt={`Preview ${selectedPreview + 1}`}

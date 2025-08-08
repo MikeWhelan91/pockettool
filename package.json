@@ -14,18 +14,23 @@
   "dependencies": {
     "@ffmpeg/util": "^0.12.1",
     "clsx": "^2.1.0",
+    "diff": "^8.0.2",
+    "fast-xml-parser": "^5.2.5",
     "formidable": "^3.5.4",
     "git": "^0.1.5",
     "heic2any": "^0.0.4",
+    "js-yaml": "^4.1.0",
     "next": "^15.4.6",
     "pdf-lib": "^1.17.1",
     "pdfjs-dist": "^5.4.54",
     "qrcode": "^1.5.3",
     "react": "18.3.1",
-    "react-dom": "18.3.1"
+    "react-dom": "18.3.1",
+    "xml-formatter": "^3.6.6"
   },
   "devDependencies": {
     "@types/jest": "^30.0.0",
+    "@types/js-yaml": "^4.0.9",
     "@types/node": "^20.11.30",
     "@types/qrcode": "^1.5.5",
     "@types/react": "^18.2.66",

@@ -2,8 +2,9 @@ import "./globals.css";
 import Link from "next/link";
 import type { Metadata } from "next";
 import ConsentBanner from "../components/ConsentBanner";
-import { Suspense } from "react";
 import ToolMenuWrapper from "../components/ToolMenuWrapper";
+import ThemeToggle from "@/components/ThemeToggle";
+import { Space_Grotesk } from "next/font/google";
 
 export const metadata: Metadata = {
   title: "PocketKit — All-in-One Web Toolkit",
@@ -12,32 +13,45 @@ export const metadata: Metadata = {
   themeColor: "#3B82F6",
 };
 
+const spaceGrotesk = Space_Grotesk({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+});
+
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
-      <body suppressHydrationWarning className="bg-neutral-950 text-white">
-        {/* ✅ Client-side floating sidebar */}
+    <html lang="en" className={`theme-light ${spaceGrotesk.className}`}>
+            <body suppressHydrationWarning className="bg-[var(--bg)] text-[var(--text)]">
+        {/* Floating sidebar */}
         <ToolMenuWrapper />
 
-        <div className="min-h-screen flex flex-col items-center">
-          <header className="sticky top-0 z-30 backdrop-blur border-b border-neutral-800 bg-neutral-950/80 w-full">
-            <div className="flex items-center gap-4 py-3 px-4 max-w-screen-lg mx-auto">
-              <Link href="/" className="font-semibold tracking-tight text-lg ml-2">
-                🧰 PocketKit
+        <div className="min-h-screen flex flex-col">
+          {/* Header */}
+          <header
+            role="banner"
+            className="sticky top-0 z-30 border-b border-[color:var(--stroke)] bg-[color:var(--bg)]/95 backdrop-blur"
+          >
+            <div className="container-pk h-14 flex items-center justify-between">
+              <Link href="/" className="flex items-center gap-2 font-extrabold tracking-tight">
+                <span className="text-xl leading-none">🧰</span>
+                <span>Pocket<span className="text-[color:var(--brand)]">Kit</span></span>
               </Link>
+              <div className="flex items-center gap-2">
+                <ThemeToggle />
+              </div>
             </div>
           </header>
 
-          <main className="flex-1 py-6 px-4 w-full max-w-screen-lg">
+          {/* Main */}
+          <main className="flex-1 container-pk py-8">
             <ConsentBanner />
             {children}
           </main>
 
-          <footer className="px-4 py-6 text-sm text-neutral-400 w-full max-w-screen-lg">
-            <div className="flex flex-wrap gap-4">
-              <Suspense fallback={<span>© PocketKit</span>}>
-                <DynamicCopyright />
-              </Suspense>
+          {/* Footer */}
+          <footer className="border-t border-[color:var(--stroke)] bg-[color:var(--bg-soft)]/60">
+            <div className="container-pk py-6 text-sm text-[color:var(--text-muted)] flex flex-wrap items-center gap-4">
+              <span>© {new Date().getFullYear()} PocketKit</span>
               <Link href="/privacy" className="hover:underline">Privacy</Link>
               <Link href="/terms" className="hover:underline">Terms</Link>
               <Link href="/cookies" className="hover:underline">Cookies</Link>
@@ -47,9 +61,4 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       </body>
     </html>
   );
-}
-
-function DynamicCopyright() {
-  if (typeof window === "undefined") return null;
-  return <span>© {new Date().getFullYear()} PocketKit</span>;
 }

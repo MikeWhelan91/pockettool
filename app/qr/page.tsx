@@ -1,26 +1,19 @@
-import type { Metadata } from 'next';
-import Client from './Client';
+import ToolLayout from "@/components/ToolLayout";
+import Client from "./Client";
 
-export const metadata: Metadata = {
-  title: 'QR / Wi-Fi QR Generator — PocketTool',
+export const metadata = {
+  title: "Wi-Fi QR Code Generator — PocketTool",
   description:
-    'Create QR codes for URLs, text, and Wi-Fi (WPA/WEP/Open). PNG & SVG downloads. Everything runs in your browser.',
-  openGraph: {
-    title: 'QR / Wi-Fi QR Generator — PocketTool',
-    description:
-      'Create QR codes for URLs, text, and Wi-Fi. PNG & SVG downloads. Private, in-browser.',
-    url: '/qr',
-    siteName: 'PocketTool',
-    type: 'website',
-  },
-  twitter: {
-    card: 'summary',
-    title: 'QR / Wi-Fi QR Generator — PocketTool',
-    description:
-      'Create QR codes for URLs, text, and Wi-Fi. PNG & SVG downloads. Private, in-browser.',
-  },
+    "Create Wi-Fi QR codes (WPA/WEP/Open) and standard QR codes for text, email or SMS. Export PNG/SVG. Everything runs locally.",
 };
 
 export default function Page() {
-  return <Client />;
+  return (
+    <ToolLayout
+      title="Wi-Fi QR Code Generator"
+      description="Share your network instantly: scan to connect. Adjust size, margin and colors, and export PNG or SVG."
+    >
+      <Client />
+    </ToolLayout>
+  );
 }

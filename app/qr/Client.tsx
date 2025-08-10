@@ -1,178 +1,253 @@
-'use client';
+"use client";
 
-import { useEffect, useState } from 'react';
-import QRCode from 'qrcode';
-import AdSlot from '@/components/AdSlot';
+import React, { useEffect, useMemo, useRef, useState } from "react";
+import QRCode from "qrcode";
 
-type QRType = 'wifi' | 'text' | 'email' | 'sms';
+type QRType = "wifi" | "text" | "email" | "sms";
 
-export default function Client() {
-  const [qrType, setQrType] = useState<QRType>('wifi');
-  const [text, setText] = useState('');
-  const [wifiSSID, setWifiSSID] = useState('');
-  const [wifiPassword, setWifiPassword] = useState('');
-  const [wifiSecurity, setWifiSecurity] = useState<'WPA' | 'WEP' | 'nopass'>('WPA');
-  const [emailTo, setEmailTo] = useState('');
-  const [smsNumber, setSmsNumber] = useState('');
-  const [qrUrl, setQrUrl] = useState<string | null>(null);
-  const [svgUrl, setSvgUrl] = useState<string | null>(null);
-  const [copied, setCopied] = useState(false);
+export default function QRTool() {
+  // Default hero = Wi-Fi
+  const [type, setType] = useState<QRType>("wifi");
 
-  const buildData = (): string => {
-    switch (qrType) {
-      case 'wifi':
-        return `WIFI:T:${wifiSecurity};S:${wifiSSID};P:${wifiPassword};H:false;`;
-      case 'email':
-        return `mailto:${emailTo}`;
-      case 'sms':
-        return `sms:${smsNumber}`;
-      case 'text':
+  // generic
+  const [text, setText] = useState("");
+
+  // wifi
+  const [ssid, setSsid] = useState("");
+  const [password, setPassword] = useState("");
+  const [wifiAuth, setWifiAuth] = useState<"WPA" | "WEP" | "nopass">("WPA");
+  const [hidden, setHidden] = useState(false);
+
+  // email
+  const [email, setEmail] = useState("");
+  const [subject, setSubject] = useState("");
+  const [body, setBody] = useState("");
+
+  // sms
+  const [phone, setPhone] = useState("");
+  const [smsBody, setSmsBody] = useState("");
+
+  // fixed rendering opts (we removed size/margin/colors UI)
+  const SIZE = 280;
+  const MARGIN = 2;
+  const FG = "#111111";
+  const BG = "#ffffff";
+
+  const [pngUrl, setPngUrl] = useState<string | null>(null);
+  const [svgText, setSvgText] = useState<string | null>(null);
+  const imgRef = useRef<HTMLImageElement>(null);
+
+  // Build QR payload
+  const data = useMemo(() => {
+    switch (type) {
+      case "wifi": {
+        const esc = (s: string) => s.replace(/([\\;,:"])/g, "\\$1");
+        const auth = wifiAuth === "nopass" ? "nopass" : wifiAuth;
+        return `WIFI:T:${auth};S:${esc(ssid)};${wifiAuth !== "nopass" ? `P:${esc(password)};` : ""}${hidden ? "H:true;" : ""};`;
+      }
+      case "email": {
+        const params = new URLSearchParams();
+        if (subject) params.set("subject", subject);
+        if (body) params.set("body", body);
+        return `mailto:${email}${params.toString() ? `?${params.toString()}` : ""}`;
+      }
+      case "sms": {
+        const params = new URLSearchParams();
+        if (smsBody) params.set("body", smsBody);
+        return `sms:${phone}${params.toString() ? `?${params.toString()}` : ""}`;
+      }
       default:
-        return text;
+        return text || "";
     }
-  };
+  }, [type, text, wifiAuth, ssid, password, hidden, email, subject, body, phone, smsBody]);
 
-  const generateQR = async () => {
-    const data = buildData();
-    try {
-      const url = await QRCode.toDataURL(data, { width: 256 });
-      const svg = await QRCode.toString(data, { type: 'svg' });
-      setQrUrl(url);
-      setSvgUrl(`data:image/svg+xml;utf8,${encodeURIComponent(svg)}`);
-    } catch (err) {
-      console.error('QR generation failed', err);
-      setQrUrl(null);
-      setSvgUrl(null);
-    }
-  };
-
+  // Generate PNG + SVG whenever inputs change
   useEffect(() => {
-    generateQR();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [qrType, text, wifiSSID, wifiPassword, wifiSecurity, emailTo, smsNumber]);
+    let cancelled = false;
 
-  const copyToClipboard = async () => {
-    const data = buildData();
-    try {
-      await navigator.clipboard.writeText(data);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    } catch (e) {
-      console.error('Copy failed', e);
+    async function run() {
+      try {
+        const opts = { margin: MARGIN, color: { dark: FG, light: BG }, width: SIZE };
+        const dataUrl = await QRCode.toDataURL(data || " ", opts);
+        const svg = await QRCode.toString(data || " ", { ...opts, type: "svg" });
+        if (!cancelled) {
+          setPngUrl(dataUrl);
+          setSvgText(svg);
+        }
+      } catch {
+        if (!cancelled) {
+          setPngUrl(null);
+          setSvgText(null);
+        }
+      }
     }
-  };
+
+    run();
+    return () => { cancelled = true; };
+  }, [data]);
+
+  function download(filename: string, href: string) {
+    const a = document.createElement("a");
+    a.href = href;
+    a.download = filename;
+    a.click();
+  }
+
+  function downloadSVG() {
+    if (!svgText) return;
+    const blob = new Blob([svgText], { type: "image/svg+xml" });
+    const url = URL.createObjectURL(blob);
+    download("qr.svg", url);
+    URL.revokeObjectURL(url);
+  }
 
   return (
-    <div className="flex flex-col items-center space-y-6 py-6">
-      <h1 className="text-2xl font-semibold text-center">Create a Wi-Fi QR Code for Guests</h1>
-      <p className="text-center text-neutral-400 max-w-prose text-sm">
-        Share your Wi-Fi quickly by generating a QR code that guests can scan with their phone.
-        Fill in your network details below.
-      </p>
+    <>
+      {/* Left: form */}
+      <div className="card p-4 md:p-6">
+        <div className="grid gap-5">
+          {/* Type selector */}
+          <div className="grid gap-2">
+            <label className="text-sm font-medium">Type</label>
+            <div className="flex flex-wrap gap-2">
+              {([
+                { id: "wifi", label: "Wi-Fi" },
+                { id: "text", label: "Text / URL" },
+                { id: "email", label: "Email" },
+                { id: "sms", label: "SMS" },
+              ] as const).map((t) => {
+                const isActive = type === t.id;
+                const cls = isActive ? "btn" : "btn-ghost";
+                return (
+                  <button
+                    key={t.id}
+                    type="button"
+                    onClick={() => setType(t.id)}
+                    className={cls}
+                    aria-current={isActive ? "page" : undefined}
+                  >
+                    {t.label}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
 
-      {/* QR Type Selector - visible up top now */}
-      <div className="card w-full max-w-screen-md p-4 space-y-4">
-        <label className="block font-medium">Select QR Code Type</label>
-        <select
-          className="input w-full"
-          value={qrType}
-          onChange={(e) => setQrType(e.target.value as QRType)}
-        >
-          <option value="wifi">Wi-Fi (Default)</option>
-          <option value="text">Text / URL</option>
-          <option value="email">Email</option>
-          <option value="sms">SMS</option>
-        </select>
-      </div>
+          {/* Content fields */}
+          {type === "wifi" && (
+            <div className="grid gap-3">
+              <div className="grid gap-2">
+                <label className="text-sm font-medium" htmlFor="ssid">Wi-Fi SSID</label>
+                <input id="ssid" className="input" placeholder="e.g. MyHomeWiFi" value={ssid} onChange={(e) => setSsid(e.target.value)} />
+              </div>
 
-      {/* Wi-Fi Generator */}
-      {qrType === 'wifi' && (
-        <div className="card w-full max-w-screen-md space-y-4 p-4">
-          <input
-            type="text"
-            placeholder="Wi-Fi SSID (Network Name)"
-            value={wifiSSID}
-            onChange={(e) => setWifiSSID(e.target.value)}
-            className="input w-full"
-          />
-          <input
-            type="text"
-            placeholder="Wi-Fi Password"
-            value={wifiPassword}
-            onChange={(e) => setWifiPassword(e.target.value)}
-            className="input w-full"
-          />
-          <select
-            className="input w-full"
-            value={wifiSecurity}
-            onChange={(e) => setWifiSecurity(e.target.value as 'WPA' | 'WEP' | 'nopass')}
-          >
-            <option value="WPA">WPA/WPA2</option>
-            <option value="WEP">WEP</option>
-            <option value="nopass">No Password</option>
-          </select>
-        </div>
-      )}
+              <div className="grid gap-2">
+                <label className="text-sm font-medium">Authentication</label>
+                <div className="flex flex-wrap gap-2">
+                  {(["WPA", "WEP", "nopass"] as const).map((a) => {
+                    const active = wifiAuth === a;
+                    return (
+                      <button
+                        key={a}
+                        type="button"
+                        className={active ? "btn" : "btn-ghost"}
+                        onClick={() => setWifiAuth(a)}
+                        aria-pressed={active}
+                      >
+                        {a}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
 
-      {qrType === 'text' && (
-        <div className="card w-full max-w-screen-md space-y-4 p-4">
-          <input
-            type="text"
-            placeholder="Enter text or URL"
-            value={text}
-            onChange={(e) => setText(e.target.value)}
-            className="input w-full"
-          />
-        </div>
-      )}
+              {wifiAuth !== "nopass" && (
+                <div className="grid gap-2">
+                  <label className="text-sm font-medium" htmlFor="pwd">Password</label>
+                  <input id="pwd" className="input" type="password" value={password} onChange={(e) => setPassword(e.target.value)} />
+                </div>
+              )}
 
-      {qrType === 'email' && (
-        <div className="card w-full max-w-screen-md space-y-4 p-4">
-          <input
-            type="email"
-            placeholder="someone@example.com"
-            value={emailTo}
-            onChange={(e) => setEmailTo(e.target.value)}
-            className="input w-full"
-          />
-        </div>
-      )}
+              <label className="inline-flex items-center gap-2 text-sm">
+                <input type="checkbox" checked={hidden} onChange={(e) => setHidden(e.target.checked)} />
+                Hidden network
+              </label>
+            </div>
+          )}
 
-      {qrType === 'sms' && (
-        <div className="card w-full max-w-screen-md space-y-4 p-4">
-          <input
-            type="tel"
-            placeholder="+123456789"
-            value={smsNumber}
-            onChange={(e) => setSmsNumber(e.target.value)}
-            className="input w-full"
-          />
-        </div>
-      )}
+          {type === "text" && (
+            <div className="grid gap-2">
+              <label className="text-sm font-medium" htmlFor="qr-text">Text or URL</label>
+              <textarea
+                id="qr-text"
+                className="input min-h-[120px]"
+                placeholder="https://example.com or any text…"
+                value={text}
+                onChange={(e) => setText(e.target.value)}
+              />
+            </div>
+          )}
 
-      {/* Preview + actions */}
-      {qrUrl && (
-        <div className="flex flex-col items-center space-y-2">
-          <img src={qrUrl} alt="QR Code" className="border rounded shadow-md" />
-          <div className="flex gap-3 mt-2">
-            <a href={qrUrl} download="qr.png" className="btn text-sm">
-              Download PNG
-            </a>
-            {svgUrl && (
-              <a href={svgUrl} download="qr.svg" className="btn text-sm">
-                Download SVG
-              </a>
-            )}
-            <button onClick={copyToClipboard} className="btn text-sm">
-              {copied ? 'Copied!' : 'Copy QR Content'}
-            </button>
+          {type === "email" && (
+            <div className="grid gap-3">
+              <div className="grid gap-2">
+                <label className="text-sm font-medium" htmlFor="email">To</label>
+                <input id="email" className="input" type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
+              </div>
+              <div className="grid gap-2">
+                <label className="text-sm font-medium" htmlFor="subj">Subject</label>
+                <input id="subj" className="input" value={subject} onChange={(e) => setSubject(e.target.value)} />
+              </div>
+              <div className="grid gap-2">
+                <label className="text-sm font-medium" htmlFor="em-body">Body</label>
+                <textarea id="em-body" className="input min-h-[100px]" value={body} onChange={(e) => setBody(e.target.value)} />
+              </div>
+            </div>
+          )}
+
+          {type === "sms" && (
+            <div className="grid gap-3">
+              <div className="grid gap-2">
+                <label className="text-sm font-medium" htmlFor="phone">Phone</label>
+                <input id="phone" className="input" value={phone} onChange={(e) => setPhone(e.target.value)} />
+              </div>
+              <div className="grid gap-2">
+                <label className="text-sm font-medium" htmlFor="sms-body">Message</label>
+                <textarea id="sms-body" className="input min-h-[100px]" value={smsBody} onChange={(e) => setSmsBody(e.target.value)} />
+              </div>
+            </div>
+          )}
+
+          {/* Actions */}
+          <div className="flex flex-wrap gap-2">
+            {pngUrl ? (
+              <button className="btn" onClick={() => download("wifi-qr.png", pngUrl)}>Download PNG</button>
+            ) : null}
+            {svgText ? (
+              <button className="btn-ghost" onClick={downloadSVG}>Download SVG</button>
+            ) : null}
           </div>
         </div>
-      )}
-
-      <div className="w-full max-w-screen-md mx-auto">
-        <AdSlot slotId="0000000004" />
       </div>
-    </div>
+
+      {/* Right: live preview (sticky) */}
+      <div className="card p-4 md:p-6 md:sticky md:top-[88px]">
+        <div className="grid place-items-center min-h-[320px]">
+          {pngUrl ? (
+            <img
+              ref={imgRef}
+              src={pngUrl}
+              alt="Generated QR code"
+              width={SIZE}
+              height={SIZE}
+              className="rounded-md border border-line"
+              style={{ background: BG }}
+            />
+          ) : (
+            <div className="text-sm text-muted">Enter Wi-Fi details to generate a QR code.</div>
+          )}
+        </div>
+      </div>
+    </>
   );
 }

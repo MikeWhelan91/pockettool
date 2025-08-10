@@ -1,36 +1,37 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Moon, Sun } from 'lucide-react';
+
+type Mode = 'light' | 'dark';
+const STORAGE_KEY = 'pk_theme';
 
 export default function ThemeToggle() {
-  const [isLight, setIsLight] = useState(false);
+  const [mode, setMode] = useState<Mode | undefined>(undefined);
 
   useEffect(() => {
-    // initial from localStorage or OS
-    const saved = localStorage.getItem('pk_theme');
-    const prefersLight = window.matchMedia('(prefers-color-scheme: light)').matches;
-    const light = saved ? saved === 'light' : prefersLight;
-    setIsLight(light);
-    document.documentElement.classList.toggle('theme-light', light);
+    const saved = (typeof window !== 'undefined' && localStorage.getItem(STORAGE_KEY)) as Mode | null;
+    const prefersDark =
+      typeof window !== 'undefined' && window.matchMedia?.('(prefers-color-scheme: dark)').matches;
+    const initial: Mode = saved ?? (prefersDark ? 'dark' : 'light');
+    setMode(initial);
+    document.documentElement.classList.toggle('theme-dark', initial === 'dark');
   }, []);
 
+  if (!mode) return null;
+
+  const next: Mode = mode === 'dark' ? 'light' : 'dark';
+  const label = mode === 'dark' ? '🌙 Dark' : '☀️ Light';
+
   function toggle() {
-    const next = !isLight;
-    setIsLight(next);
-    document.documentElement.classList.toggle('theme-light', next);
-    localStorage.setItem('pk_theme', next ? 'light' : 'dark');
+    const m: Mode = mode === 'dark' ? 'light' : 'dark';
+    setMode(m);
+    document.documentElement.classList.toggle('theme-dark', m === 'dark');
+    localStorage.setItem(STORAGE_KEY, m);
   }
 
   return (
-    <button
-      onClick={toggle}
-      className="btn-ghost flex items-center gap-2"
-      aria-label="Toggle theme"
-      title={isLight ? 'Switch to dark' : 'Switch to light'}
-    >
-      {isLight ? <Moon size={16}/> : <Sun size={16}/>}
-      <span className="hidden sm:inline">{isLight ? 'Dark' : 'Light'}</span>
+    <button onClick={toggle} aria-label="Toggle theme" className="header-action" title={`Switch to ${next} mode`}>
+      {label}
     </button>
   );
 }

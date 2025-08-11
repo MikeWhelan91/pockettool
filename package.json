@@ -13,6 +13,7 @@
   },
   "dependencies": {
     "@ffmpeg/util": "^0.12.1",
+    "@next/font": "^14.2.15",
     "clsx": "^2.1.0",
     "diff": "^8.0.2",
     "fast-xml-parser": "^5.2.5",

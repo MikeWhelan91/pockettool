@@ -1,16 +1,18 @@
-'use client';
-import Link from 'next/link';
-import { useState } from 'react';
-import { usePathname } from 'next/navigation';
+"use client";
+
+import Link from "next/link";
+import { useState } from "react";
+import { usePathname } from "next/navigation";
+import UtilixyLogo from "@/components/branding/UtilixyLogo";
 
 const nav = [
-  { href: '/', label: 'Home' },
-  { href: '/qr', label: 'QR' },
-  { href: '/image-converter', label: 'Images' },
-  { href: '/pdf', label: 'PDF' },
-  { href: '/formatter', label: 'Formatter' },
-  { href: '/diff', label: 'Diff' },
-  { href: '/random', label: 'Random' },
+  { href: "/", label: "Home" },
+  { href: "/qr", label: "QR" },
+  { href: "/image-converter", label: "Images" },
+  { href: "/pdf", label: "PDF" },
+  { href: "/formatter", label: "Formatter" },
+  { href: "/diff", label: "Diff" },
+  { href: "/random", label: "Random" },
 ];
 
 export default function Header() {
@@ -20,10 +22,11 @@ export default function Header() {
   return (
     <header className="sticky top-0 z-50 border-b border-[color:var(--stroke)] bg-[color:var(--bg)]/80 backdrop-blur">
       <div className="container-pk h-14 flex items-center justify-between">
+        {/* Brand logo + name */}
         <Link href="/" className="flex items-center gap-2">
-          <span className="text-2xl leading-none">🧰</span>
+          <UtilixyLogo className="h-7 w-auto text-[color:var(--brand)]" aria-label="Utilixy" />
           <span className="font-extrabold tracking-tight">
-            Pocket<span className="text-[color:var(--brand)]">Kit</span>
+            Utilixy
           </span>
         </Link>
 
@@ -36,7 +39,11 @@ export default function Header() {
                 key={n.href}
                 href={n.href}
                 className={`px-3 py-1.5 rounded-lg text-sm
-                  ${active ? 'bg-[color:var(--bg-lift)] text-white border border-[color:var(--stroke)]' : 'text-[color:var(--text-muted)] hover:text-white'}`}
+                  ${
+                    active
+                      ? "bg-[color:var(--bg-lift)] text-white border border-[color:var(--stroke)]"
+                      : "text-[color:var(--text-muted)] hover:text-white"
+                  }`}
               >
                 {n.label}
               </Link>
@@ -46,13 +53,26 @@ export default function Header() {
 
         {/* Actions */}
         <div className="hidden md:flex items-center gap-2">
-          <Link href="/privacy" className="text-sm text-[color:var(--text-muted)] hover:text-white">Privacy</Link>
-          <Link href="/cookies" className="text-sm text-[color:var(--text-muted)] hover:text-white">Cookies</Link>
+          <Link
+            href="/privacy"
+            className="text-sm text-[color:var(--text-muted)] hover:text-white"
+          >
+            Privacy
+          </Link>
+          <Link
+            href="/cookies"
+            className="text-sm text-[color:var(--text-muted)] hover:text-white"
+          >
+            Cookies
+          </Link>
           <button className="md:hidden" />
         </div>
 
-        {/* Mobile */}
-        <button className="md:hidden btn-ghost" onClick={() => setOpen((s) => !s)}>
+        {/* Mobile menu button */}
+        <button
+          className="md:hidden btn-ghost"
+          onClick={() => setOpen((s) => !s)}
+        >
           Menu
         </button>
       </div>
@@ -66,15 +86,29 @@ export default function Header() {
                 key={n.href}
                 href={n.href}
                 onClick={() => setOpen(false)}
-                className={`px-3 py-2 rounded-lg ${path === n.href ? 'bg-[color:var(--bg-lift)] border border-[color:var(--stroke)]' : 'hover:bg-[color:var(--bg-lift)]'}`}
+                className={`px-3 py-2 rounded-lg ${
+                  path === n.href
+                    ? "bg-[color:var(--bg-lift)] border border-[color:var(--stroke)]"
+                    : "hover:bg-[color:var(--bg-lift)]"
+                }`}
               >
                 {n.label}
               </Link>
             ))}
             <div className="flex items-center gap-3 pt-2">
-              <Link href="/privacy" className="text-sm text-[color:var(--text-muted)] hover:text-white">Privacy</Link>
+              <Link
+                href="/privacy"
+                className="text-sm text-[color:var(--text-muted)] hover:text-white"
+              >
+                Privacy
+              </Link>
               <span className="text-[color:var(--text-muted)]">•</span>
-              <Link href="/cookies" className="text-sm text-[color:var(--text-muted)] hover:text-white">Cookies</Link>
+              <Link
+                href="/cookies"
+                className="text-sm text-[color:var(--text-muted)] hover:text-white"
+              >
+                Cookies
+              </Link>
             </div>
           </div>
         </div>

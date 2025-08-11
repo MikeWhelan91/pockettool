@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 
 type Mode = 'light' | 'dark';
-const STORAGE_KEY = 'pk_theme';
+const STORAGE_KEY = 'utilixy_theme';
 
 export default function ThemeToggle() {
   const [mode, setMode] = useState<Mode | undefined>(undefined);
@@ -20,7 +20,7 @@ export default function ThemeToggle() {
   if (!mode) return null;
 
   const next: Mode = mode === 'dark' ? 'light' : 'dark';
-  const label = mode === 'dark' ? '🌙 Dark' : '☀️ Light';
+  const icon = mode === 'dark' ? '🌙' : '☀️';
 
   function toggle() {
     const m: Mode = mode === 'dark' ? 'light' : 'dark';
@@ -30,8 +30,14 @@ export default function ThemeToggle() {
   }
 
   return (
-    <button onClick={toggle} aria-label="Toggle theme" className="header-action" title={`Switch to ${next} mode`}>
-      {label}
+    <button
+      onClick={toggle}
+      aria-label={`Switch to ${next} mode`}
+      className="theme-chip"
+      title={`Switch to ${next} mode`}
+    >
+      <span aria-hidden>{icon}</span>
+      <span className="theme-chip__label">{mode === 'dark' ? 'Dark' : 'Light'}</span>
     </button>
   );
 }

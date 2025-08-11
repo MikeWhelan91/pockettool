@@ -49,7 +49,7 @@ a{ text-underline-offset:3px; }
 .bg-elev{ background:hsl(var(--elev)); }
 .container-wrap{ max-width:1160px; }
 
-/* Reusable brand gradient (navbar + footer) */
+/* Reusable brand gradient (keep for footer) */
 .brand-gradient{ background-image:linear-gradient(to bottom,#1e3a8a 0%,#2563eb 45%,#3b82f6 100%); }
 
 /* ===== Components ===== */
@@ -66,7 +66,7 @@ a{ text-underline-offset:3px; }
   box-shadow:0 2px 10px rgba(0,0,0,0.04);
 }
 
-/* Header action buttons (hamburger + theme toggle) — readable on gradient */
+/* Header action (legacy, still used in some places) */
 .header-action{
   display:inline-flex; align-items:center; gap:.5rem;
   padding:10px 14px; border-radius:12px;
@@ -78,6 +78,61 @@ a{ text-underline-offset:3px; }
 }
 .header-action:hover{ background:rgba(255,255,255,.16); border-color:rgba(255,255,255,.75); }
 .header-action:active{ transform: translateY(1px); }
+
+/* NEW: compact header action (for neutral navbar) */
+.header-action--sm{
+  display:inline-flex; align-items:center; gap:.45rem;
+  padding:6px 10px; border-radius:10px;
+  color:hsl(var(--text));
+  border:1px solid hsl(var(--line));
+  background:hsl(var(--card) / .55);
+  backdrop-filter: blur(6px);
+  font-size:.9rem; line-height:1;
+  text-decoration:none;
+  transition: background .15s ease, transform .05s ease, border-color .15s ease;
+}
+.header-action--sm:hover{ background:hsl(var(--card) / .75); }
+.header-action--sm:active{ transform: translateY(1px); }
+
+/* --- Header controls (hamburger + theme) --- */
+.icon-btn{
+  display:inline-flex; align-items:center; justify-content:center;
+  width:36px; height:36px;            /* mobile size */
+  border:1px solid hsl(var(--line));
+  border-radius:12px;
+  background:hsl(var(--card));
+  color:hsl(var(--text));
+}
+@media (min-width: 768px){
+  .icon-btn{ width:40px; height:40px; }
+}
+
+/* Theme toggle chip */
+.theme-chip{
+  display:inline-flex; align-items:center; gap:.5rem;
+  padding:8px 10px;                    /* compact on mobile */
+  border:1px solid hsl(var(--line));
+  border-radius:999px;
+  background:hsl(var(--card));
+  color:hsl(var(--text));
+  line-height:1;
+}
+@media (min-width:768px){
+  .theme-chip{ padding:10px 14px; }
+}
+.theme-chip__label{ font-size:.9rem; }
+@media (max-width:767px){
+  /* hide label on mobile, keep icon-only */
+  .theme-chip__label{ display:none; }
+}
+
+/* hero backdrops — only one visible per theme */
+.hero-dark { display: none; }
+.hero-light { display: block; }
+
+.theme-dark .hero-dark { display: block; }
+.theme-dark .hero-light { display: none; }
+
 
 /* Buttons */
 .btn{
@@ -102,19 +157,16 @@ a{ text-underline-offset:3px; }
 .btn-ghost:hover{ background:hsl(var(--card)); }
 
 /* Inputs */
-/* Light mode default = blue border */
 .input{
   width:100%; padding:10px 12px; border-radius:10px;
-  border:1px solid hsl(var(--ring));              /* blue in light mode */
+  border:1px solid hsl(var(--ring));
   background:hsl(var(--card));
   outline:none; transition: box-shadow .15s ease, border-color .15s ease;
 }
-/* Dark mode input border stays neutral */
 .theme-dark .input{ border-color:hsl(var(--line)); }
-/* Focus ring stays blue in both themes */
 .input:focus-visible{ border-color:hsl(var(--ring)); box-shadow:0 0 0 3px hsl(var(--ring) / .25); }
 
-/* Small inline input (numbers) */
+/* Small inline input */
 .input-sm{
   width: 80px;
   padding: 6px 8px;
@@ -125,7 +177,7 @@ a{ text-underline-offset:3px; }
 }
 .theme-dark .input-sm{ border-color: hsl(var(--line)); }
 
-/* Segmented control (generator tabs) */
+/* Segmented control */
 .seg{ display:flex; flex-wrap:wrap; gap:.5rem; }
 .seg-btn{
   padding: 8px 12px;
@@ -154,7 +206,7 @@ a{ text-underline-offset:3px; }
 /* Header shell */
 .header{ @apply sticky top-0 z-30 shadow-sm; }
 
-/* Tool tiles with poppy hover */
+/* Tool tiles */
 .tile{
   background:hsl(var(--card));
   border:1px solid hsl(var(--line));
@@ -169,26 +221,23 @@ a{ text-underline-offset:3px; }
 }
 
 /* ===== Uniform tool panels ===== */
-/* Wrapper turns into two equal columns and stretches children */
 .tool-panels{
   display:grid;
-  gap:1.5rem;                 /* 6 */
-  grid-template-columns: 1fr; /* mobile = single column */
+  gap:1.5rem;
+  grid-template-columns: 1fr;
   align-items: stretch;
 }
-@media (min-width: 768px){     /* md */
+@media (min-width: 768px){
   .tool-panels{ grid-template-columns: 1fr 1fr; }
 }
-/* Each direct child (we inject this class) fills height + has a consistent min-height */
 .tool-panel{
-  min-height: 420px;   /* tweak if you want taller/shorter baseline */
+  min-height: 420px;
   height: 100%;
   display: flex;
   flex-direction: column;
 }
-/* Allow grid columns to shrink properly (fixes random page width issues) */
-.tool-panels > * { min-width: 0; }         /* any direct child */
-.tool-panel { min-width: 0; }              /* the injected class */
-.card { min-width: 0; }                    /* cards inside panels can shrink */
+.tool-panels > * { min-width: 0; }
+.tool-panel { min-width: 0; }
+.card { min-width: 0; }
 textarea.input { width: 100%; min-width: 0; overflow-wrap: anywhere; }
-.seg { flex-wrap: wrap; }                  /* tabs can wrap instead of stretching the column */
+.seg { flex-wrap: wrap; }

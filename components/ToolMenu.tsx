@@ -42,7 +42,7 @@ export default function ToolMenu({ onClose }: { onClose: () => void }) {
       </nav>
 
       <div className="absolute bottom-0 left-0 right-0 border-t border-line p-3 text-xs text-muted">
-        © {new Date().getFullYear()} PocketTool
+        © {new Date().getFullYear()} Utilixy
       </div>
     </aside>
   );

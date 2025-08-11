@@ -14,55 +14,61 @@ const tools = [
 export default function HomePage() {
   return (
     <div className="grid gap-10">
-      {/* Hero with thin blue border + soft glow */}
-      <section
-        className="hero border"
-        style={{
-          // thin blue border from theme token
-          borderColor: "hsl(var(--ring))",
-          // soft outer glow using the same token (kept gentle so it doesn't shout)
-          boxShadow:
-            "0 6px 24px hsl(var(--ring) / .16), inset 0 1px 0 hsl(var(--bg) / .8)",
-        }}
-      >
-        <div className="px-6 py-10 md:px-10 md:py-14 grid gap-8 md:grid-cols-[1.1fr_.9fr] items-center">
-          <div>
-            <h1 className="text-[2.1rem] leading-tight font-semibold tracking-tight">
-              Quick, private web tools — right in your browser
-            </h1>
-            <p className="mt-3 text-[1.05rem] text-muted max-w-[58ch]">
-              Generate QR codes, convert images, merge PDFs, format JSON/YAML/XML, and more. Everything runs locally on
-              your device — nothing uploaded.
-            </p>
+      {/* Hero — subtle glow, gradient accents, no CTA */}
+    <section
+  className="
+    relative overflow-hidden rounded-[var(--radius)]
+    border border-line bg-[hsl(var(--card))]
+    shadow-[0_10px_40px_-10px_hsl(var(--ring)/.25)]
+  "
+>
+  {/* thin highlight */}
+  <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[hsl(var(--ring)/.45)] to-transparent opacity-60" />
 
-            <div className="mt-6 flex flex-wrap gap-3">
-              <Link href="/qr" className="btn">Open a tool</Link>
-            </div>
+  {/* BACKDROPS */}
+  {/* Dark-mode glow (kept from your current look) */}
+  <div
+    aria-hidden
+    className="hero-dark pointer-events-none absolute inset-0"
+  >
+    <div className="absolute inset-0 [mask-image:radial-gradient(70%_60%_at_35%_0%,#000_0,transparent_70%)]
+                    bg-[radial-gradient(60%_60%_at_15%_10%,hsl(var(--ring)/.18),transparent_60%),radial-gradient(40%_40%_at_95%_0%,hsl(var(--ring)/.14),transparent_60%)]" />
+    <div className="absolute -top-20 -left-24 h-[420px] w-[420px] rounded-full bg-[hsl(var(--ring)/.18)] blur-3xl" />
+    <div className="absolute -bottom-28 -right-28 h-[520px] w-[520px] rounded-full bg-[hsl(var(--ring)/.12)] blur-3xl" />
+  </div>
 
-            <div className="mt-7 flex flex-wrap gap-2.5">
-              {["Runs locally","No tracking","Dark mode","PWA friendly","Accessible"].map((x) => (
-                <span key={x} className="chip">{x}</span>
-              ))}
-            </div>
-          </div>
+  {/* Light-mode: super subtle, mostly neutral (almost no blue) */}
+  <div
+    aria-hidden
+    className="hero-light pointer-events-none absolute inset-0"
+  >
+    {/* extremely faint neutral wash */}
+    <div className="absolute inset-0 bg-[radial-gradient(80%_60%_at_20%_0%,hsl(220_20%_96%/.8),transparent_65%)]" />
+    {/* a tiny hint of ring, much lower than before */}
+    <div className="absolute inset-0 bg-[radial-gradient(40%_40%_at_95%_0%,hsl(var(--ring)/.04),transparent_60%)]" />
+  </div>
 
-          {/* Keep the preview block for balance for now */}
-          <div className="hidden md:block">
-            <div
-              className="card--flat p-5 h-full grid place-items-center"
-              style={{
-                background:
-                  "radial-gradient(60% 60% at 50% 40%, hsl(var(--ring) / .14), transparent 60%), hsl(var(--card))",
-              }}
-            >
-              <div className="rounded-[16px] border border-line bg-[hsl(var(--bg))] shadow-sm px-6 py-4">
-                <div className="text-sm text-muted">Preview</div>
-                <div className="mt-2 text-[.95rem]">Lightweight UI with consistent spacing.</div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
+  <div className="relative px-6 py-10 md:px-10 md:py-14 grid gap-8 md:grid-cols-[380px_1fr] items-center">
+    <div className="flex justify-center items-center">
+      <img
+        src="/utilixy-logo.svg"
+        alt="Utilixy logo"
+        className="h-[220px] w-auto md:h-[260px] lg:h-[300px] drop-shadow-md [filter:contrast(1.05)_saturate(1.05)]"
+      />
+    </div>
+
+    <div>
+      <h1 className="text-[2.2rem] leading-tight font-semibold tracking-tight md:text-[2.6rem]">
+        Quick, private web tools — right in your browser
+      </h1>
+      <p className="mt-3 text-[1.05rem] text-muted max-w-[64ch]">
+        Generate QR codes, convert images, merge PDFs, format JSON/YAML/XML, and more.
+        Everything runs locally on your device — nothing uploaded.
+      </p>
+    </div>
+  </div>
+</section>
+
 
       {/* Tools grid */}
       <section className="grid gap-5">

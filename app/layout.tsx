@@ -99,6 +99,13 @@ export default function RootLayout({
       className={`${ibmPlexSans.variable} ${jetBrainsMono.variable}`}
     >
       <head>
+
+        <script
+          async
+          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1257499604453174"
+          crossOrigin="anonymous"
+        />
+        
         {/* Ensure theme class is set before paint */}
         <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
 

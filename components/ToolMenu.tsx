@@ -4,9 +4,9 @@ import Link from 'next/link';
 
 const tools = [
   { href: '/', label: 'Home' },
+    { href: '/pdf', label: 'PDF Studio' },
   { href: '/random', label: 'Password & Random Generators' },
   { href: '/qr', label: 'Wi-Fi QR & QR Codes' },
-  { href: '/pdf', label: 'PDF Tools' },
   { href: '/image-converter', label: 'Image Converter (JPG / PNG / WEBP + HEIC)' },
   { href: '/case-converter', label: 'Case Converter' },
   { href: '/format', label: 'JSON / YAML / XML Formatter' },

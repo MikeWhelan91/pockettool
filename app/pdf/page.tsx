@@ -1,11 +1,11 @@
 import type { Metadata } from "next";
 import ToolLayout from "@/components/ToolLayout";
 import Client from "./Client";
+import Ad from "@/components/ads/Ad";
 
 export const metadata: Metadata = {
   title: "PDF Studio — Utilixy",
-  description:
-    "Reorder, rotate, split, merge, watermark, page numbers, extract text, images↔PDF, redaction and more — fully client-side.",
+  description: "Reorder, rotate, split, merge, watermark, page numbers, extract text, images↔PDF, redaction and more — fully client-side.",
   alternates: { canonical: "/pdf" },
 };
 
@@ -29,11 +29,10 @@ export default function Page() {
         align="center"
       >
         <Client />
+      
       </ToolLayout>
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
-      />
+
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
     </>
   );
 }

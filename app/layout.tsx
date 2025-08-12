@@ -2,11 +2,11 @@ import "./globals.css";
 import type { Metadata } from "next";
 import Link from "next/link";
 import Image from "next/image";
-import { Analytics } from '@vercel/analytics/react';
-import { SpeedInsights } from '@vercel/speed-insights/next';
+import { Analytics } from "@vercel/analytics/react";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 import ToolMenuWrapper from "@/components/ToolMenuWrapper";
 import ThemeToggle from "@/components/ThemeToggle";
-import ConsentBanner from "@/components/ConsentBanner";
+import FooterMultiplex from "@/components/ads/FooterMultiplex";
 
 import { IBM_Plex_Sans, JetBrains_Mono } from "next/font/google";
 
@@ -23,7 +23,6 @@ const jetBrainsMono = JetBrains_Mono({
   variable: "--font-mono",
   display: "swap",
 });
-
 
 export const metadata: Metadata = {
   title: "Utilixy — Quick, private web tools",
@@ -74,8 +73,7 @@ const jsonLd = {
   "@type": "WebSite",
   name: "Utilixy",
   url: "https://utilixy.com",
-  description:
-    "Quick, private web tools that run locally in your browser.",
+  description: "Quick, private web tools that run locally in your browser.",
 };
 
 const jsonLdOrg = {
@@ -85,7 +83,6 @@ const jsonLdOrg = {
   url: "https://utilixy.com",
   logo: "https://utilixy.com/icons/icon-512.png",
 };
-
 
 export default function RootLayout({
   children,
@@ -99,6 +96,20 @@ export default function RootLayout({
       className={`${ibmPlexSans.variable} ${jetBrainsMono.variable}`}
     >
       <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('consent', 'default', {
+          ad_user_data: 'denied',
+          ad_personalization: 'denied',
+          ad_storage: 'denied',
+          analytics_storage: 'denied'
+        });
+      `,
+          }}
+        />
 
         <script
           async
@@ -124,83 +135,89 @@ export default function RootLayout({
         <div className="min-h-dvh flex flex-col">
           {/* Neutral glass header */}
 
+          {/* Header */}
+          <header className="header bg-[hsl(var(--bg))]/90 backdrop-blur supports-[backdrop-filter]:bg-[hsl(var(--bg))]/80 border-b border-line">
+            <div className="mx-auto container-wrap h-14 md:h-16 grid grid-cols-3 items-center md:flex md:items-center md:justify-between">
+              {/* Mobile hamburger (left) */}
+              <div className="md:hidden justify-self-start">
+                <ToolMenuWrapper />
+              </div>
 
-{/* Header */}
-<header className="header bg-[hsl(var(--bg))]/90 backdrop-blur supports-[backdrop-filter]:bg-[hsl(var(--bg))]/80 border-b border-line">
-  <div className="mx-auto container-wrap h-14 md:h-16 flex items-center justify-between">
-    {/* LEFT: mobile burger + brand */}
-    <div className="flex items-center gap-2">
-      {/* Mobile hamburger */}
-      <div className="md:hidden">
-        <ToolMenuWrapper />
-      </div>
+              {/* Brand — centered on mobile, left-aligned on desktop */}
+              <Link
+                href="/"
+                aria-label="Utilixy home"
+                className="col-start-2 justify-self-center md:col-auto md:justify-self-start flex items-center gap-2 no-underline"
+              >
+                <Image
+                  src="/utilixy-nav.svg"
+                  alt=""
+                  aria-hidden="true"
+                  width={500}
+                  height={500}
+                  priority
+                  className="h-14 w-auto md:h-16"
+                />
+                <span className="text-[26px] md:text-[26px] tracking-tight font-semibold">
+                  Utilixy
+                </span>
+              </Link>
 
-      {/* Brand (no absolute centering) */}
-      <Link
-        href="/"
-        aria-label="Utilixy home"
-        className="flex items-center gap-2 no-underline"
-      >
-        <Image
-          src="/utilixy-nav.svg"
-          alt=""
-          aria-hidden="true"
-          width={500}
-          height={500}
-          priority
-          className="h-11 w-auto md:h-14"
-        />
-        <span className="text-[20px] md:text-[24px] tracking-tight font-semibold">
-          Utilixy
-        </span>
-      </Link>
-    </div>
+              {/* Spacer to balance grid on mobile */}
+              <div className="md:hidden" />
 
-    {/* RIGHT: desktop burger + tagline */}
-    <div className="flex items-center gap-4">
-      <div className="hidden md:block">
-        <ToolMenuWrapper />
-      </div>
-      <div className="hidden md:flex items-center h-10">
-        <span className="text-sm text-muted leading-none whitespace-nowrap">
-          Private · Local-first · Nothing uploaded
-        </span>
-      </div>
-    </div>
-  </div>
-</header>
-
-
-
-
+              {/* Desktop: menu button (right) + tagline */}
+              <div className="hidden md:flex items-center gap-4">
+                <div className="hidden md:block">
+                  <ToolMenuWrapper />
+                </div>
+                <div className="hidden md:flex items-center h-10">
+                  <span className="text-sm text-muted leading-none whitespace-nowrap">
+                    Private · Local-first · Nothing uploaded
+                  </span>
+                </div>
+              </div>
+            </div>
+          </header>
 
           {/* Main content */}
           <main className="mx-auto container-wrap px-4 py-8 flex-1">
             {children}
           </main>
 
-         {/* Neutral footer (no brand gradient) */}
+                    {/* Multiplex above footer on tool pages */}
+          <FooterMultiplex />
+
+          {/* Neutral footer (no brand gradient) */}
           <footer className="border-t border-line bg-[hsl(var(--card))]">
             <div className="mx-auto container-wrap px-4 py-5 text-sm flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
               <div className="text-muted">
-                © {new Date().getFullYear()} Utilixy — Tools run locally in your browser.
+                © {new Date().getFullYear()} Utilixy — Tools run locally in your
+                browser.
               </div>
-            <div className="flex items-center gap-4 h-10">
-  <nav className="flex items-center gap-4 leading-none">
-    <Link href="/privacy" className="hover:underline leading-none">Privacy</Link>
-    <Link href="/terms" className="hover:underline leading-none">Terms</Link>
-    <Link href="/about" className="hover:underline leading-none">About</Link>
-  </nav>
-  <div className="flex items-center">
-    <ThemeToggle />
-  </div>
-</div>
+              <div className="flex items-center gap-4 h-10">
+                <nav className="flex items-center gap-4 leading-none">
+                  <Link
+                    href="/privacy"
+                    className="hover:underline leading-none"
+                  >
+                    Privacy
+                  </Link>
+                  <Link href="/terms" className="hover:underline leading-none">
+                    Terms
+                  </Link>
+                  <Link href="/about" className="hover:underline leading-none">
+                    About
+                  </Link>
+                </nav>
+                <div className="flex items-center">
+                  <ThemeToggle />
+                </div>
+              </div>
             </div>
           </footer>
         </div>
-
-        <ConsentBanner />
-         <Analytics />
+        <Analytics />
         <SpeedInsights />
       </body>
     </html>

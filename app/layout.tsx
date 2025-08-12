@@ -113,7 +113,6 @@ export default function RootLayout({
       </head>
       <body className="min-h-dvh bg-[hsl(var(--bg))] text-[hsl(var(--text))]">
         {/* Collapsible sidebar trigger (hamburger lives here; compact styling in component) */}
-        <ToolMenuWrapper />
 
         <div className="min-h-dvh flex flex-col">
           {/* Neutral glass header */}

@@ -105,7 +105,7 @@ export default function RootLayout({
           src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1257499604453174"
           crossOrigin="anonymous"
         />
-        
+
         {/* Ensure theme class is set before paint */}
         <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
 
@@ -127,40 +127,45 @@ export default function RootLayout({
 
 {/* Header */}
 <header className="header bg-[hsl(var(--bg))]/90 backdrop-blur supports-[backdrop-filter]:bg-[hsl(var(--bg))]/80 border-b border-line">
-  <div className="mx-auto container-wrap h-14 md:h-16 relative flex items-center justify-between">
-    {/* Hamburger on small screens */}
-    <div className="flex items-center md:hidden">
-      <ToolMenuWrapper />
+  <div className="mx-auto container-wrap h-14 md:h-16 flex items-center justify-between">
+    {/* LEFT: mobile burger + brand */}
+    <div className="flex items-center gap-2">
+      {/* Mobile hamburger */}
+      <div className="md:hidden">
+        <ToolMenuWrapper />
+      </div>
+
+      {/* Brand (no absolute centering) */}
+      <Link
+        href="/"
+        aria-label="Utilixy home"
+        className="flex items-center gap-2 no-underline"
+      >
+        <Image
+          src="/utilixy-nav.svg"
+          alt=""
+          aria-hidden="true"
+          width={500}
+          height={500}
+          priority
+          className="h-11 w-auto md:h-14"
+        />
+        <span className="text-[20px] md:text-[24px] tracking-tight font-semibold">
+          Utilixy
+        </span>
+      </Link>
     </div>
 
-    {/* Brand */}
-    <Link
-      href="/"
-      aria-label="Utilixy home"
-      className="
-        flex items-center gap-2 no-underline
-        absolute left-1/2 -translate-x-1/2
-        md:static md:translate-x-0 md:left-auto
-        md:ml-4 lg:ml-6
-      "
-    >
-      <Image
-        src="/utilixy-nav.svg"
-        alt=""
-        aria-hidden="true"
-        width={500}
-        height={500}
-        priority
-        className="h-11 w-auto md:h-14"
-      />
-      <span className="text-[20px] md:text-[24px] tracking-tight font-semibold">Utilixy</span>
-    </Link>
-
-    {/* Right-side tagline (desktop only) */}
-    <div className="hidden md:flex items-center h-10">
-      <span className="text-sm text-muted leading-none whitespace-nowrap">
-        Private · Local-first · Nothing uploaded
-      </span>
+    {/* RIGHT: desktop burger + tagline */}
+    <div className="flex items-center gap-4">
+      <div className="hidden md:block">
+        <ToolMenuWrapper />
+      </div>
+      <div className="hidden md:flex items-center h-10">
+        <span className="text-sm text-muted leading-none whitespace-nowrap">
+          Private · Local-first · Nothing uploaded
+        </span>
+      </div>
     </div>
   </div>
 </header>

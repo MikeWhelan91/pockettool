@@ -21,6 +21,17 @@ export const metadata: Metadata = {
     "QR & Wi-Fi codes, image and PDF tools, formatters and random generators — all running locally in your browser.",
   manifest: "/manifest.json",
   themeColor: "#3B82F6",
+  metadataBase: new URL("https://utilixy.com"),
+  alternates: { canonical: "/" },
+  robots: { index: true, follow: true },
+  keywords: [
+    "PDF tools",
+    "QR code generator",
+    "image converter",
+    "JSON formatter",
+    "Base64 encoder",
+    "random generator",
+  ],
   openGraph: {
     title: "Utilixy — Quick, private web tools",
     description:
@@ -48,6 +59,15 @@ const themeInitScript = `
   } catch (e) {}
 `;
 
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  name: "Utilixy",
+  url: "https://utilixy.com",
+  description:
+    "Quick, private web tools that run locally in your browser.",
+};
+
 
 export default function RootLayout({
   children,
@@ -70,6 +90,10 @@ export default function RootLayout({
         <link
           href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap"
           rel="stylesheet"
+        />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
         />
       </head>
 

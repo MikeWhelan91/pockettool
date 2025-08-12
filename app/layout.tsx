@@ -2,7 +2,8 @@ import "./globals.css";
 import type { Metadata } from "next";
 import Link from "next/link";
 import Image from "next/image";
-
+import { Analytics } from '@vercel/analytics/react';
+import { SpeedInsights } from '@vercel/speed-insights/next';
 import ToolMenuWrapper from "@/components/ToolMenuWrapper";
 import ThemeToggle from "@/components/ThemeToggle";
 import ConsentBanner from "@/components/ConsentBanner";
@@ -110,7 +111,6 @@ export default function RootLayout({
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLdOrg) }}
         />
       </head>
-
       <body className="min-h-dvh bg-[hsl(var(--bg))] text-[hsl(var(--text))]">
         {/* Collapsible sidebar trigger (hamburger lives here; compact styling in component) */}
         <ToolMenuWrapper />
@@ -189,6 +189,8 @@ export default function RootLayout({
         </div>
 
         <ConsentBanner />
+         <Analytics />
+        <SpeedInsights />
       </body>
     </html>
   );

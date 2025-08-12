@@ -6,16 +6,34 @@ export const metadata: Metadata = {
   title: "PDF Studio — Utilixy",
   description:
     "Reorder, rotate, split, merge, watermark, page numbers, extract text, images↔PDF, redaction and more — fully client-side.",
+  alternates: { canonical: "/pdf" },
 };
 
 export default function Page() {
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    name: "PDF Studio",
+    applicationCategory: "UtilitiesApplication",
+    operatingSystem: "Web",
+    url: "https://utilixy.com/pdf",
+    description:
+      "Reorder, rotate, split, merge, watermark, page numbers, extract text, images↔PDF, redaction and more — fully client-side.",
+  };
+
   return (
-    <ToolLayout
-      title="PDF Studio"
-      description="Reorder, rotate, split, merge, watermark, page numbers, extract text, images↔PDF, redaction and more — all locally in your browser."
-      align="center"
-    >
-      <Client />
-    </ToolLayout>
+    <>
+      <ToolLayout
+        title="PDF Studio"
+        description="Reorder, rotate, split, merge, watermark, page numbers, extract text, images↔PDF, redaction and more — all locally in your browser."
+        align="center"
+      >
+        <Client />
+      </ToolLayout>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
+    </>
   );
 }

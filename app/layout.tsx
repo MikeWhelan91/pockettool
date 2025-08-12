@@ -1,17 +1,26 @@
-/* eslint-disable @next/next/no-img-element */
 import "./globals.css";
 import type { Metadata } from "next";
 import Link from "next/link";
+import Image from "next/image";
 
 import ToolMenuWrapper from "@/components/ToolMenuWrapper";
 import ThemeToggle from "@/components/ThemeToggle";
 import ConsentBanner from "@/components/ConsentBanner";
 
-import { Poppins } from "next/font/google";
+import { IBM_Plex_Sans, JetBrains_Mono } from "next/font/google";
 
-const poppins = Poppins({
-  weight: ["600"], // semi-bold
+const ibmPlexSans = IBM_Plex_Sans({
+  weight: ["400", "500", "600"],
   subsets: ["latin"],
+  variable: "--font-sans",
+  display: "swap",
+});
+
+const jetBrainsMono = JetBrains_Mono({
+  weight: ["400", "600"],
+  subsets: ["latin"],
+  variable: "--font-mono",
+  display: "swap",
 });
 
 
@@ -68,6 +77,14 @@ const jsonLd = {
     "Quick, private web tools that run locally in your browser.",
 };
 
+const jsonLdOrg = {
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  name: "Utilixy",
+  url: "https://utilixy.com",
+  logo: "https://utilixy.com/icons/icon-512.png",
+};
+
 
 export default function RootLayout({
   children,
@@ -75,25 +92,22 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html
+      lang="en"
+      suppressHydrationWarning
+      className={`${ibmPlexSans.variable} ${jetBrainsMono.variable}`}
+    >
       <head>
         {/* Ensure theme class is set before paint */}
         <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
 
-        {/* Fonts */}
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link
-          rel="preconnect"
-          href="https://fonts.gstatic.com"
-          crossOrigin=""
-        />
-        <link
-          href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap"
-          rel="stylesheet"
-        />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLdOrg) }}
         />
       </head>
 
@@ -124,7 +138,15 @@ export default function RootLayout({
         md:ml-4 lg:ml-6
       "
     >
-      <img src="/utilixy-nav.svg" alt="" aria-hidden="true" className="h-11 w-auto md:h-14" />
+      <Image
+        src="/utilixy-nav.svg"
+        alt=""
+        aria-hidden="true"
+        width={500}
+        height={500}
+        priority
+        className="h-11 w-auto md:h-14"
+      />
       <span className="text-[20px] md:text-[24px] tracking-tight font-semibold">Utilixy</span>
     </Link>
 

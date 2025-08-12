@@ -1,19 +1,24 @@
+import Link from "next/link";
 import ToolLayout from "@/components/ToolLayout";
 import Client from "./Client";
 
 export const metadata = {
-  title: "Random Generators — Utilixy",
+  title: "Password Generator & Random Tools — Utilixy",
   description:
-    "Passwords, UUIDs, colors, slugs, and lorem ipsum. Everything runs locally in your browser.",
+    "Generate strong passwords, UUIDs, colors, slugs and lorem ipsum locally in your browser.",
+  alternates: { canonical: "/random" },
 };
 
 export default function Page() {
   return (
     <ToolLayout
-      title="Random Data Generators"
-      description="Pick a generator, tweak options, and produce many results at once. Everything runs locally."
+      title="Password Generator & Random Tools"
+      description="Create strong passwords plus UUIDs, colors, slugs and lorem ipsum. Everything runs locally."
     >
       <Client />
+      <p className="mt-4 text-sm text-muted">
+        Need to work with PDFs? Try our <Link href="/pdf">PDF Studio</Link>.
+      </p>
     </ToolLayout>
   );
 }

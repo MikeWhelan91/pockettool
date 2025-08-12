@@ -17,10 +17,10 @@ export const metadata: Metadata = {
 
 const tools = [
   { href: "/pdf", title: "PDF Studio", desc: "Reorder, rotate, merge, split, numbers, watermark, extract, redact — locally." },
+  { href: "/random", title: "Password Generator", desc: "Strong passwords, UUIDs, colors, lorem, slugs." },
   { href: "/qr", title: "QR & Wi‑Fi", desc: "Create QR codes. Export PNG/SVG." },
   { href: "/image-converter", title: "Image Converter", desc: "HEIC → JPG/PNG/WebP. Local, private." },
   { href: "/format", title: "JSON / YAML / XML", desc: "Format, validate and convert." },
-  { href: "/random", title: "Random & Passwords", desc: "UUIDs, passwords, colors, lorem, slugs." },
   { href: "/case-converter", title: "Case Converter", desc: "Title, sentence, snake, kebab, camel, pascal." },
   { href: "/base64", title: "Base64", desc: "Encode or decode text and files." },
   { href: "/diff", title: "Text Diff", desc: "Compare two texts and see changes." },
@@ -80,7 +80,7 @@ export default function HomePage() {
                 { href: "/qr", label: "QR & Wi‑Fi" },
                 { href: "/image-converter", label: "Image converter" },
                 { href: "/format", label: "JSON/YAML/XML" },
-                { href: "/random", label: "Passwords & random" },
+                { href: "/random", label: "Password generator" },
               ].map((x) => (
                 <Link key={x.href} href={x.href} className="inline-flex items-center gap-2 rounded-full border border-line px-3 py-1 hover:bg-[hsl(var(--bg))/0.6] no-underline">
                   <span>{x.label}</span>

@@ -35,8 +35,6 @@
 /* ===== Base ===== */
 html,body{ height:100%; background:hsl(var(--bg)); color:hsl(var(--text));
   -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale; }
-:root{ --font-sans:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",Roboto,Ubuntu,"Helvetica Neue",Arial,sans-serif;
-       --font-mono:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; }
 body{ font-family:var(--font-sans); }
 code,pre{ font-family:var(--font-mono); }
 *,*::before,*::after{ box-sizing:border-box; }

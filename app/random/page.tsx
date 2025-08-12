@@ -2,7 +2,7 @@ import ToolLayout from "@/components/ToolLayout";
 import Client from "./Client";
 
 export const metadata = {
-  title: "Random Generators — PocketTool",
+  title: "Random Generators — Utilixy",
   description:
     "Passwords, UUIDs, colors, slugs, and lorem ipsum. Everything runs locally in your browser.",
 };

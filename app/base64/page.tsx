@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import Client from './Client';
 
 export const metadata: Metadata = {
-  title: 'Base64 Encoder / Decoder – PocketTool',
+  title: 'Base64 Encoder / Decoder – Utilixy',
   description: 'Convert text or files to and from Base64 instantly in your browser.',
 };
 

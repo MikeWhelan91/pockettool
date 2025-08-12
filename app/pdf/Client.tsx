@@ -1,259 +1,1192 @@
-'use client';
+"use client";
 
-import { useEffect, useState } from 'react';
-import { PDFDocument } from 'pdf-lib';
-import AdSlot from '@/components/AdSlot';
+import { useEffect, useMemo, useRef, useState } from "react";
+import { PDFDocument, StandardFonts, rgb } from "pdf-lib";
 
-// Base scale for HD previews
-const PREVIEW_BASE_SCALE = 0.6;
-
-type Operation = 'merge' | 'split' | 'compress';
+/* ---------------- Shared helpers ---------------- */
 
 async function loadPdfJs() {
-  const pdfjs = await import('pdfjs-dist');
-  // expects /public/pdfjs/pdf.worker.min.js to exist
-  pdfjs.GlobalWorkerOptions.workerSrc = '/pdfjs/pdf.worker.min.js';
+  const pdfjs = await import("pdfjs-dist");
+  // Make sure this exists: /public/pdfjs/pdf.worker.min.js
+  pdfjs.GlobalWorkerOptions.workerSrc = "/pdfjs/pdf.worker.min.js";
   return pdfjs;
 }
 
-export default function PDFToolsPage() {
-  const [files, setFiles] = useState<File[]>([]);
-  const [operation, setOperation] = useState<Operation>('merge');
-  const [ranges, setRanges] = useState<string>('1-end');
-  const [busy, setBusy] = useState(false);
-  const [outputUrl, setOutputUrl] = useState<string>('');
-  const [previews, setPreviews] = useState<string[]>([]);
-  const [selectedPreview, setSelectedPreview] = useState<number | null>(null);
-  const [showFirefoxWarning, setShowFirefoxWarning] = useState(
-    typeof navigator !== 'undefined' && navigator.userAgent.includes('Firefox')
+async function loadJSZip() {
+  try {
+    const mod = await import("jszip");
+    return (mod as any).default || mod;
+  } catch {
+    return null;
+  }
+}
+
+async function loadQRCode() {
+  try {
+    const mod = await import("qrcode");
+    return mod as any;
+  } catch {
+    return null;
+  }
+}
+
+function dl(url: string, name: string) {
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = name;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 5000);
+}
+
+async function blobFromUint8(bytes: Uint8Array, name = "output.pdf") {
+  const blob = new Blob([bytes.buffer as ArrayBuffer], { type: "application/pdf" });
+  const url = URL.createObjectURL(blob);
+  return { blob, url, name };
+}
+
+
+// --- Simple collapsible help block used by all tools ---
+function ToolHelp({
+  title = "What this does & how to use it",
+  children,
+}: {
+  title?: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <details className="rounded-lg border border-neutral-800 bg-neutral-900/40 p-3">
+      <summary className="cursor-pointer text-sm font-medium">{title}</summary>
+      <div className="mt-2 text-sm text-muted space-y-2">{children}</div>
+    </details>
   );
+}
 
-  // Regenerate previews
+// --- Explanations (what/why/how) for each tool ---
+const HELP = {
+  reorder: (
+    <>
+      <p><b>Why</b>: Fix wrong page order, rotate sideways scans, or remove pages before sharing.</p>
+      <p><b>How</b>:</p>
+      <ol className="list-decimal pl-5 space-y-1">
+        <li>Choose one or more PDFs.</li>
+        <li>Drag thumbnails to reorder. Right-click a page to delete. Press <kbd>R</kbd> to rotate the preview.</li>
+        <li>Click <b>Export PDF</b> to download the new document.</li>
+      </ol>
+      <p><b>Notes</b>: Rotation in this tool is visual for arranging; the exported PDF preserves the chosen order.</p>
+    </>
+  ),
+  watermark: (
+    <>
+      <p><b>Why</b>: Add page numbers or simple headers/footers; stamp a “CONFIDENTIAL/DRAFT” watermark for compliance.</p>
+      <p><b>How</b>:</p>
+      <ol className="list-decimal pl-5 space-y-1">
+        <li>Pick a PDF and a <b>Mode</b> (numbers, header, footer, watermark).</li>
+        <li>Set text/position, font size, and opacity.</li>
+        <li>Click <b>Apply & Download</b>.</li>
+      </ol>
+      <p><b>Notes</b>: Page numbers default to <i>Bottom-Center</i>. “Watermark” places angled text in the center by default.</p>
+    </>
+  ),
+  imagesToPdf: (
+    <>
+      <p><b>Why</b>: Turn photos/scans into a clean, single PDF (receipts, whiteboard shots, signed pages).</p>
+      <p><b>How</b>:</p>
+      <ol className="list-decimal pl-5 space-y-1">
+        <li>Select JPG/PNG images (order usually follows the file picker).</li>
+        <li>Choose page size and margins.</li>
+        <li>Click <b>Build PDF</b>.</li>
+      </ol>
+      <p><b>Tip</b>: If images are huge, shrinking them before import keeps the PDF small.</p>
+    </>
+  ),
+  pdfToImages: (
+    <>
+      <p><b>Why</b>: Export pages as PNGs for slides, annotation apps, or image-only sharing.</p>
+      <p><b>How</b>:</p>
+      <ol className="list-decimal pl-5 space-y-1">
+        <li>Pick a PDF; optionally enable <b>Download as .zip</b>.</li>
+        <li>Click <b>Convert</b>. Download images or a zip archive.</li>
+      </ol>
+      <p><b>Note</b>: This renders pages (it’s not extracting embedded images one-by-one).</p>
+    </>
+  ),
+  extractText: (
+    <>
+      <p><b>Why</b>: Get selectable text for search, quoting, or indexing.</p>
+      <p><b>How</b>:</p>
+      <ol className="list-decimal pl-5 space-y-1">
+        <li>Choose a PDF and click <b>Extract</b>.</li>
+        <li>Copy from the output or <b>Download .txt</b>.</li>
+      </ol>
+      <p><b>Limitations</b>: Scanned PDFs without OCR will produce little or no text (we can add client-side OCR later if you’d like).</p>
+    </>
+  ),
+  fillFlatten: (
+    <>
+      <p><b>Why</b>: Fill form fields and lock the values so they can’t be edited.</p>
+      <p><b>How</b>:</p>
+      <ol className="list-decimal pl-5 space-y-1">
+        <li>Open a PDF form, enter a field name and value, then click <b>Fill & Flatten</b>.</li>
+      </ol>
+      <p><b>Notes</b>: You need the exact field name. We can add a “list fields” helper if that would help your workflow.</p>
+    </>
+  ),
+  redact: (
+    <>
+      <p><b>Why</b>: Quickly hide sensitive content before sharing.</p>
+      <p><b>How</b>:</p>
+      <ol className="list-decimal pl-5 space-y-1">
+        <li>Open a PDF and choose <b>Redaction color</b> (black or white).</li>
+        <li>Drag boxes over the areas to hide. Use <b>Clear boxes</b> to reset.</li>
+        <li>Click <b>Apply (page 1)</b> to bake the redaction into the first page and download.</li>
+      </ol>
+      <p><b>Important</b>: This is a <i>raster</i> redaction (page 1 only) for speed. For full, vector redaction across pages (removing hidden text layer), we can add a separate advanced tool.</p>
+    </>
+  ),
+  split: (
+    <>
+      <p><b>Why</b>: Break large PDFs into smaller chunks for email or per-section delivery.</p>
+      <p><b>How</b>:</p>
+      <ol className="list-decimal pl-5 space-y-1">
+        <li>Choose a PDF and a mode: <b>count</b> (every N pages), <b>max</b> (chunk size), or <b>bookmarks</b> (split by top-level outline).</li>
+        <li>Click <b>Split</b> to download parts.</li>
+      </ol>
+      <p><b>Note</b>: Bookmark split requires a PDF with a proper outline.</p>
+    </>
+  ),
+  stampQR: (
+    <>
+      <p><b>Why</b>: Stamp a QR code (URL, ticket ID, signature link) onto every page.</p>
+      <p><b>How</b>:</p>
+      <ol className="list-decimal pl-5 space-y-1">
+        <li>Open a PDF, enter the text/URL, choose size and corner.</li>
+        <li>Click <b>Stamp & Download</b>.</li>
+      </ol>
+    </>
+  ),
+  batchMerge: (
+    <>
+      <p><b>Why</b>: Combine multiple PDFs into one (e.g., report + appendix + invoices).</p>
+      <p><b>How</b>:</p>
+      <ol className="list-decimal pl-5 space-y-1">
+        <li>Select PDFs in the order you want them merged.</li>
+        <li>Click <b>Merge & Download</b>.</li>
+      </ol>
+      <p><b>Tip</b>: If you need to reorder after selection, use the Reorder tool on the merged file.</p>
+    </>
+  ),
+  compress: (
+    <>
+      <p><b>Why</b>: Reduce file size for sharing, while keeping content intact.</p>
+      <p><b>How</b>:</p>
+      <ol className="list-decimal pl-5 space-y-1">
+        <li>Select one or more PDFs and click <b>Optimize & Download</b>.</li>
+      </ol>
+      <p><b>Note</b>: This is <i>lossless</i> structural optimization. For stronger shrinkage (image recompression/downsizing), we can add a “lossy” mode.</p>
+    </>
+  ),
+} as const;
+
+
+/* --------- Core studio shell (sidebar + stage) --------- */
+
+type ToolKey =
+  | "reorder"
+  | "watermark"
+  | "imagesToPdf"
+  | "pdfToImages"
+  | "extractText"
+  | "fillFlatten"
+  | "redact"
+  | "split"
+  | "stampQR"
+  | "batchMerge"
+  | "compress";
+
+const TOOL_LIST: { key: ToolKey; label: string }[] = [
+  { key: "reorder", label: "Reorder / Rotate / Delete" },
+  { key: "watermark", label: "Page numbers / Header / Footer / Watermark" },
+  { key: "imagesToPdf", label: "Images → PDF (scanner)" },
+  { key: "pdfToImages", label: "PDF → Images (PNG/Zip)" },
+  { key: "extractText", label: "Extract text" },
+  { key: "fillFlatten", label: "Fill forms & flatten" },
+  { key: "redact", label: "Redact (rectangles)" },
+  { key: "split", label: "Split (count / size / bookmarks)" },
+  { key: "stampQR", label: "Stamp QR" },
+  { key: "batchMerge", label: "Batch merge" },
+  { key: "compress", label: "Compress (lossless optimize)" },
+];
+
+export default function PDFStudio() {
+  const [tool, setTool] = useState<ToolKey>("reorder");
+
+  return (
+    <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-[220px,1fr] gap-6">
+      <aside className="card p-3 h-fit">
+        <div className="grid gap-1">
+          {TOOL_LIST.map((t) => (
+            <button
+              key={t.key}
+              className={`text-left px-3 py-2 rounded-lg hover:bg-neutral-800 ${
+                tool === t.key ? "bg-neutral-800 font-medium" : ""
+              }`}
+              onClick={() => setTool(t.key)}
+            >
+              {t.label}
+            </button>
+          ))}
+        </div>
+      </aside>
+
+      <main className="grid gap-6">
+        {tool === "reorder" && <ToolReorder />}
+        {tool === "watermark" && <ToolWatermark />}
+        {tool === "imagesToPdf" && <ToolImagesToPdf />}
+        {tool === "pdfToImages" && <ToolPdfToImages />}
+        {tool === "extractText" && <ToolExtractText />}
+        {tool === "fillFlatten" && <ToolFillFlatten />}
+        {tool === "redact" && <ToolRedact />}
+        {tool === "split" && <ToolSplit />}
+        {tool === "stampQR" && <ToolStampQR />}
+        {tool === "batchMerge" && <ToolBatchMerge />}
+        {tool === "compress" && <ToolCompress />}
+      </main>
+    </div>
+  );
+}
+
+/* -------------------- Tool: Reorder / Rotate / Delete -------------------- */
+
+function ToolReorder() {
+  const [files, setFiles] = useState<File[]>([]);
+  const [thumbs, setThumbs] = useState<{ url: string; fileIndex: number; page: number }[]>([]);
+  const dragIndex = useRef<number | null>(null);
+
   useEffect(() => {
-    setPreviews([]);
-    if (!files.length) return;
-    if (operation === 'merge') generateMergePreviews(files);
-    else if (operation === 'split') generateSplitPreviews(files[0]);
-  }, [files, operation, ranges]);
+    (async () => {
+      setThumbs([]);
+      if (!files.length) return;
+      const pdfjs = await loadPdfJs();
+      const urls: { url: string; fileIndex: number; page: number }[] = [];
+      for (let fi = 0; fi < files.length; fi++) {
+        const data = await files[fi].arrayBuffer();
+        const doc = await pdfjs.getDocument({ data }).promise;
+        const pages = Math.min(1000, doc.numPages);
+        for (let p = 1; p <= pages; p++) {
+          const page = await doc.getPage(p);
+          const vp = page.getViewport({ scale: 0.35 * (window.devicePixelRatio || 1) });
+          const canvas = document.createElement("canvas");
+          canvas.width = vp.width;
+          canvas.height = vp.height;
+          const ctx = canvas.getContext("2d")!;
+          await page.render({ canvasContext: ctx, canvas, viewport: vp }).promise;
+          urls.push({ url: canvas.toDataURL("image/png"), fileIndex: fi, page: p - 1 });
+        }
+      }
+      setThumbs(urls);
+    })();
+  }, [files]);
 
-  async function generateMergePreviews(selection: File[]) {
-    const urls: string[] = [];
-    const dpr = window.devicePixelRatio || 1;
-    const pdfjs = await loadPdfJs();
-    for (const f of selection) {
-      const data = await f.arrayBuffer();
-      const pdf = await pdfjs.getDocument({ data }).promise;
-      const page = await pdf.getPage(1);
-      const viewport = page.getViewport({ scale: PREVIEW_BASE_SCALE * dpr });
-      const canvas = document.createElement('canvas');
-      canvas.width = viewport.width;
-      canvas.height = viewport.height;
-      const ctx = canvas.getContext('2d')!;
-      await page.render({ canvas, canvasContext: ctx, viewport }).promise;
-      urls.push(canvas.toDataURL('image/png'));
-    }
-    setPreviews(urls);
-  }
-
-  async function generateSplitPreviews(file: File) {
-    const urls: string[] = [];
-    const data = await file.arrayBuffer();
-    const pdfjs = await loadPdfJs();
-    const pdf = await pdfjs.getDocument({ data }).promise;
-    const totalPages = pdf.numPages;
-    const pageIndices: number[] = [];
-
-    ranges.split(',').forEach((part) => {
-      let [start, end] = part.split('-').map((x) => x.trim());
-      let s = start === 'end' ? totalPages : parseInt(start, 10);
-      let e = end ? (end === 'end' ? totalPages : parseInt(end, 10)) : s;
-      if (isNaN(s) || s < 1) s = 1;
-      if (isNaN(e) || e > totalPages) e = totalPages;
-      for (let p = s; p <= e; p++) pageIndices.push(p - 1);
-    });
-
-    const dpr = window.devicePixelRatio || 1;
-    for (const idx of pageIndices) {
-      const page = await pdf.getPage(idx + 1);
-      const viewport = page.getViewport({ scale: PREVIEW_BASE_SCALE * dpr });
-      const canvas = document.createElement('canvas');
-      canvas.width = viewport.width;
-      canvas.height = viewport.height;
-      const ctx = canvas.getContext('2d')!;
-      await page.render({ canvas, canvasContext: ctx, viewport }).promise;
-      urls.push(canvas.toDataURL('image/png'));
-    }
-    setPreviews(urls);
-  }
-
-  const handleFiles = (fl: FileList | null) => {
-    if (!fl) return;
-    setFiles(Array.from(fl));
-    setOutputUrl('');
-    setSelectedPreview(null);
+  const onDrop = (from: number, to: number) => {
+    if (to < 0 || to >= thumbs.length || from === to) return;
+    const arr = thumbs.slice();
+    const [moved] = arr.splice(from, 1);
+    arr.splice(to, 0, moved);
+    setThumbs(arr);
   };
 
+  const exportPdf = async () => {
+    if (!files.length || !thumbs.length) return;
+    const out = await PDFDocument.create();
+    for (const t of thumbs) {
+      const src = await PDFDocument.load(await files[t.fileIndex].arrayBuffer());
+      const [page] = await out.copyPages(src, [t.page]);
+      out.addPage(page);
+    }
+    const bytes = await out.save({ useObjectStreams: true });
+    const { url } = await blobFromUint8(bytes, "reordered.pdf");
+    dl(url, "reordered.pdf");
+  };
+
+  return (
+    <div className="card p-6 space-y-4">
+      <ToolHelp>{HELP.reorder}</ToolHelp>
+
+      <div className="grid md:grid-cols-2 gap-3">
+        <div>
+          <label className="block text-sm mb-1">PDF files</label>
+          <input
+            type="file"
+            accept="application/pdf"
+            multiple
+            className="input w-full"
+            onChange={(e) => e.target.files && setFiles(Array.from(e.target.files))}
+          />
+        </div>
+        <div className="text-sm text-muted">
+          Drag thumbnails to reorder; right-click to <b>delete</b>; <kbd>R</kbd> to rotate (visual only).
+        </div>
+      </div>
+
+      <div className="grid grid-cols-3 sm:grid-cols-5 gap-2">
+        {thumbs.map((t, i) => (
+          <button
+            key={i}
+            draggable
+            onDragStart={() => (dragIndex.current = i)}
+            onDragOver={(e) => e.preventDefault()}
+            onDrop={() => dragIndex.current !== null && onDrop(dragIndex.current, i)}
+            onContextMenu={(e) => {
+              e.preventDefault();
+              setThumbs((a) => a.filter((_, idx) => idx !== i));
+            }}
+            className="border rounded overflow-hidden"
+            title={`From file #${t.fileIndex + 1}, page ${t.page + 1}`}
+          >
+            <img src={t.url} alt="" className="w-full" />
+          </button>
+        ))}
+      </div>
+
+      <div>
+        <button className="btn" onClick={exportPdf} disabled={!thumbs.length}>
+          Export PDF
+        </button>
+      </div>
+    </div>
+  );
+}
+
+/* -------------------- Tool: Page numbers / Header / Footer / Watermark -------------------- */
+
+function ToolWatermark() {
+  const [file, setFile] = useState<File | null>(null);
+
+  // One tool, multiple modes
+  const [mode, setMode] =
+    useState<"numbers" | "header" | "footer" | "watermark">("numbers");
+
+  const [text, setText] = useState<string>("CONFIDENTIAL");
+  const [pos, setPos] =
+    useState<"tl" | "tc" | "tr" | "bl" | "bc" | "br" | "center">("bc");
+  const [opacity, setOpacity] = useState<number>(30);
+  const [size, setSize] = useState<number>(12);
+
+  // Sensible defaults when switching modes
+  useEffect(() => {
+    if (mode === "numbers") setPos("bc");
+    else if (mode === "header") setPos("tc");
+    else if (mode === "footer") setPos("bc");
+    else if (mode === "watermark") setPos("center");
+  }, [mode]);
+
   const run = async () => {
-    if (!files.length) return;
-    setBusy(true);
-    setOutputUrl('');
-    try {
-      const pdfDoc = await PDFDocument.create();
-      if (operation === 'merge' || operation === 'compress') {
-        for (const f of files) {
-          const bytes = await f.arrayBuffer();
-          const src = await PDFDocument.load(bytes);
-          const pages = await pdfDoc.copyPages(src, src.getPageIndices());
-          pages.forEach((p) => pdfDoc.addPage(p));
-        }
-      } else {
-        const bytes = await files[0].arrayBuffer();
-        const src = await PDFDocument.load(bytes);
-        const total = src.getPageCount();
-        const indices: number[] = [];
-        ranges.split(',').forEach((part) => {
-          let [start, end] = part.split('-').map((x) => x.trim());
-          let s = start === 'end' ? total : parseInt(start, 10);
-          let e = end ? (end === 'end' ? total : parseInt(end, 10)) : s;
-          if (isNaN(s) || s < 1) s = 1;
-          if (isNaN(e) || e > total) e = total;
-          for (let p = s; p <= e; p++) indices.push(p - 1);
-        });
-        const pages = await pdfDoc.copyPages(src, indices);
-        pages.forEach((p) => pdfDoc.addPage(p));
+    if (!file) return;
+    const src = await PDFDocument.load(await file.arrayBuffer());
+    const font = await src.embedFont(StandardFonts.Helvetica);
+
+    const pages = src.getPages();
+    pages.forEach((p, idx) => {
+      const { width, height } = p.getSize();
+      const pad = 24;
+
+      let x = width / 2;
+      let y = height / 2;
+
+      // content per mode
+      let content = text;
+      if (mode === "numbers") content = `${idx + 1} / ${pages.length}`;
+
+      // Keep page numbers in footer center if user picked "center"
+      const effectivePos =
+        mode === "numbers" && pos === "center" ? "bc" : pos;
+
+      switch (effectivePos) {
+        case "tl": x = pad; y = height - pad; break;
+        case "tc": x = width / 2; y = height - pad; break;
+        case "tr": x = width - pad; y = height - pad; break;
+        case "bl": x = pad; y = pad; break;
+        case "bc": x = width / 2; y = pad; break; // footer-center
+        case "br": x = width - pad; y = pad; break;
+        case "center": x = width / 2; y = height / 2; break;
       }
-      const out = await pdfDoc.save({ useObjectStreams: operation === 'compress' });
-      const blob = new Blob([out.buffer as ArrayBuffer], { type: 'application/pdf' });
-      setOutputUrl(URL.createObjectURL(blob));
-    } catch (e) {
-      console.error(e);
-    } finally {
-      setBusy(false);
+
+      const w = font.widthOfTextAtSize(content, size);
+      let drawX = x;
+      if (effectivePos.endsWith("c") || effectivePos === "center") drawX = x - w / 2;
+      if (effectivePos.endsWith("r")) drawX = x - w;
+
+      p.drawText(content, {
+        x: drawX,
+        y,
+        size,
+        font,
+        color: rgb(0, 0, 0),
+        opacity: Math.max(0, Math.min(1, opacity / 100)),
+        // Angle only for true watermark; never for numbers/header/footer
+        rotate:
+          effectivePos === "center" && mode === "watermark"
+            ? { type: "degrees", angle: 35 }
+            : undefined,
+      } as any);
+    });
+
+    const bytes = await src.save({ useObjectStreams: true });
+    const { url } = await blobFromUint8(bytes, `annotated.pdf`);
+    dl(url, `annotated.pdf`);
+  };
+
+  return (
+    <div className="card p-6 space-y-4">
+      <ToolHelp>{HELP.watermark}</ToolHelp>
+
+      <div className="grid md:grid-cols-2 gap-3">
+        <div>
+          <label className="text-sm mb-1 block">PDF file</label>
+          <input
+            type="file"
+            accept="application/pdf"
+            className="input w-full"
+            onChange={(e) => setFile(e.target.files?.[0] ?? null)}
+          />
+        </div>
+        <div>
+          <label className="text-sm mb-1 block">Mode</label>
+          <select
+            className="input w-full"
+            value={mode}
+            onChange={(e) => setMode(e.target.value as any)}
+          >
+            <option value="numbers">Page numbers</option>
+            <option value="header">Header text</option>
+            <option value="footer">Footer text</option>
+            <option value="watermark">Watermark (center angled)</option>
+          </select>
+        </div>
+      </div>
+
+      {mode !== "numbers" && (
+        <div className="grid md:grid-cols-2 gap-3">
+          <label className="block">
+            <span className="text-sm">Text</span>
+            <input
+              className="input w-full mt-1"
+              value={text}
+              onChange={(e) => setText(e.target.value)}
+            />
+          </label>
+          <label className="block">
+            <span className="text-sm">Position</span>
+            <select
+              className="input w-full mt-1"
+              value={pos}
+              onChange={(e) => setPos(e.target.value as any)}
+            >
+              <option value="tl">Top-Left</option>
+              <option value="tc">Top-Center</option>
+              <option value="tr">Top-Right</option>
+              <option value="bl">Bottom-Left</option>
+              <option value="bc">Bottom-Center</option>
+              <option value="br">Bottom-Right</option>
+              <option value="center">Center (angled)</option>
+            </select>
+          </label>
+        </div>
+      )}
+
+      {mode === "numbers" && (
+        <div className="text-sm text-muted">
+          Page numbers default to <b>Bottom-Center</b>. Choose another position above if you like.
+        </div>
+      )}
+
+      <div className="grid md:grid-cols-2 gap-3">
+        <label className="block">
+          <span className="text-sm">Font size</span>
+          <input
+            type="number"
+            className="input mt-1"
+            value={size}
+            min={6}
+            max={72}
+            onChange={(e) => setSize(parseInt(e.target.value || "12", 10))}
+          />
+        </label>
+        <label className="block">
+          <span className="text-sm">Opacity (%)</span>
+          <input
+            type="number"
+            className="input mt-1"
+            value={opacity}
+            min={0}
+            max={100}
+            onChange={(e) => setOpacity(parseInt(e.target.value || "30", 10))}
+          />
+        </label>
+      </div>
+
+      <button className="btn" onClick={run} disabled={!file}>
+        Apply & Download
+      </button>
+    </div>
+  );
+}
+
+/* -------------------- Tool: Images → PDF -------------------- */
+
+function ToolImagesToPdf() {
+  const [images, setImages] = useState<File[]>([]);
+  const [pageSize, setPageSize] = useState<"A4" | "Letter">("A4");
+  const [margin, setMargin] = useState<number>(24);
+
+  const run = async () => {
+    if (!images.length) return;
+    const doc = await PDFDocument.create();
+    for (const img of images) {
+      const bytes = new Uint8Array(await img.arrayBuffer());
+      const isPng = img.type.includes("png");
+      const embedded = isPng ? await doc.embedPng(bytes) : await doc.embedJpg(bytes);
+      const [w, h] = pageSize === "A4" ? [595.28, 841.89] : [612, 792];
+      const page = doc.addPage([w, h]);
+      const scale = Math.min((w - margin * 2) / embedded.width, (h - margin * 2) / embedded.height);
+      const dw = embedded.width * scale;
+      const dh = embedded.height * scale;
+      const x = (w - dw) / 2;
+      const y = (h - dh) / 2;
+      page.drawImage(embedded, { x, y, width: dw, height: dh });
+    }
+    const bytes = await doc.save({ useObjectStreams: true });
+    const { url } = await blobFromUint8(bytes, "images.pdf");
+    dl(url, "images.pdf");
+  };
+
+  return (
+    <div className="card p-6 space-y-4">
+      <ToolHelp>{HELP.imagesToPdf}</ToolHelp>
+
+      <div className="grid md:grid-cols-2 gap-3">
+        <label className="block">
+          <span className="text-sm">Images (JPG/PNG)</span>
+          <input
+            type="file"
+            accept="image/png,image/jpeg"
+            multiple
+            className="input mt-1"
+            onChange={(e) => setImages(e.target.files ? Array.from(e.target.files) : [])}
+          />
+        </label>
+        <div className="grid grid-cols-2 gap-3">
+          <label className="block">
+            <span className="text-sm">Page</span>
+            <select className="input mt-1" value={pageSize} onChange={(e) => setPageSize(e.target.value as any)}>
+              <option value="A4">A4</option>
+              <option value="Letter">Letter</option>
+            </select>
+          </label>
+          <label className="block">
+            <span className="text-sm">Margins (pt)</span>
+            <input
+              type="number"
+              className="input mt-1"
+              value={margin}
+              min={0}
+              max={72}
+              onChange={(e) => setMargin(parseInt(e.target.value || "24", 10))}
+            />
+          </label>
+        </div>
+      </div>
+      <button className="btn" onClick={run} disabled={!images.length}>
+        Build PDF
+      </button>
+    </div>
+  );
+}
+
+/* -------------------- Tool: PDF → Images (PNG / Zip) -------------------- */
+
+function ToolPdfToImages() {
+  const [file, setFile] = useState<File | null>(null);
+  const [pngs, setPngs] = useState<string[]>([]);
+  const [asZip, setAsZip] = useState<boolean>(false);
+
+  const run = async () => {
+    if (!file) return;
+    const pdfjs = await loadPdfJs();
+    const bytes = await file.arrayBuffer();
+    const doc = await pdfjs.getDocument({ data: bytes }).promise;
+    const urls: string[] = [];
+    for (let i = 1; i <= doc.numPages; i++) {
+      const page = await doc.getPage(i);
+      const vp = page.getViewport({ scale: 2 });
+      const canvas = document.createElement("canvas");
+      canvas.width = vp.width;
+      canvas.height = vp.height;
+      const ctx = canvas.getContext("2d")!;
+      await page.render({ canvasContext: ctx, canvas, viewport: vp }).promise;
+      urls.push(canvas.toDataURL("image/png"));
+    }
+    setPngs(urls);
+
+    if (asZip) {
+      const JSZip = await loadJSZip();
+      if (!JSZip) return alert("Install jszip to enable Zip export: npm i jszip");
+      const zip = new JSZip();
+      urls.forEach((u, idx) => zip.file(`page-${idx + 1}.png`, u.split(",")[1], { base64: true }));
+      const blob = await zip.generateAsync({ type: "blob" });
+      const url = URL.createObjectURL(blob);
+      dl(url, "pages.zip");
     }
   };
 
   return (
-    <>
-      <div className="card w-full max-w-screen-md">
-        <h1 className="text-xl font-semibold mb-4">PDF Merge / Split / Compress</h1>
+    <div className="card p-6 space-y-4">
+      <ToolHelp>{HELP.pdfToImages}</ToolHelp>
 
-        {showFirefoxWarning && (
-          <div className="bg-yellow-100 border border-yellow-300 text-yellow-900 text-sm px-4 py-2 rounded mb-4 flex justify-between items-center">
-            <span>
-              ⚠️ PDF merging in Firefox may freeze on some systems due to hardware acceleration. Try disabling it in settings if needed.
-            </span>
-            <button onClick={() => setShowFirefoxWarning(false)} className="ml-4 text-xs underline">
-              Dismiss
-            </button>
-          </div>
-        )}
+      <div className="grid md:grid-cols-2 gap-3">
+        <label className="block">
+          <span className="text-sm">PDF file</span>
+          <input type="file" accept="application/pdf" className="input mt-1" onChange={(e) => setFile(e.target.files?.[0] ?? null)} />
+        </label>
+        <label className="inline-flex items-center gap-2">
+          <input type="checkbox" checked={asZip} onChange={(e) => setAsZip(e.target.checked)} />
+          Download as .zip
+        </label>
+      </div>
+      <button className="btn" onClick={run} disabled={!file}>
+        Convert
+      </button>
 
+      {pngs.length > 0 && (
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+          {pngs.map((u, i) => (
+            <a key={i} href={u} download={`page-${i + 1}.png`} className="border rounded overflow-hidden block">
+              <img src={u} alt={`page ${i + 1}`} />
+            </a>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* -------------------- Tool: Extract text -------------------- */
+
+function ToolExtractText() {
+  const [file, setFile] = useState<File | null>(null);
+  const [out, setOut] = useState<string>("");
+
+  const run = async () => {
+    if (!file) return;
+    const pdfjs = await loadPdfJs();
+    const doc = await pdfjs.getDocument({ data: await file.arrayBuffer() }).promise;
+    let buf = "";
+    for (let i = 1; i <= doc.numPages; i++) {
+      const page = await doc.getPage(i);
+      const tc = await page.getTextContent();
+      const line = (tc.items as any[]).map((it: any) => ("str" in it ? it.str : "")).join("");
+      buf += line + "\n\n";
+    }
+    setOut(buf.trim());
+  };
+
+  return (
+    <div className="card p-6 space-y-4">
+      <ToolHelp>{HELP.extractText}</ToolHelp>
+
+      <div className="grid md:grid-cols-2 gap-3">
+        <input type="file" accept="application/pdf" className="input" onChange={(e) => setFile(e.target.files?.[0] ?? null)} />
+        <button className="btn" onClick={run} disabled={!file}>
+          Extract
+        </button>
+      </div>
+      <textarea className="input h-64 font-mono" value={out} readOnly />
+      {out && (
+        <button
+          className="btn-ghost"
+          onClick={() => {
+            const url = URL.createObjectURL(new Blob([out], { type: "text/plain" }));
+            dl(url, "text.txt");
+          }}
+        >
+          Download .txt
+        </button>
+      )}
+    </div>
+  );
+}
+
+/* -------------------- Tool: Fill forms & flatten -------------------- */
+
+function ToolFillFlatten() {
+  const [file, setFile] = useState<File | null>(null);
+  const [k, setK] = useState<string>("");
+  const [v, setV] = useState<string>("");
+
+  const run = async () => {
+    if (!file || !k) return;
+    const doc = await PDFDocument.load(await file.arrayBuffer());
+    const form = doc.getForm();
+    try {
+      const field = form.getField(k);
+      (field as any).setText?.(v);
+      (field as any).setCheckBox?.(v === "true");
+    } catch {
+      alert("Field not found or not a text/checkbox field.");
+      return;
+    }
+    form.flatten();
+    const bytes = await doc.save({ useObjectStreams: true });
+    const { url } = await blobFromUint8(bytes, "filled.pdf");
+    dl(url, "filled.pdf");
+  };
+
+  return (
+    <div className="card p-6 space-y-4">
+      <ToolHelp>{HELP.fillFlatten}</ToolHelp>
+
+      <div className="grid md:grid-cols-3 gap-3">
+        <input type="file" accept="application/pdf" className="input" onChange={(e) => setFile(e.target.files?.[0] ?? null)} />
+        <input className="input" placeholder="Field name (exact)" value={k} onChange={(e) => setK(e.target.value)} />
+        <input className="input" placeholder="Value" value={v} onChange={(e) => setV(e.target.value)} />
+      </div>
+      <button className="btn" onClick={run} disabled={!file || !k}>
+        Fill & Flatten
+      </button>
+    </div>
+  );
+}
+
+/* -------------------- Tool: Redact (rectangles, page 1 quick) -------------------- */
+
+function ToolRedact() {
+  const [file, setFile] = useState<File | null>(null);
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const [page, setPage] = useState<any>(null);
+  const [rects, setRects] = useState<{ x: number; y: number; w: number; h: number }[]>([]);
+  const drawing = useRef<{ x: number; y: number } | null>(null);
+  const scale = 1.3;
+
+  // user color
+  const [redactColor, setRedactColor] = useState<"black" | "white">("black");
+
+  async function loadFirstPage(f: File) {
+    const pdfjs = await loadPdfJs();
+    const d = await pdfjs.getDocument({ data: await f.arrayBuffer() }).promise;
+    const p = await d.getPage(1);
+    setPage(p);
+
+    const vp = p.getViewport({ scale });
+    const canvas = canvasRef.current!;
+    const ctx = canvas.getContext("2d")!;
+
+    canvas.width = vp.width;
+    canvas.height = vp.height;
+    canvas.style.width = `${vp.width}px`;
+    canvas.style.height = `${vp.height}px`;
+
+    await p.render({ canvasContext: ctx, canvas, viewport: vp }).promise;
+  }
+
+  // redraw helper (page + given overlays)
+  async function render(rectsToDraw: typeof rects = rects) {
+    if (!page) return;
+    const canvas = canvasRef.current!;
+    const ctx = canvas.getContext("2d")!;
+    const vp = page.getViewport({ scale });
+
+    // draw the base page
+    await page.render({ canvasContext: ctx, canvas, viewport: vp }).promise;
+
+    // preview overlays
+    const prevFill =
+      redactColor === "black" ? "rgba(0,0,0,0.35)" : "rgba(255,255,255,0.5)";
+    ctx.fillStyle = prevFill;
+    ctx.strokeStyle =
+      redactColor === "black" ? "rgba(255,255,255,0.6)" : "rgba(0,0,0,0.6)";
+    ctx.lineWidth = 1;
+
+    rectsToDraw.forEach(({ x, y, w, h }) => {
+      ctx.fillRect(x, y, w, h);
+      ctx.strokeRect(x, y, w, h);
+    });
+  }
+
+  // convert mouse -> canvas pixels (handles any CSS scaling)
+  function getCanvasPos(e: React.MouseEvent): { x: number; y: number } {
+    const canvas = canvasRef.current!;
+    const rect = canvas.getBoundingClientRect();
+    const scaleX = canvas.width / rect.width;
+    const scaleY = canvas.height / rect.height;
+    return {
+      x: (e.clientX - rect.left) * scaleX,
+      y: (e.clientY - rect.top) * scaleY,
+    };
+  }
+
+  function start(e: React.MouseEvent) {
+    if (!page) return;
+    drawing.current = getCanvasPos(e);
+  }
+
+  async function move(e: React.MouseEvent) {
+    if (!page || !drawing.current) return;
+    const { x, y } = getCanvasPos(e);
+    const sx = drawing.current.x;
+    const sy = drawing.current.y;
+
+    // live preview = existing rects + current drag rect
+    const live = [
+      ...rects,
+      { x: Math.min(sx, x), y: Math.min(sy, y), w: Math.abs(x - sx), h: Math.abs(y - sy) },
+    ];
+    await render(live);
+  }
+
+  async function end(e: React.MouseEvent) {
+    if (!drawing.current) return;
+    const { x, y } = getCanvasPos(e);
+    const sx = drawing.current.x;
+    const sy = drawing.current.y;
+    drawing.current = null;
+
+    const next = [
+      ...rects,
+      { x: Math.min(sx, x), y: Math.min(sy, y), w: Math.abs(x - sx), h: Math.abs(y - sy) },
+    ];
+    setRects(next);
+    await render(next);
+  }
+
+  // clear all overlays and refresh the canvas
+  async function clearBoxes() {
+    drawing.current = null;
+    setRects([]);
+    await render([]); // <-- actually removes them from the view
+  }
+
+  const apply = async () => {
+    if (!file || !page) return;
+
+    // paint final solid color on top of current page render
+    const canvas = canvasRef.current!;
+    const ctx = canvas.getContext("2d")!;
+    ctx.fillStyle = redactColor === "black" ? "#000000" : "#FFFFFF";
+    rects.forEach((r) => ctx.fillRect(r.x, r.y, r.w, r.h));
+
+    const dataUrl = canvas.toDataURL("image/png");
+    const pngBytes = await (await fetch(dataUrl)).arrayBuffer();
+
+    const src = await PDFDocument.load(await file.arrayBuffer());
+    const out = await PDFDocument.create();
+    const pages = await out.copyPages(src, src.getPageIndices());
+    pages.forEach((p) => out.addPage(p));
+
+    const img = await out.embedPng(pngBytes);
+    const p0 = out.getPage(0);
+    const { width, height } = p0.getSize();
+    p0.drawImage(img, { x: 0, y: 0, width, height });
+
+    const u8 = await out.save({ useObjectStreams: true });
+    const { url } = await blobFromUint8(u8, "redacted.pdf");
+    dl(url, "redacted.pdf");
+  };
+
+  // re-render when color changes (keeps preview consistent)
+  useEffect(() => {
+    render().catch(() => {});
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [redactColor]);
+
+  return (
+    <div className="card p-6 space-y-4">
+      <ToolHelp>{HELP.redact}</ToolHelp>
+
+      <div className="grid md:grid-cols-3 gap-3">
         <input
           type="file"
           accept="application/pdf"
-          multiple
-          onChange={(e) => handleFiles(e.target.files)}
-          className="input mb-4"
+          className="input"
+          onChange={(e) => {
+            const f = e.target.files?.[0];
+            if (f) {
+              setFile(f);
+              setRects([]);
+              loadFirstPage(f);
+            }
+          }}
         />
+        <div>
+          <label className="text-sm mb-1 block">Redaction color</label>
+          <div className="seg">
+            {(["black", "white"] as const).map((c) => (
+              <button
+                key={c}
+                type="button"
+                className={`seg-btn ${redactColor === c ? "seg-btn--active" : ""}`}
+                onClick={() => setRedactColor(c)}
+              >
+                {c}
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
 
-        {operation === 'merge' && (
-          <p className="text-sm text-neutral-400 mb-4">Select two or more PDF files to merge.</p>
-        )}
-        {operation === 'split' && (
-          <p className="text-sm text-neutral-400 mb-4">
-            Select one PDF and enter page ranges (e.g. <code>1-3,5,7-end</code>) to split into a
-            new file.
-          </p>
-        )}
-        {operation === 'compress' && (
-          <p className="text-sm text-neutral-400 mb-4">
-            Compression uses PDF object streams to reduce file size of the selected PDFs.
-          </p>
-        )}
+      <div className="overflow-auto">
+        <canvas
+          ref={canvasRef}
+          className="rounded border"
+          onMouseDown={start}
+          onMouseMove={move}
+          onMouseUp={end}
+        />
+      </div>
 
-        <div className="flex gap-2 mb-4">
-          {(['merge', 'split', 'compress'] as Operation[]).map((op) => (
-            <button
-              key={op}
-              onClick={() => setOperation(op)}
-              className={
-                'px-4 py-2 rounded-lg border ' +
-                (operation === op
-                  ? 'bg-brand text-white border-brand'
-                  : 'border-neutral-700 hover:bg-neutral-800')
-              }
-            >
-              {op.charAt(0).toUpperCase() + op.slice(1)}
+      <div className="flex gap-2">
+        <button className="btn" onClick={apply} disabled={!file || rects.length === 0}>
+          Apply (page 1)
+        </button>
+        <button className="btn-ghost" onClick={clearBoxes} disabled={!page || rects.length === 0}>
+          Clear boxes
+        </button>
+      </div>
+
+      <p className="text-xs text-muted">
+        Quick raster redaction of page 1. We can add a vector/search redactor later if you want.
+      </p>
+    </div>
+  );
+}
+
+/* -------------------- Tool: Split (count / size / bookmarks) -------------------- */
+
+function ToolSplit() {
+  const [file, setFile] = useState<File | null>(null);
+  const [mode, setMode] = useState<"count" | "max" | "bookmarks">("count");
+  const [count, setCount] = useState<number>(10);
+  const [maxPages, setMaxPages] = useState<number>(25);
+
+  const run = async () => {
+    if (!file) return;
+    const src = await PDFDocument.load(await file.arrayBuffer());
+    const total = src.getPageCount();
+
+    if (mode === "count") {
+      let idx = 0;
+      for (let start = 0; start < total; start += count) {
+        const end = Math.min(total, start + count) - 1;
+        const out = await PDFDocument.create();
+        const pages = await out.copyPages(src, Array.from({ length: end - start + 1 }, (_, i) => start + i));
+        pages.forEach((p) => out.addPage(p));
+        const bytes = await out.save({ useObjectStreams: true });
+        const { url } = await blobFromUint8(bytes, `split-${++idx}.pdf`);
+        dl(url, `split-${idx}.pdf`);
+      }
+      return;
+    }
+
+    if (mode === "max") {
+      let idx = 0;
+      for (let start = 0; start < total; start += maxPages) {
+        const end = Math.min(total, start + maxPages) - 1;
+        const out = await PDFDocument.create();
+        const pages = await out.copyPages(src, Array.from({ length: end - start + 1 }, (_, i) => start + i));
+        pages.forEach((p) => out.addPage(p));
+        const bytes = await out.save({ useObjectStreams: true });
+        const { url } = await blobFromUint8(bytes, `chunk-${++idx}.pdf`);
+        dl(url, `chunk-${idx}.pdf`);
+      }
+      return;
+    }
+
+    // bookmarks (outline) split if present
+    try {
+      const pdfjs = await loadPdfJs();
+      const d = await pdfjs.getDocument({ data: await file.arrayBuffer() }).promise;
+      const outline = await d.getOutline();
+      if (!outline?.length) return alert("No bookmarks found in this PDF.");
+
+      let start = (outline[0].dest as any)?.[0]?.num - 1 || 0;
+      for (let i = 0; i < outline.length; i++) {
+        const o = outline[i];
+        const next = outline[i + 1];
+        const thisStart = start;
+        const thisEnd = (next?.dest as any)?.[0]?.num - 2 || total - 1;
+        start = thisEnd + 1;
+
+        const out = await PDFDocument.create();
+        const pages = await out.copyPages(src, Array.from({ length: thisEnd - thisStart + 1 }, (_, k) => thisStart + k));
+        pages.forEach((p) => out.addPage(p));
+        const bytes = await out.save({ useObjectStreams: true });
+        const safe = (o.title || `section-${i + 1}`).replace(/[^a-z0-9\- _]/gi, "_");
+        const { url } = await blobFromUint8(bytes, `${safe}.pdf`);
+        dl(url, `${safe}.pdf`);
+      }
+    } catch {
+      alert("Could not read bookmarks in this PDF.");
+    }
+  };
+
+  return (
+    <div className="card p-6 space-y-4">
+      <ToolHelp>{HELP.split}</ToolHelp>
+
+      <div className="grid md:grid-cols-3 gap-3">
+        <input type="file" accept="application/pdf" className="input" onChange={(e) => setFile(e.target.files?.[0] ?? null)} />
+        <div className="seg">
+          {(["count", "max", "bookmarks"] as const).map((m) => (
+            <button key={m} className={`seg-btn ${mode === m ? "seg-btn--active" : ""}`} onClick={() => setMode(m)}>
+              {m}
             </button>
           ))}
         </div>
-
-        {operation === 'split' && (
-          <div className="mb-4">
-            <label className="block text-sm text-neutral-300 mb-1">
-              Page ranges (e.g. 1-3,5,7-end)
-            </label>
-            <input
-              className="input w-full"
-              value={ranges}
-              onChange={(e) => setRanges(e.target.value)}
-              placeholder="1-end"
-            />
-          </div>
+        {mode === "count" && (
+          <input type="number" className="input" min={1} value={count} onChange={(e) => setCount(Math.max(1, parseInt(e.target.value || "10", 10)))} />
         )}
-
-        {previews.length > 0 && (
-          <>
-            <div className="grid grid-cols-4 gap-2 mb-4">
-              {previews.map((url, i) => (
-                <img
-                  key={i}
-                  src={url}
-                  alt={`Preview ${i + 1}`}
-                  className="w-full border rounded cursor-pointer transform transition hover:scale-110"
-                  onClick={() => setSelectedPreview(i)}
-                />
-              ))}
-            </div>
-            {selectedPreview !== null && (
-              <div
-                className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50"
-                onClick={() => setSelectedPreview(null)}
-              >
-                <img
-                  src={previews[selectedPreview]}
-                  alt={`Preview ${selectedPreview + 1}`}
-                  className="max-w-full max-h-full"
-                />
-              </div>
-            )}
-          </>
-        )}
-
-        <button className="btn w-full" onClick={run} disabled={busy || !files.length}>
-          {busy ? 'Processing…' : 'Run'}
-        </button>
-
-        {outputUrl && (
-          <a
-            href={outputUrl}
-            download={
-              operation === 'merge'
-                ? 'merged.pdf'
-                : operation === 'split'
-                ? 'split.pdf'
-                : 'compressed.pdf'
-            }
-            className="btn w-full mt-4"
-          >
-            Download Result
-          </a>
+        {mode === "max" && (
+          <input type="number" className="input" min={1} value={maxPages} onChange={(e) => setMaxPages(Math.max(1, parseInt(e.target.value || "25", 10)))} />
         )}
       </div>
-
-      <div className="w-full max-w-screen-md mx-auto">
-        <AdSlot slotId="0000000003" />
-      </div>
-    </>
+      <button className="btn" onClick={run} disabled={!file}>
+        Split
+      </button>
+    </div>
   );
 }
+
+/* -------------------- Tool: Stamp QR -------------------- */
+
+function ToolStampQR() {
+  const [file, setFile] = useState<File | null>(null);
+  const [text, setText] = useState<string>("https://example.com");
+  const [size, setSize] = useState<number>(96);
+  const [pos, setPos] = useState<"tl" | "tr" | "bl" | "br">("br");
+
+  const run = async () => {
+    if (!file) return;
+    const QRCode = await loadQRCode();
+    if (!QRCode) return alert("Install qrcode to use this tool: npm i qrcode");
+
+    const dataUrl = await QRCode.toDataURL(text, { errorCorrectionLevel: "M", margin: 0 });
+    const src = await PDFDocument.load(await file.arrayBuffer());
+    const png = await src.embedPng(await (await fetch(dataUrl)).arrayBuffer());
+
+    src.getPages().forEach((p) => {
+      const { width, height } = p.getSize();
+      const pad = 16;
+      let x = width - size - pad;
+      let y = pad;
+      if (pos === "tl") { x = pad; y = height - size - pad; }
+      if (pos === "tr") { x = width - size - pad; y = height - size - pad; }
+      if (pos === "bl") { x = pad; y = pad; }
+      if (pos === "br") { x = width - size - pad; y = pad; }
+      p.drawImage(png, { x, y, width: size, height: size });
+    });
+
+    const bytes = await src.save({ useObjectStreams: true });
+    const { url } = await blobFromUint8(bytes, "stamped.pdf");
+    dl(url, "stamped.pdf");
+  };
+
+  return (
+    <div className="card p-6 space-y-4">
+      <ToolHelp>{HELP.stampQR}</ToolHelp>
+
+      <div className="grid md:grid-cols-3 gap-3">
+        <input type="file" accept="application/pdf" className="input" onChange={(e) => setFile(e.target.files?.[0] ?? null)} />
+        <input className="input" value={text} onChange={(e) => setText(e.target.value)} placeholder="Text / URL" />
+        <div className="grid grid-cols-2 gap-3">
+          <input type="number" className="input" min={48} max={256} value={size} onChange={(e) => setSize(parseInt(e.target.value || "96", 10))} />
+          <select className="input" value={pos} onChange={(e) => setPos(e.target.value as any)}>
+            <option value="tl">Top-Left</option>
+            <option value="tr">Top-Right</option>
+            <option value="bl">Bottom-Left</option>
+            <option value="br">Bottom-Right</option>
+          </select>
+        </div>
+      </div>
+      <button className="btn" onClick={run} disabled={!file}>
+        Stamp & Download
+      </button>
+    </div>
+  );
+}
+
+/* -------------------- Tool: Batch merge -------------------- */
+
+function ToolBatchMerge() {
+  const [files, setFiles] = useState<File[]>([]);
+
+  const run = async () => {
+    if (!files.length) return;
+    const out = await PDFDocument.create();
+    for (const f of files) {
+      const src = await PDFDocument.load(await f.arrayBuffer());
+      const pages = await out.copyPages(src, src.getPageIndices());
+      pages.forEach((p) => out.addPage(p));
+    }
+    const bytes = await out.save({ useObjectStreams: true });
+    const { url } = await blobFromUint8(bytes, "merged.pdf");
+    dl(url, "merged.pdf");
+  };
+
+  return (
+    <div className="card p-6 space-y-4">
+      <ToolHelp>{HELP.batchMerge}</ToolHelp>
+
+      <input
+        type="file"
+        multiple
+        accept="application/pdf"
+        className="input"
+        onChange={(e) => setFiles(e.target.files ? Array.from(e.target.files) : [])}
+      />
+      <button className="btn" onClick={run} disabled={!files.length}>
+        Merge & Download
+      </button>
+    </div>
+  );
+}
+
+/* -------------------- Tool: Compress (lossless optimize) -------------------- */
+
+function ToolCompress() {
+  const [files, setFiles] = useState<File[]>([]);
+
+  const run = async () => {
+    if (!files.length) return;
+    const out = await PDFDocument.create();
+    for (const f of files) {
+      const src = await PDFDocument.load(await f.arrayBuffer());
+      const pages = await out.copyPages(src, src.getPageIndices());
+      pages.forEach((p) => out.addPage(p));
+    }
+    const bytes = await out.save({ useObjectStreams: true });
+    const { url } = await blobFromUint8(bytes, "compressed.pdf");
+    dl(url, "compressed.pdf");
+  };
+
+  return (
+    <div className="card p-6 space-y-4">
+      <ToolHelp>{HELP.compress}</ToolHelp>
+
+      <input
+        type="file"
+        multiple
+        accept="application/pdf"
+        className="input"
+        onChange={(e) => setFiles(e.target.files ? Array.from(e.target.files) : [])}
+      />
+      <button className="btn" onClick={run} disabled={!files.length}>
+        Optimize & Download
+      </button>
+      <p className="text-xs text-muted">
+        Lossless structural optimize. Image-heavy PDFs may not shrink much without lossy re-encoding (kept off by design).
+      </p>
+    </div>
+  );
+}
+/* -------------------- Tool: Help text -------------------- */

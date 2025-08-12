@@ -28,7 +28,6 @@ export default function ImageConverter() {
     setConverted([]);
     setWarning(null);
 
-    // Detect HEIC files
     const hasHeic = arr.some(
       (file) =>
         file.type === 'image/heic' || file.name.toLowerCase().endsWith('.heic')
@@ -44,7 +43,6 @@ export default function ImageConverter() {
 
     const results: ConvertedImage[] = [];
 
-    // Dynamically import heic2any only in the browser
     let heic2any: any = null;
     if (typeof window !== 'undefined') {
       const mod = await import('heic2any');
@@ -54,19 +52,15 @@ export default function ImageConverter() {
     for (const file of images) {
       const ext = file.name.split('.').pop()?.toLowerCase();
 
-      // Safeguard: skip same-format conversions
-      // Normalize 'jpg' to 'jpeg' for comparison
       const normalizedExt = ext === 'jpg' ? 'jpeg' : ext;
-
       if (normalizedExt === format) {
         setWarning(`Skipping ${file.name} — already a ${format.toUpperCase()} file.`);
         continue;
       }
- 
+
       try {
         let srcBlob: Blob = file;
 
-        // HEIC support
         if (
           (file.type === 'image/heic' || file.name.toLowerCase().endsWith('.heic')) &&
           heic2any
@@ -78,17 +72,14 @@ export default function ImageConverter() {
           })) as Blob;
         }
 
-        // ✅ Clone the blob to avoid "InvalidStateError"
         srcBlob = srcBlob.slice(0, srcBlob.size, srcBlob.type);
 
-        // Create image bitmap
         const imgBitmap = await createImageBitmap(srcBlob);
         const canvas = document.createElement('canvas');
         canvas.width = imgBitmap.width;
         canvas.height = imgBitmap.height;
         const ctx = canvas.getContext('2d');
 
-        // Fill background if JPEG (no alpha)
         if (format === 'jpeg') {
           ctx!.fillStyle = bgColor;
           ctx!.fillRect(0, 0, canvas.width, canvas.height);
@@ -96,7 +87,6 @@ export default function ImageConverter() {
 
         ctx?.drawImage(imgBitmap, 0, 0);
 
-        // Convert to target format
         const blob: Blob | null = await new Promise((resolve) => {
           canvas.toBlob(
             (b) => resolve(b),
@@ -120,20 +110,18 @@ export default function ImageConverter() {
     setBusy(false);
   }
 
+  // IMPORTANT: under ToolLayout, return sibling cards; do not cap width.
   return (
-    <div className="flex flex-col items-center space-y-6 py-6">
-      <div className="card w-full max-w-screen-md p-6 space-y-4">
+    <>
+      <div className="card p-6 space-y-4 md:col-span-2">
         <h1 className="text-xl font-semibold">Image Converter</h1>
         <p className="text-neutral-400 text-sm">
           Convert images directly in your browser — supports PNG, JPEG, WEBP, and HEIC as input.
           Choose format, quality, and background fill for JPEG. Drag & drop or use the file picker.
         </p>
 
-        {/* Drag-and-drop area */}
         <div
-          className={`border-2 border-dashed rounded-lg p-6 text-center cursor-pointer transition ${
-            dragOver ? 'border-green-500 bg-green-500/10' : 'border-neutral-700'
-          }`}
+          className={`border-2 border-dashed rounded-lg p-6 text-center cursor-pointer transition ${dragOver ? 'border-green-500 bg-green-500/10' : 'border-neutral-700'}`}
           onDragOver={(e) => {
             e.preventDefault();
             setDragOver(true);
@@ -146,9 +134,7 @@ export default function ImageConverter() {
           }}
           onClick={() => document.getElementById('fileInput')?.click()}
         >
-          <p className="text-neutral-400">
-            Drop images here or click to select files
-          </p>
+          <p className="text-neutral-400">Drop images here or click to select files</p>
           <input
             id="fileInput"
             type="file"
@@ -159,19 +145,14 @@ export default function ImageConverter() {
           />
         </div>
 
-        {/* HEIC detection notice */}
         {heicDetected && (
           <div className="text-xs text-yellow-400">
             HEIC file detected — it will be converted to your chosen output format.
           </div>
         )}
 
-        {/* Warning for skipped files */}
-        {warning && (
-          <div className="text-xs text-yellow-400">{warning}</div>
-        )}
+        {warning && <div className="text-xs text-yellow-400">{warning}</div>}
 
-        {/* Preview thumbnails */}
         {images.length > 0 && (
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mt-3">
             {images.map((file, i) => (
@@ -187,7 +168,6 @@ export default function ImageConverter() {
           </div>
         )}
 
-        {/* Format selection */}
         <div>
           <label className="block text-sm text-neutral-300 mb-1">Output Format</label>
           <select
@@ -201,7 +181,6 @@ export default function ImageConverter() {
           </select>
         </div>
 
-        {/* Quality slider */}
         {(format === 'jpeg' || format === 'webp') && (
           <div>
             <label className="block text-sm text-neutral-300 mb-1">
@@ -218,28 +197,17 @@ export default function ImageConverter() {
           </div>
         )}
 
-        {/* Background color for JPEG */}
         {format === 'jpeg' && (
           <div>
             <label className="block text-sm text-neutral-300 mb-1">Background Color</label>
-            <input
-              type="color"
-              value={bgColor}
-              onChange={(e) => setBgColor(e.target.value)}
-            />
+            <input type="color" value={bgColor} onChange={(e) => setBgColor(e.target.value)} />
           </div>
         )}
 
-        {/* Convert button */}
-        <button
-          onClick={convertAll}
-          disabled={images.length === 0 || busy}
-          className="btn w-full"
-        >
+        <button onClick={convertAll} disabled={images.length === 0 || busy} className="btn w-full">
           {busy ? 'Converting…' : `Convert ${images.length || ''} Image${images.length !== 1 ? 's' : ''}`}
         </button>
 
-        {/* Converted results */}
         {converted.length > 0 && (
           <div className="space-y-3">
             {converted.map((img, i) => (
@@ -249,11 +217,7 @@ export default function ImageConverter() {
                   alt={img.name}
                   className="max-h-64 object-contain border border-neutral-800 rounded"
                 />
-                <a
-                  href={img.url}
-                  download={img.name}
-                  className="underline text-blue-400"
-                >
+                <a href={img.url} download={img.name} className="underline text-blue-400">
                   Download {img.name}
                 </a>
               </div>
@@ -262,10 +226,10 @@ export default function ImageConverter() {
         )}
       </div>
 
-      {/* Ad slot */}
-      <div className="w-full max-w-screen-md mx-auto">
+      {/* Ad slot below, full width of the layout */}
+      <div className="md:col-span-2">
         <AdSlot slotId="0000000002" />
       </div>
-    </div>
+    </>
   );
 }

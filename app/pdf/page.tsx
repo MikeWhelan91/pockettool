@@ -1,31 +1,21 @@
-// app/pdf/page.tsx
-import type { Metadata } from 'next';
-import Client from './Client';
+import type { Metadata } from "next";
+import ToolLayout from "@/components/ToolLayout";
+import Client from "./Client";
 
 export const metadata: Metadata = {
-  title: 'PDF Merge / Split / Compress — PocketTool',
+  title: "PDF Studio — Utilixy",
   description:
-    'Merge multiple PDFs, split page ranges, or compress — all in your browser. No uploads.',
-  openGraph: {
-    title: 'PDF Merge / Split / Compress — PocketTool',
-    description:
-      'Merge multiple PDFs, split page ranges, or compress — all in your browser. No uploads.',
-    url: '/pdf',
-    siteName: 'PocketTool',
-    type: 'website',
-  },
-  twitter: {
-    card: 'summary',
-    title: 'PDF Merge / Split / Compress — PocketTool',
-    description:
-      'Merge multiple PDFs, split page ranges, or compress — all in your browser. No uploads.',
-  },
+    "Reorder, rotate, split, merge, watermark, page numbers, extract text, images↔PDF, redaction and more — fully client-side.",
 };
 
 export default function Page() {
   return (
-    <div className="flex flex-col items-center space-y-6 py-6">
+    <ToolLayout
+      title="PDF Studio"
+      description="Reorder, rotate, split, merge, watermark, page numbers, extract text, images↔PDF, redaction and more — all locally in your browser."
+      align="center"
+    >
       <Client />
-    </div>
+    </ToolLayout>
   );
 }

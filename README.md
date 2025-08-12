@@ -1,5 +1,5 @@
 
-# PocketTool — Swiss‑Army Web Tools (Scaffold)
+# Utilixy — Swiss‑Army Web Tools (Scaffold)
 
 This is a minimal Next.js + TypeScript + Tailwind scaffold with two tools ready:
 
@@ -37,11 +37,11 @@ Edit `components/AdSlot.tsx`:
 
 ## Branding
 
-Current working name: **PocketTool** (rename freely). To rename:
+Current working name: **Utilixy** (rename freely). To rename:
 - update `public/manifest.json`
 - change header label in `app/layout.tsx`
-- search/replace PocketTool in code
+- search/replace Utilixy in code
 
 ---
 
-© 2025 PocketTool
+© 2025 Utilixy

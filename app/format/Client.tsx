@@ -8,21 +8,20 @@ import AdSlot from '@/components/AdSlot';
 type Mode = 'auto' | 'json' | 'yaml' | 'xml';
 
 function Badge({
-  color = 'neutral',
+  tone = 'neutral',
   children,
 }: {
-  color?: 'neutral' | 'green' | 'red' | 'blue' | 'yellow';
+  tone?: 'neutral' | 'green' | 'red';
   children: React.ReactNode;
 }) {
-  const map: Record<string, string> = {
-    neutral: 'bg-neutral-900 text-neutral-300 border-neutral-700',
-    green: 'bg-green-900/30 text-green-300 border-green-800/60',
-    red: 'bg-red-900/30 text-red-300 border-red-800/60',
-    blue: 'bg-blue-900/30 text-blue-300 border-blue-800/60',
-    yellow: 'bg-yellow-900/30 text-yellow-300 border-yellow-800/60',
-  };
+  const cls =
+    tone === 'green'
+      ? 'border-green-300 bg-green-100 text-green-800 dark:border-green-800 dark:bg-green-900/30 dark:text-green-300'
+      : tone === 'red'
+      ? 'border-red-300 bg-red-100 text-red-800 dark:border-red-800 dark:bg-red-900/30 dark:text-red-300'
+      : 'border-neutral-300 bg-white text-neutral-700 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-300';
   return (
-    <span className={`inline-flex items-center gap-1 rounded-md border px-2 py-1 text-xs ${map[color]}`}>
+    <span className={`inline-flex items-center gap-1 rounded-md border px-2 py-1 text-xs ${cls}`}>
       {children}
     </span>
   );
@@ -57,9 +56,7 @@ export default function FormatterClient() {
       }
       setDetected('yaml');
       let dump = yaml.dump(obj, { indent: minify ? 0 : 2 });
-      if (minify) {
-        dump = dump.replace(/\n+/g, ' ').replace(/\s{2,}/g, ' ').trim();
-      }
+      if (minify) dump = dump.replace(/\n+/g, ' ').replace(/\s{2,}/g, ' ').trim();
       return dump;
     };
 
@@ -76,7 +73,7 @@ export default function FormatterClient() {
       if (mode === 'yaml') return tryYAML();
       if (mode === 'xml') return tryXML();
 
-      // Auto detect
+      // auto
       try {
         return tryJSON();
       } catch {}
@@ -108,114 +105,103 @@ export default function FormatterClient() {
     navigator.clipboard?.writeText(text).catch(() => {});
   }
 
+  // Single full-width card so ToolLayout keeps widths consistent across pages
   return (
-    <div className="space-y-5">
-      {/* Tool strip */}
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex flex-wrap items-center gap-2">
-          <div className="inline-flex overflow-hidden rounded-lg border border-neutral-700">
-            {(['auto', 'json', 'yaml', 'xml'] as Mode[]).map((m) => (
-              <button
-                key={m}
-                onClick={() => setMode(m)}
-                className={`px-3 py-1.5 text-sm transition
-                  ${mode === m ? 'bg-[#3B82F6] text-white' : 'bg-neutral-900 hover:bg-neutral-800 text-neutral-200'}`}
-              >
-                {m.toUpperCase()}
-              </button>
-            ))}
-          </div>
+    <>
+      <div className="card p-6 md:col-span-2 space-y-5">
+        {/* Controls row */}
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex flex-wrap items-center gap-2">
+            {/* Use shared segmented style so it themes correctly */}
+            <div className="seg">
+              {(['auto', 'json', 'yaml', 'xml'] as Mode[]).map((m) => (
+                <button
+                  key={m}
+                  onClick={() => setMode(m)}
+                  className={`seg-btn ${mode === m ? 'seg-btn--active' : ''}`}
+                >
+                  {m.toUpperCase()}
+                </button>
+              ))}
+            </div>
 
-          <label className="inline-flex items-center gap-2 rounded-lg border border-neutral-700 bg-neutral-900 px-3 py-1.5 text-sm">
-            <input
-              type="checkbox"
-              className="accent-blue-500"
-              checked={minify}
-              onChange={(e) => setMinify(e.target.checked)}
-            />
-            Minify
-          </label>
+            <label className="inline-flex items-center gap-2 rounded-lg border px-3 py-1.5 text-sm">
+              <input
+                type="checkbox"
+                className="accent-blue-500"
+                checked={minify}
+                onChange={(e) => setMinify(e.target.checked)}
+              />
+              Minify
+            </label>
 
-          <div className="hidden sm:block">
-            {error ? (
-              <Badge color="red">Invalid {mode === 'auto' ? 'input' : mode.toUpperCase()}</Badge>
-            ) : detected !== 'auto' ? (
-              <Badge color="green">Detected: {detected.toUpperCase()}</Badge>
-            ) : (
-              <Badge>Awaiting input…</Badge>
-            )}
-          </div>
-        </div>
-
-        <div className="flex items-center gap-2">
-          <button
-            className="px-4 py-2 rounded-lg border border-neutral-700 bg-neutral-900 hover:bg-neutral-800 text-sm"
-            onClick={() => setInput('')}
-          >
-            Clear
-          </button>
-          <button
-            className="px-4 py-2 rounded-lg bg-[#3B82F6] text-white text-sm"
-            onClick={() => copy(output)}
-            disabled={!output}
-          >
-            Copy output
-          </button>
-        </div>
-      </div>
-
-      {/* Editor panes */}
-      <div className="grid gap-4 sm:grid-cols-2">
-        <div className="flex flex-col">
-          <div className="mb-1 flex items-center justify-between">
-            <label className="text-sm text-neutral-300">Input</label>
-            <span className="text-xs text-neutral-500">
-              {inStats.words} words • {inStats.chars} chars • {inStats.lines} lines
-            </span>
-          </div>
-          <textarea
-            className="input font-mono h-64 sm:h-[420px]"
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            placeholder='Paste JSON, YAML, or XML here…'
-          />
-        </div>
-
-        <div className="flex flex-col">
-          <div className="mb-1 flex items-center justify-between">
-            <label className="text-sm text-neutral-300">Output</label>
-            <div className="sm:hidden">
+            <div className="hidden sm:block">
               {error ? (
-                <Badge color="red">Invalid</Badge>
+                <Badge tone="red">Invalid {mode === 'auto' ? 'input' : mode.toUpperCase()}</Badge>
               ) : detected !== 'auto' ? (
-                <Badge color="green">Detected: {detected.toUpperCase()}</Badge>
+                <Badge tone="green">Detected: {detected.toUpperCase()}</Badge>
               ) : (
-                <Badge>—</Badge>
+                <Badge>Awaiting input…</Badge>
               )}
             </div>
           </div>
-          <textarea
-            className={`input font-mono h-64 sm:h-[420px] ${error && !output ? 'bg-red-950 text-red-300' : ''}`}
-            value={error && !output ? 'Invalid JSON/YAML/XML' : output}
-            readOnly
-            placeholder="Formatted output will appear here…"
-          />
+
+          <div className="flex items-center gap-2">
+            <button className="btn-ghost" onClick={() => setInput('')}>
+              Clear
+            </button>
+            <button className="btn" onClick={() => copy(output)} disabled={!output}>
+              Copy output
+            </button>
+          </div>
+        </div>
+
+        {/* Editors */}
+        <div className="grid gap-4 sm:grid-cols-2">
+          <div className="flex flex-col">
+            <div className="mb-1 flex items-center justify-between">
+              <label className="text-sm">Input</label>
+              <span className="text-xs text-muted">
+                {inStats.words} words • {inStats.chars} chars • {inStats.lines} lines
+              </span>
+            </div>
+            <textarea
+              className="input font-mono h-64 sm:h-[420px]"
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              placeholder="Paste JSON, YAML, or XML here…"
+            />
+          </div>
+
+          <div className="flex flex-col">
+            <div className="mb-1 flex items-center justify-between">
+              <label className="text-sm">Output</label>
+              <div className="sm:hidden">
+                {error ? (
+                  <Badge tone="red">Invalid</Badge>
+                ) : detected !== 'auto' ? (
+                  <Badge tone="green">Detected: {detected.toUpperCase()}</Badge>
+                ) : (
+                  <Badge>—</Badge>
+                )}
+              </div>
+            </div>
+            <textarea
+              className={`input font-mono h-64 sm:h-[420px] ${
+                error && !output ? 'bg-red-50 text-red-700 dark:bg-red-950 dark:text-red-300' : ''
+              }`}
+              value={error && !output ? 'Invalid JSON/YAML/XML' : output}
+              readOnly
+              placeholder="Formatted output will appear here…"
+            />
+          </div>
         </div>
       </div>
 
-      {/* Tips + Ad */}
-      <div className="mt-2 grid gap-4 lg:grid-cols-[1fr,330px]">
-        <div className="rounded-xl border border-neutral-800 bg-neutral-900 p-4 text-sm text-neutral-300">
-          <ul className="list-disc pl-5 space-y-1">
-            <li><strong>Auto‑detect</strong> tries JSON → YAML → XML in that order.</li>
-            <li><strong>Minify</strong> removes whitespace; turn it off for pretty‑printed output.</li>
-            <li>Everything runs locally — your data never leaves your browser.</li>
-          </ul>
-        </div>
-        <div className="rounded-xl border border-neutral-800 bg-neutral-900 p-3">
-          <AdSlot slotId="0000000005" />
-        </div>
+      {/* Ad row spans the layout width */}
+      <div className="md:col-span-2">
+        <AdSlot slotId="0000000005" />
       </div>
-    </div>
+    </>
   );
 }

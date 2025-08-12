@@ -2,7 +2,7 @@ import ToolLayout from "@/components/ToolLayout";
 import Client from "./Client";
 
 export const metadata = {
-  title: "Wi-Fi QR Code Generator — PocketTool",
+  title: "Wi-Fi QR Code Generator — Utilixy",
   description:
     "Create Wi-Fi QR codes (WPA/WEP/Open) and standard QR codes for text, email or SMS. Export PNG/SVG. Everything runs locally.",
 };

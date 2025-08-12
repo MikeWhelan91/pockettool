@@ -3,20 +3,20 @@ import type { Metadata } from 'next';
 import Client from './Client';
 
 export const metadata: Metadata = {
-  title: 'Text Difference Checker — PocketTool',
+  title: 'Text Difference Checker — Utilixy',
   description:
     'Compare two blocks of text and highlight additions, deletions, and unchanged parts. Everything runs in your browser.',
   openGraph: {
-    title: 'Text Difference Checker — PocketTool',
+    title: 'Text Difference Checker — Utilixy',
     description:
       'Compare two blocks of text and highlight additions, deletions, and unchanged parts. Everything runs in your browser.',
     url: '/diff',
-    siteName: 'PocketTool',
+    siteName: 'Utilixy',
     type: 'website',
   },
   twitter: {
     card: 'summary',
-    title: 'Text Difference Checker — PocketTool',
+    title: 'Text Difference Checker — Utilixy',
     description:
       'Compare two blocks of text and highlight additions, deletions, and unchanged parts. Everything runs in your browser.',
   },

@@ -17,6 +17,9 @@ export default function RandomGeneratorPage() {
   const [gen, setGen] = useState<Gen>("password");
   const [count, setCount] = useState<number>(1);
 
+  // force regeneration on every click
+  const [regen, setRegen] = useState(0);
+
   // password options
   const [pwUpper, setPwUpper] = useState(true);
   const [pwLower, setPwLower] = useState(true);
@@ -25,7 +28,8 @@ export default function RandomGeneratorPage() {
   const [pwLen, setPwLen] = useState<number>(12); // 12 default
 
   // lorem options
-  const [loremType, setLoremType] = useState<"words" | "sentences" | "paragraphs">("sentences");
+  const [loremType, setLoremType] =
+    useState<"words" | "sentences" | "paragraphs">("sentences");
   const [loremCount, setLoremCount] = useState<number>(3);
 
   const output = useMemo(() => {
@@ -36,15 +40,12 @@ export default function RandomGeneratorPage() {
       case "password": {
         for (let i = 0; i < n; i++) {
           items.push(
-            generatePassword(
-              pwLen || 12,
-              {
-                includeUppercase: pwUpper,
-                includeLowercase: pwLower,
-                includeNumbers: pwNum,
-                includeSymbols: pwSym,
-              }
-            )
+            generatePassword(pwLen || 12, {
+              includeUppercase: pwUpper,
+              includeLowercase: pwLower,
+              includeNumbers: pwNum,
+              includeSymbols: pwSym,
+            })
           );
         }
         break;
@@ -66,13 +67,25 @@ export default function RandomGeneratorPage() {
         break;
       }
       case "lorem": {
-        for (let i = 0; i < n; i++) items.push(generateLorem({ type: loremType, count: loremCount || 3 }));
+        for (let i = 0; i < n; i++)
+          items.push(generateLorem({ type: loremType, count: loremCount || 3 }));
         break;
       }
     }
 
     return items.join("\n");
-  }, [gen, count, pwLen, pwUpper, pwLower, pwNum, pwSym, loremType, loremCount]);
+  }, [
+    gen,
+    count,
+    pwLen,
+    pwUpper,
+    pwLower,
+    pwNum,
+    pwSym,
+    loremType,
+    loremCount,
+    regen, // <-- triggers a fresh generate on click
+  ]);
 
   return (
     <>
@@ -108,36 +121,39 @@ export default function RandomGeneratorPage() {
             <div className="grid gap-3">
               <div className="text-sm text-muted">Password Options</div>
 
-              {/* checkboxes + length inline */}
-              <div className="flex flex-wrap items-center gap-4">
+              {/* 2-column: Numbers sits below Lowercase */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                 <label className="inline-flex items-center gap-2 text-sm">
-                  <input type="checkbox" checked={pwUpper} onChange={(e) => setPwUpper(e.target.checked)} />
+                  <input
+                    type="checkbox"
+                    checked={pwUpper}
+                    onChange={(e) => setPwUpper(e.target.checked)}
+                  />
                   Include Uppercase
                 </label>
                 <label className="inline-flex items-center gap-2 text-sm">
-                  <input type="checkbox" checked={pwLower} onChange={(e) => setPwLower(e.target.checked)} />
+                  <input
+                    type="checkbox"
+                    checked={pwLower}
+                    onChange={(e) => setPwLower(e.target.checked)}
+                  />
                   Include Lowercase
                 </label>
                 <label className="inline-flex items-center gap-2 text-sm">
-                  <input type="checkbox" checked={pwNum} onChange={(e) => setPwNum(e.target.checked)} />
+                  <input
+                    type="checkbox"
+                    checked={pwNum}
+                    onChange={(e) => setPwNum(e.target.checked)}
+                  />
                   Include Numbers
                 </label>
                 <label className="inline-flex items-center gap-2 text-sm">
-                  <input type="checkbox" checked={pwSym} onChange={(e) => setPwSym(e.target.checked)} />
-                  Include Symbols
-                </label>
-
-                {/* length small input */}
-                <label className="inline-flex items-center gap-2 text-sm ml-auto">
-                  Length
                   <input
-                    className="input-sm"
-                    type="number"
-                    min={4}
-                    max={128}
-                    value={pwLen}
-                    onChange={(e) => setPwLen(Math.max(4, Math.min(128, parseInt(e.target.value || "12", 10))))}
+                    type="checkbox"
+                    checked={pwSym}
+                    onChange={(e) => setPwSym(e.target.checked)}
                   />
+                  Include Symbols
                 </label>
               </div>
             </div>
@@ -167,31 +183,57 @@ export default function RandomGeneratorPage() {
                     min={1}
                     max={50}
                     value={loremCount}
-                    onChange={(e) => setLoremCount(Math.max(1, Math.min(50, parseInt(e.target.value || "3", 10))))}
+                    onChange={(e) =>
+                      setLoremCount(
+                        Math.max(1, Math.min(50, parseInt(e.target.value || "3", 10)))
+                      )
+                    }
                   />
                 </label>
               </div>
             </div>
           )}
 
-          {/* Count + Generate */}
- <div className="flex flex-wrap items-center gap-3 min-w-0">
-  <label className="inline-flex items-center gap-2 text-sm">
-    Count
-    <input
-      className="input-sm"
-      type="number"
-      min={1}
-      max={500}
-      value={count}
-      onChange={(e) =>
-        setCount(Math.max(1, Math.min(500, parseInt(e.target.value || "1", 10))))
-      }
-    />
-  </label>
-  <button className="btn">Generate</button>
-</div>
+          {/* Count + Length (for password) + Generate */}
+          <div className="flex flex-wrap items-center gap-3 min-w-0">
+            <label className="inline-flex items-center gap-2 text-sm">
+              Count
+              <input
+                className="input-sm"
+                type="number"
+                min={1}
+                max={500}
+                value={count}
+                onChange={(e) =>
+                  setCount(
+                    Math.max(1, Math.min(500, parseInt(e.target.value || "1", 10)))
+                  )
+                }
+              />
+            </label>
 
+            {gen === "password" && (
+              <label className="inline-flex items-center gap-2 text-sm">
+                Length
+                <input
+                  className="input-sm"
+                  type="number"
+                  min={4}
+                  max={128}
+                  value={pwLen}
+                  onChange={(e) =>
+                    setPwLen(
+                      Math.max(4, Math.min(128, parseInt(e.target.value || "12", 10)))
+                    )
+                  }
+                />
+              </label>
+            )}
+
+            <button className="btn" onClick={() => setRegen((n) => n + 1)}>
+              Generate
+            </button>
+          </div>
         </div>
       </div>
 
@@ -199,11 +241,7 @@ export default function RandomGeneratorPage() {
       <div className="card p-4 md:p-6">
         <div className="grid gap-3">
           <label className="text-sm font-medium">Output</label>
-          <textarea
-            className="input min-h-[260px]"
-            value={output}
-            readOnly
-          />
+          <textarea className="input min-h-[260px]" value={output} readOnly />
           <div className="flex gap-2">
             <button
               className="btn-ghost"

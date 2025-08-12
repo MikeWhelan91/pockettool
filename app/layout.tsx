@@ -38,15 +38,16 @@ export const metadata: Metadata = {
 };
 
 // Runs before hydration to avoid SSR/CSR theme mismatch
+// default to dark unless the user has explicitly chosen otherwise
 const themeInitScript = `
   try {
     var d = document.documentElement;
-    var saved = localStorage.getItem('utilixy_theme');
-    var prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
-    var mode = saved ? saved : (prefersDark ? 'dark' : 'light');
+    var saved = localStorage.getItem('utilixy_theme'); // 'light' | 'dark'
+    var mode = saved || 'dark';
     if (mode === 'dark') d.classList.add('theme-dark'); else d.classList.remove('theme-dark');
   } catch (e) {}
 `;
+
 
 export default function RootLayout({
   children,
@@ -92,24 +93,22 @@ export default function RootLayout({
     <Link
       href="/"
       aria-label="Utilixy home"
-      className="flex items-center gap-2 no-underline
-                 md:static md:translate-x-0
-                 absolute left-1/2 -translate-x-1/2 md:left-auto"
+      className="
+        flex items-center gap-2 no-underline
+        absolute left-1/2 -translate-x-1/2
+        md:static md:translate-x-0 md:left-auto
+        md:ml-4 lg:ml-6
+      "
     >
-      <img
-        src="/utilixy-nav.svg"
-        alt=""
-        aria-hidden="true"
-        className="h-11 w-auto md:h-14"
-      />
-      <span className="text-[20px] md:text-[24px] tracking-tight font-semibold">
-        Utilixy
-      </span>
+      <img src="/utilixy-nav.svg" alt="" aria-hidden="true" className="h-11 w-auto md:h-14" />
+      <span className="text-[20px] md:text-[24px] tracking-tight font-semibold">Utilixy</span>
     </Link>
 
-    {/* Theme toggle */}
-    <div className="flex items-center">
-      <ThemeToggle />
+    {/* Right-side tagline (desktop only) */}
+    <div className="hidden md:flex items-center h-10">
+      <span className="text-sm text-muted leading-none whitespace-nowrap">
+        Private · Local-first · Nothing uploaded
+      </span>
     </div>
   </div>
 </header>
@@ -123,27 +122,22 @@ export default function RootLayout({
             {children}
           </main>
 
-          {/* Footer: keep the pleasant blue gradient */}
-          <footer className="brand-gradient">
-            <div
-              className="mx-auto container-wrap px-4 py-5 text-sm flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3"
-              style={{ color: "white" }}
-            >
-              <div>
-                © {new Date().getFullYear()} Utilixy — Tools run locally in your
-                browser.
+         {/* Neutral footer (no brand gradient) */}
+          <footer className="border-t border-line bg-[hsl(var(--card))]">
+            <div className="mx-auto container-wrap px-4 py-5 text-sm flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+              <div className="text-muted">
+                © {new Date().getFullYear()} Utilixy — Tools run locally in your browser.
               </div>
-              <nav className="flex gap-4">
-                <Link href="/privacy" className="hover:underline">
-                  Privacy
-                </Link>
-                <Link href="/terms" className="hover:underline">
-                  Terms
-                </Link>
-                <Link href="/about" className="hover:underline">
-                  About
-                </Link>
-              </nav>
+            <div className="flex items-center gap-4 h-10">
+  <nav className="flex items-center gap-4 leading-none">
+    <Link href="/privacy" className="hover:underline leading-none">Privacy</Link>
+    <Link href="/terms" className="hover:underline leading-none">Terms</Link>
+    <Link href="/about" className="hover:underline leading-none">About</Link>
+  </nav>
+  <div className="flex items-center">
+    <ThemeToggle />
+  </div>
+</div>
             </div>
           </footer>
         </div>

@@ -1,131 +1,137 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import AdSlot from '@/components/AdSlot';
+import { useState } from "react";
 
-type Mode = 'encode' | 'decode';
+type Mode = "encode" | "decode";
 
 export default function Base64Client() {
-  const [input, setInput] = useState('');
-  const [output, setOutput] = useState('');
-  const [mode, setMode] = useState<Mode>('encode');
+  const [input, setInput] = useState("");
+  const [output, setOutput] = useState("");
+  const [mode, setMode] = useState<Mode>("encode");
   const [file, setFile] = useState<File | null>(null);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
 
   async function processText() {
     try {
-      setError('');
-      if (mode === 'encode') {
+      setError("");
+      if (mode === "encode") {
         setOutput(btoa(unescape(encodeURIComponent(input))));
       } else {
         setOutput(decodeURIComponent(escape(atob(input))));
       }
-    } catch (e: any) {
-      setError('Invalid input for chosen mode.');
+    } catch {
+      setError("Invalid input for chosen mode.");
+      setOutput("");
     }
   }
 
   async function processFile(f: File) {
     try {
-      setError('');
-      if (mode === 'encode') {
+      setError("");
+      if (mode === "encode") {
         const data = await f.arrayBuffer();
         const bytes = new Uint8Array(data);
-        let binary = '';
-        for (let b of bytes) binary += String.fromCharCode(b);
+        let binary = "";
+        for (const b of bytes) binary += String.fromCharCode(b);
         setOutput(btoa(binary));
       } else {
         const binary = atob(input.trim());
         const bytes = new Uint8Array(binary.length);
-        for (let i = 0; i < binary.length; i++) {
-          bytes[i] = binary.charCodeAt(i);
-        }
+        for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
         const blob = new Blob([bytes]);
-        setOutput(URL.createObjectURL(blob));
+        setOutput(URL.createObjectURL(blob)); // user can download
       }
     } catch {
-      setError('Error processing file.');
+      setError("Error processing file.");
+      setOutput("");
     }
   }
 
-  function copy(text: string) {
-    navigator.clipboard?.writeText(text).catch(() => {});
-  }
-
   return (
-    <div className="space-y-6">
-      {/* Mode selection */}
-      <div className="grid sm:grid-cols-3 gap-3">
-        <select
-          className="input"
-          value={mode}
-          onChange={(e) => setMode(e.target.value as Mode)}
-        >
-          <option value="encode">Encode</option>
-          <option value="decode">Decode</option>
-        </select>
-        <button className="btn" onClick={processText}>
-          Process Text
-        </button>
-        <button
-          className="btn"
-          onClick={() => file && processFile(file)}
-          disabled={!file}
-        >
-          Process File
-        </button>
-      </div>
+    <>
+      {/* Single full-width card to match other tools */}
+      <div className="card p-6 md:col-span-2 space-y-6">
+        {/* Controls */}
+        <div className="grid sm:grid-cols-3 gap-3">
+          <select
+            className="input"
+            value={mode}
+            onChange={(e) => setMode(e.target.value as Mode)}
+            aria-label="Mode"
+          >
+            <option value="encode">Encode</option>
+            <option value="decode">Decode</option>
+          </select>
 
-      {/* Text input */}
-      <textarea
-        className="input font-mono"
-        rows={6}
-        value={input}
-        onChange={(e) => setInput(e.target.value)}
-        placeholder={mode === 'encode' ? 'Enter text to encode…' : 'Enter Base64 to decode…'}
-      />
+          <button className="btn" onClick={processText}>
+            Process Text
+          </button>
 
-      {/* File input */}
-      <input
-        type="file"
-        onChange={(e) => setFile(e.target.files?.[0] || null)}
-        className="input"
-      />
-
-      {/* Output */}
-      {output && mode === 'decode' && output.startsWith('blob:') ? (
-        <div className="mt-2">
-          <a href={output} download="decoded-file" className="underline">
-            Download Decoded File
-          </a>
+          <button
+            className="btn"
+            onClick={() => file && processFile(file)}
+            disabled={!file}
+          >
+            Process File
+          </button>
         </div>
-      ) : (
-        <textarea
-          className="input font-mono"
-          rows={6}
-          value={output}
-          readOnly
-          placeholder="Output will appear here…"
-        />
-      )}
 
-      {/* Error */}
-      {error && <div className="text-red-400 text-sm">{error}</div>}
+        {/* Text input */}
+        <div>
+          <label className="block text-sm mb-1">
+            {mode === "encode" ? "Enter text to encode…" : "Enter Base64 to decode…"}
+          </label>
+          <textarea
+            className="input font-mono"
+            rows={8}
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+          />
+        </div>
 
-      {/* Copy button */}
-      {output && !output.startsWith('blob:') && (
-        <button
-          className="px-4 py-2 rounded-lg border border-neutral-700 hover:bg-neutral-800"
-          onClick={() => copy(output)}
-        >
-          Copy Output
-        </button>
-      )}
+        {/* File input */}
+        <div>
+          <label className="block text-sm mb-1">Or select a file</label>
+          <input
+            type="file"
+            onChange={(e) => setFile(e.target.files?.[0] || null)}
+            className="input"
+          />
+        </div>
 
-      {/* Ad */}
-      <div className="w-full max-w-screen-md mx-auto">
-        <AdSlot slotId="0000000006" />
+        {/* Output */}
+        {output && mode === "decode" && output.startsWith("blob:") ? (
+          <div className="mt-2">
+            <a href={output} download="decoded-file" className="underline">
+              Download decoded file
+            </a>
+          </div>
+        ) : (
+          <div>
+            <label className="block text-sm mb-1">Output</label>
+            <textarea
+              className="input font-mono"
+              rows={8}
+              value={output}
+              readOnly
+              placeholder="Output will appear here…"
+            />
+          </div>
+        )}
+
+        {/* Error */}
+        {error && <div className="text-red-400 text-sm">{error}</div>}
+
+        {/* Copy */}
+        {output && !output.startsWith("blob:") && (
+          <button
+            className="btn-ghost"
+            onClick={() => navigator.clipboard?.writeText(output).catch(() => {})}
+          >
+            Copy output
+          </button>
+        )}
       </div>
-    </div>
+    </>
   );
 }

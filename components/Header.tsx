@@ -21,14 +21,33 @@ export default function Header() {
 
   return (
     <header className="sticky top-0 z-50 border-b border-[color:var(--stroke)] bg-[color:var(--bg)]/80 backdrop-blur">
-      <div className="container-pk h-14 flex items-center justify-between">
-        {/* Brand logo + name */}
-        <Link href="/" className="flex items-center gap-2">
-          <UtilixyLogo className="h-7 w-auto text-[color:var(--brand)]" aria-label="Utilixy" />
-          <span className="font-extrabold tracking-tight">
-            Utilixy
-          </span>
+      {/* On mobile: 3-col grid (menu | logo | spacer) so logo can be centered.
+          On md+: switch to flex with justify-between */}
+      <div className="container-pk h-14 grid grid-cols-3 items-center md:flex md:items-center md:justify-between">
+        {/* Mobile: hamburger (left) */}
+        <button
+          className="btn-ghost justify-self-start md:hidden"
+          aria-label="Open menu"
+          onClick={() => setOpen((s) => !s)}
+        >
+          {/* icon is nicer than “Menu” text */}
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M4 7h16M4 12h16M4 17h16" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+          </svg>
+        </button>
+
+        {/* Brand — centered on mobile (col 2), left-aligned on md+ */}
+        <Link
+          href="/"
+          className="col-start-2 justify-self-center md:col-auto md:justify-self-start flex items-center gap-2 no-underline"
+          aria-label="Utilixy home"
+        >
+          <UtilixyLogo className="h-7 w-auto text-[color:var(--brand)]" aria-hidden="true" />
+          <span className="font-extrabold tracking-tight">Utilixy</span>
         </Link>
+
+        {/* Spacer on mobile to balance grid; hidden on md since we switch to flex */}
+        <div className="justify-self-end md:hidden" />
 
         {/* Desktop nav */}
         <nav className="hidden md:flex items-center gap-2">
@@ -38,12 +57,11 @@ export default function Header() {
               <Link
                 key={n.href}
                 href={n.href}
-                className={`px-3 py-1.5 rounded-lg text-sm
-                  ${
-                    active
-                      ? "bg-[color:var(--bg-lift)] text-white border border-[color:var(--stroke)]"
-                      : "text-[color:var(--text-muted)] hover:text-white"
-                  }`}
+                className={`px-3 py-1.5 rounded-lg text-sm ${
+                  active
+                    ? "bg-[color:var(--bg-lift)] text-white border border-[color:var(--stroke)]"
+                    : "text-[color:var(--text-muted)] hover:text-white"
+                }`}
               >
                 {n.label}
               </Link>
@@ -51,30 +69,15 @@ export default function Header() {
           })}
         </nav>
 
-        {/* Actions */}
+        {/* Desktop actions (right) */}
         <div className="hidden md:flex items-center gap-2">
-          <Link
-            href="/privacy"
-            className="text-sm text-[color:var(--text-muted)] hover:text-white"
-          >
+          <Link href="/privacy" className="text-sm text-[color:var(--text-muted)] hover:text-white">
             Privacy
           </Link>
-          <Link
-            href="/cookies"
-            className="text-sm text-[color:var(--text-muted)] hover:text-white"
-          >
+          <Link href="/cookies" className="text-sm text-[color:var(--text-muted)] hover:text-white">
             Cookies
           </Link>
-          <button className="md:hidden" />
         </div>
-
-        {/* Mobile menu button */}
-        <button
-          className="md:hidden btn-ghost"
-          onClick={() => setOpen((s) => !s)}
-        >
-          Menu
-        </button>
       </div>
 
       {/* Mobile drawer */}
@@ -96,17 +99,11 @@ export default function Header() {
               </Link>
             ))}
             <div className="flex items-center gap-3 pt-2">
-              <Link
-                href="/privacy"
-                className="text-sm text-[color:var(--text-muted)] hover:text-white"
-              >
+              <Link href="/privacy" className="text-sm text-[color:var(--text-muted)] hover:text-white">
                 Privacy
               </Link>
               <span className="text-[color:var(--text-muted)]">•</span>
-              <Link
-                href="/cookies"
-                className="text-sm text-[color:var(--text-muted)] hover:text-white"
-              >
+              <Link href="/cookies" className="text-sm text-[color:var(--text-muted)] hover:text-white">
                 Cookies
               </Link>
             </div>

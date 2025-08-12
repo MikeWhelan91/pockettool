@@ -1,9 +1,9 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 import yaml from 'js-yaml';
 import { XMLParser, XMLBuilder } from 'fast-xml-parser';
-import AdSlot from '@/components/AdSlot';
+import Ad from '@/components/ads/Ad';
 
 type Mode = 'auto' | 'json' | 'yaml' | 'xml';
 
@@ -74,15 +74,9 @@ export default function FormatterClient() {
       if (mode === 'xml') return tryXML();
 
       // auto
-      try {
-        return tryJSON();
-      } catch {}
-      try {
-        return tryYAML();
-      } catch {}
-      try {
-        return tryXML();
-      } catch {}
+      try { return tryJSON(); } catch {}
+      try { return tryYAML(); } catch {}
+      try { return tryXML(); } catch {}
 
       setError('Could not detect a valid JSON, YAML, or XML structure.');
       setDetected('auto');
@@ -105,14 +99,12 @@ export default function FormatterClient() {
     navigator.clipboard?.writeText(text).catch(() => {});
   }
 
-  // Single full-width card so ToolLayout keeps widths consistent across pages
   return (
     <>
       <div className="card p-6 md:col-span-2 space-y-5">
         {/* Controls row */}
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex flex-wrap items-center gap-2">
-            {/* Use shared segmented style so it themes correctly */}
             <div className="seg">
               {(['auto', 'json', 'yaml', 'xml'] as Mode[]).map((m) => (
                 <button
@@ -187,20 +179,13 @@ export default function FormatterClient() {
               </div>
             </div>
             <textarea
-              className={`input font-mono h-64 sm:h-[420px] ${
-                error && !output ? 'bg-red-50 text-red-700 dark:bg-red-950 dark:text-red-300' : ''
-              }`}
+              className={`input font-mono h-64 sm:h-[420px] ${error && !output ? 'bg-red-50 text-red-700 dark:bg-red-950 dark:text-red-300' : ''}`}
               value={error && !output ? 'Invalid JSON/YAML/XML' : output}
               readOnly
               placeholder="Formatted output will appear here…"
             />
           </div>
         </div>
-      </div>
-
-      {/* Ad row spans the layout width */}
-      <div className="md:col-span-2">
-        <AdSlot slotId="0000000005" />
       </div>
     </>
   );

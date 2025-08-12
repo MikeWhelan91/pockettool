@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useCallback } from 'react';
-import AdSlot from '@/components/AdSlot';
+import Ad from '@/components/ads/Ad';
 
 type OutputFormat = 'png' | 'jpeg' | 'webp';
 
@@ -51,7 +51,6 @@ export default function ImageConverter() {
 
     for (const file of images) {
       const ext = file.name.split('.').pop()?.toLowerCase();
-
       const normalizedExt = ext === 'jpg' ? 'jpeg' : ext;
       if (normalizedExt === format) {
         setWarning(`Skipping ${file.name} — already a ${format.toUpperCase()} file.`);
@@ -110,7 +109,6 @@ export default function ImageConverter() {
     setBusy(false);
   }
 
-  // IMPORTANT: under ToolLayout, return sibling cards; do not cap width.
   return (
     <>
       <div className="card p-6 space-y-4 md:col-span-2">
@@ -121,7 +119,9 @@ export default function ImageConverter() {
         </p>
 
         <div
-          className={`border-2 border-dashed rounded-lg p-6 text-center cursor-pointer transition ${dragOver ? 'border-green-500 bg-green-500/10' : 'border-neutral-700'}`}
+          className={`border-2 border-dashed rounded-lg p-6 text-center cursor-pointer transition ${
+            dragOver ? 'border-green-500 bg-green-500/10' : 'border-neutral-700'
+          }`}
           onDragOver={(e) => {
             e.preventDefault();
             setDragOver(true);
@@ -224,11 +224,6 @@ export default function ImageConverter() {
             ))}
           </div>
         )}
-      </div>
-
-      {/* Ad slot below, full width of the layout */}
-      <div className="md:col-span-2">
-        <AdSlot slotId="0000000002" />
       </div>
     </>
   );

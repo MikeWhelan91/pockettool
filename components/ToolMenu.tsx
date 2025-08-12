@@ -1,10 +1,11 @@
 'use client';
 
 import Link from 'next/link';
+import Ad from '@/components/ads/Ad';
 
 const tools = [
   { href: '/', label: 'Home' },
-    { href: '/pdf', label: 'PDF Studio' },
+  { href: '/pdf', label: 'PDF Studio' },
   { href: '/random', label: 'Password & Random Generators' },
   { href: '/qr', label: 'Wi-Fi QR & QR Codes' },
   { href: '/image-converter', label: 'Image Converter (JPG / PNG / WEBP + HEIC)' },
@@ -28,7 +29,7 @@ export default function ToolMenu({ onClose }: { onClose: () => void }) {
         </button>
       </div>
 
-      <nav className="p-3 space-y-1 text-sm">
+      <nav className="p-3 space-y-1 text-sm overflow-auto">
         {tools.map((t) => (
           <Link
             key={t.href}
@@ -39,6 +40,20 @@ export default function ToolMenu({ onClose }: { onClose: () => void }) {
             {t.label}
           </Link>
         ))}
+
+        {/* Tower ad renders only when menu is open, because ToolMenu mounts only then */}
+        <div className="mt-6 flex justify-center">
+          <Ad
+            slot="sidebarTower"
+            responsive={false}
+            format={null}           // omit data-ad-format for fixed size
+            width={250}
+            height={600}
+            display="inline-block"
+            minHeight={600}
+            lazy
+          />
+        </div>
       </nav>
 
       <div className="absolute bottom-0 left-0 right-0 border-t border-line p-3 text-xs text-muted">

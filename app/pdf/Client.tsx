@@ -205,7 +205,9 @@ type ToolKey =
   | "batchMerge"
   | "compress";
 
+// replace your TOOL_LIST with this
 const TOOL_LIST: { key: ToolKey; label: string }[] = [
+  { key: "batchMerge", label: "Merge" },                // moved to top & renamed
   { key: "reorder", label: "Reorder / Rotate / Delete" },
   { key: "watermark", label: "Page numbers / Header / Footer / Watermark" },
   { key: "imagesToPdf", label: "Images → PDF (scanner)" },
@@ -215,16 +217,33 @@ const TOOL_LIST: { key: ToolKey; label: string }[] = [
   { key: "redact", label: "Redact (rectangles)" },
   { key: "split", label: "Split (count / size / bookmarks)" },
   { key: "stampQR", label: "Stamp QR" },
-  { key: "batchMerge", label: "Batch merge" },
   { key: "compress", label: "Compress (lossless optimize)" },
 ];
 
+
 export default function PDFStudio() {
-  const [tool, setTool] = useState<ToolKey>("reorder");
+  const [tool, setTool] = useState<ToolKey>("batchMerge"); // start on Merge now
 
   return (
     <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-[220px,1fr] gap-6">
-      <aside className="card p-3 h-fit">
+      {/* Mobile tool selector (dropdown/wheel) */}
+      <div className="md:hidden card p-3">
+        <label className="block text-sm mb-1">Tool</label>
+        <select
+          className="input w-full"
+          value={tool}
+          onChange={(e) => setTool(e.target.value as ToolKey)}
+        >
+          {TOOL_LIST.map((t) => (
+            <option key={t.key} value={t.key}>
+              {t.label}
+            </option>
+          ))}
+        </select>
+      </div>
+
+      {/* Desktop sidebar (hidden on mobile) */}
+      <aside className="card p-3 h-fit hidden md:block">
         <div className="grid gap-1">
           {TOOL_LIST.map((t) => (
             <button
@@ -240,6 +259,7 @@ export default function PDFStudio() {
         </div>
       </aside>
 
+      {/* Main stage */}
       <main className="grid gap-6">
         {tool === "reorder" && <ToolReorder />}
         {tool === "watermark" && <ToolWatermark />}
@@ -250,7 +270,7 @@ export default function PDFStudio() {
         {tool === "redact" && <ToolRedact />}
         {tool === "split" && <ToolSplit />}
         {tool === "stampQR" && <ToolStampQR />}
-        {tool === "batchMerge" && <ToolBatchMerge />}
+        {tool === "batchMerge" && <ToolBatchMerge />}  {/* still the same key */}
         {tool === "compress" && <ToolCompress />}
       </main>
     </div>

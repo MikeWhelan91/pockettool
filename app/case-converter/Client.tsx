@@ -1,7 +1,7 @@
 'use client';
 
 import { useMemo, useState } from 'react';
-import AdSlot from '@/components/AdSlot';
+import Ad from '@/components/ads/Ad';
 
 type Mode =
   | 'upper'
@@ -87,7 +87,6 @@ export default function CaseConverterClient() {
 
   return (
     <>
-      {/* single full-width card to match other pages under ToolLayout */}
       <div className="card p-6 md:col-span-2 space-y-6">
         {/* Controls */}
         <div className="grid sm:grid-cols-2 gap-3">
@@ -145,11 +144,6 @@ export default function CaseConverterClient() {
             </p>
           </div>
         </div>
-      </div>
-
-      {/* Ad slot spans layout width */}
-      <div className="md:col-span-2">
-        <AdSlot slotId="0000000004" />
       </div>
     </>
   );

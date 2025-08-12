@@ -6,6 +6,7 @@ export default function robots(): MetadataRoute.Robots {
       {
         userAgent: '*',
         allow: '/',
+        disallow: '', // Explicitly allow everything
       },
     ],
     sitemap: 'https://utilixy.com/sitemap.xml',

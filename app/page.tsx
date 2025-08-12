@@ -1,4 +1,19 @@
 import Link from "next/link";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "PDF Studio & Web Tools — Utilixy",
+  description:
+    "Reorder, rotate, merge and split PDFs plus access quick tools like QR codes, image conversion and more — all local and private.",
+  keywords: [
+    "PDF Studio",
+    "web tools",
+    "QR code generator",
+    "image converter",
+    "JSON formatter",
+    "random generators",
+  ],
+};
 
 const tools = [
   { href: "/pdf", title: "PDF Studio", desc: "Reorder, rotate, merge, split, numbers, watermark, extract, redact — locally." },

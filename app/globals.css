@@ -224,14 +224,14 @@ a{ text-underline-offset:3px; }
   display:grid;
   gap:1.5rem;
   grid-template-columns: 1fr;
-  align-items: stretch;
+  align-items: start;            /* don't stretch; let items size to content */
 }
 @media (min-width: 768px){
   .tool-panels{ grid-template-columns: 1fr 1fr; }
 }
 .tool-panel{
-  min-height: 420px;
-  height: 100%;
+  min-height: 0;                 /* or remove the line entirely */
+  height: auto;                  /* let panel shrink to content */
   display: flex;
   flex-direction: column;
 }

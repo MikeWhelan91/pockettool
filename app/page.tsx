@@ -13,6 +13,7 @@ export const metadata: Metadata = {
     "image converter",
     "JSON formatter",
     "random generators",
+    "regex tester",
   ],
   openGraph: {
     title: "PDF Studio & Web Tools — Utilixy",
@@ -72,6 +73,11 @@ const tools = [
     href: "/diff",
     title: "Text Diff",
     desc: "Compare two texts and see changes.",
+  },
+  {
+    href: "/regex",
+    title: "Regex Tester",
+    desc: "Experiment with regular expressions, replace and split, and see matches instantly.",
   },
 ];
 

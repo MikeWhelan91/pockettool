@@ -12,6 +12,7 @@ const nav = [
   { href: "/pdf", label: "PDF" },
   { href: "/format", label: "Formatter" },
   { href: "/diff", label: "Diff" },
+  { href: "/regex", label: "Regex" },
   { href: "/random", label: "Random" },
 ];
 

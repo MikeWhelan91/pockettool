@@ -80,7 +80,7 @@ export default function AboutPage() {
             <li><b>PDF Studio:</b> reordering, merging, splitting, numbers, watermarks, redaction, conversions.</li>
             <li><b>QR & Wi-Fi:</b> generate and export QR codes (PNG/SVG).</li>
             <li><b>Image tools:</b> convert common formats right in the browser.</li>
-            <li><b>Formatters & text tools:</b> JSON/YAML/XML, case converter, diff, Base64, etc.</li>
+            <li><b>Formatters & text tools:</b> JSON/YAML/XML, regex tester (highlight, replace, split), case converter, diff, Base64, etc.</li>
           </ul>
           <p className="text-xs text-muted mt-3">
             If a tool ever needs a network call (rare), I’ll call it out in the UI.

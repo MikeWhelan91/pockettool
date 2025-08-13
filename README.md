@@ -7,7 +7,7 @@
 - **PDF Studio** (hero): reorder, rotate, merge, split, page numbers, headers/footers, watermarks, extract text, images↔PDF, stamp QR, quick raster redaction, optimize.
 - **QR & Wi-Fi:** generate QR codes (PNG/SVG).
 - **Image Converter:** HEIC → JPG/PNG/WebP (client-side).
-- **Formatters & Text Tools:** JSON/YAML/XML, case converter, Base64, diff.
+- **Formatters & Text Tools:** JSON/YAML/XML, regex tester (highlight, replace, split), case converter, Base64, diff.
 - **Local-first:** privacy by default.
 
 ---
@@ -37,6 +37,7 @@ npm run dev
 - `/case-converter` — Case converter
 - `/base64` — Base64 encode/decode
 - `/diff` — Text diff
+- `/regex` — Regex tester
 - `/about` — About the project
 
 ---

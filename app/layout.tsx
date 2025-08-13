@@ -45,6 +45,7 @@ export const metadata: Metadata = {
     "JSON formatter",
     "Base64 encoder",
     "random generator",
+    "regex tester",
   ],
   openGraph: {
     title: "Utilixy — Quick, private web tools",

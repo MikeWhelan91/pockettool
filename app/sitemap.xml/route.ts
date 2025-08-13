@@ -4,7 +4,7 @@ export async function GET() {
   const base = 'https://utilixy.com';
   const urls = [
     '/', '/about', '/base64', '/case-converter', '/cookies', '/diff',
-    '/format', '/image-converter', '/pdf', '/privacy', '/qr', '/random', '/terms'
+    '/regex', '/format', '/image-converter', '/pdf', '/privacy', '/qr', '/random', '/terms'
   ];
 
   const xml = `<?xml version="1.0" encoding="UTF-8"?>

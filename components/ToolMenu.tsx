@@ -13,6 +13,7 @@ const tools = [
   { href: '/format', label: 'JSON / YAML / XML Formatter' },
   { href: '/base64', label: 'Base64 Encoder/Decoder' },
   { href: '/diff', label: 'Text Diff Checker' },
+  { href: '/regex', label: 'Regex Tester' },
 ];
 
 export default function ToolMenu({ onClose }: { onClose: () => void }) {

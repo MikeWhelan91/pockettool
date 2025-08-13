@@ -9,6 +9,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: `${base}/case-converter`, lastModified: new Date() },
     { url: `${base}/cookies`, lastModified: new Date() },
     { url: `${base}/diff`, lastModified: new Date() },
+    { url: `${base}/regex`, lastModified: new Date() },
     { url: `${base}/format`, lastModified: new Date() },
     { url: `${base}/image-converter`, lastModified: new Date() },
     { url: `${base}/pdf`, lastModified: new Date() },

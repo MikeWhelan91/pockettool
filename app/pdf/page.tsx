@@ -1,38 +1,22 @@
 import type { Metadata } from "next";
 import ToolLayout from "@/components/ToolLayout";
 import Client from "./Client";
-import Ad from "@/components/ads/Ad";
 
 export const metadata: Metadata = {
-  title: "PDF Studio — Utilixy",
-  description: "Reorder, rotate, split, merge, watermark, page numbers, extract text, images↔PDF, redaction and more — fully client-side.",
+  title: "Free PDF Tools — Merge, Split, Compress, Edit, and Convert PDFs | Utilixy",
+  description:
+    "All-in-one free PDF toolkit. Merge, split, compress, convert images to PDF, edit, and secure your documents — all in your browser, no uploads required.",
   alternates: { canonical: "/pdf" },
 };
 
 export default function Page() {
-  const jsonLd = {
-    "@context": "https://schema.org",
-    "@type": "SoftwareApplication",
-    name: "PDF Studio",
-    applicationCategory: "UtilitiesApplication",
-    operatingSystem: "Web",
-    url: "https://utilixy.com/pdf",
-    description:
-      "Reorder, rotate, split, merge, watermark, page numbers, extract text, images↔PDF, redaction and more — fully client-side.",
-  };
-
   return (
-    <>
-      <ToolLayout
-        title="PDF Studio"
-        description="Reorder, rotate, split, merge, watermark, page numbers, extract text, images↔PDF, redaction and more — all locally in your browser."
-        align="center"
-      >
-        <Client />
-      
-      </ToolLayout>
-
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
-    </>
+    <ToolLayout
+      title="PDF Studio"
+      description="All-in-one free PDF toolkit. Merge, split, compress, convert images to PDF, edit, and secure your documents — all in your browser, no uploads required."
+      align="center"
+    >
+      <Client />
+    </ToolLayout>
   );
 }

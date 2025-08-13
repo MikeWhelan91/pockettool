@@ -10,7 +10,7 @@ const nav = [
   { href: "/qr", label: "QR" },
   { href: "/image-converter", label: "Images" },
   { href: "/pdf", label: "PDF" },
-  { href: "/formatter", label: "Formatter" },
+  { href: "/format", label: "Formatter" },
   { href: "/diff", label: "Diff" },
   { href: "/random", label: "Random" },
 ];

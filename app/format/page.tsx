@@ -11,7 +11,7 @@ export const metadata: Metadata = {
     title: "JSON / YAML / XML Formatter & Validator — Utilixy",
     description:
       "Format and validate JSON, YAML, or XML instantly in your browser. Auto-detect, pretty-print or minify. Private & fast.",
-    url: "/formatter",
+    url: "/format",
     siteName: "Utilixy",
     type: "website",
   },

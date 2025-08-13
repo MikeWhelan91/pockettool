@@ -10,6 +10,14 @@ const nextConfig = {
     };
     return config;
   },
+  async redirects() {
+  return [
+    { source: '/formatter', destination: '/format', permanent: true },
+  ];
+}
+
 };
+
+
 
 module.exports = nextConfig;

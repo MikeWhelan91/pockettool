@@ -1,5 +1,6 @@
 // components/ToolLayout.tsx
 import React, { ReactElement, ReactNode } from "react";
+import ShareButton from "./ShareButton";
 
 /**
  * ToolLayout
@@ -47,7 +48,12 @@ export default function ToolLayout({
             <h1 className="text-2xl font-semibold tracking-tight">{title}</h1>
             {description ? <p className="text-sm text-muted mt-1">{description}</p> : null}
           </div>
-          {!center && actions ? <div className="flex items-center gap-2">{actions}</div> : null}
+          {!center && (
+            <div className="flex items-center gap-2">
+              {actions}
+              <ShareButton />
+            </div>
+          )}
         </div>
       </div>
 

@@ -5,6 +5,20 @@ import Client from "./Client";
 export const metadata: Metadata = {
   title: "Base64 Encoder / Decoder – Utilixy",
   description: "Convert text or files to and from Base64 instantly in your browser.",
+  openGraph: {
+    title: "Base64 Encoder / Decoder – Utilixy",
+    description: "Convert text or files to and from Base64 instantly in your browser.",
+    url: "/base64",
+    siteName: "Utilixy",
+    images: [{ url: "/icons/icon-512.png", width: 512, height: 512 }],
+    type: "website",
+  },
+  twitter: {
+    card: "summary",
+    title: "Base64 Encoder / Decoder – Utilixy",
+    description: "Convert text or files to and from Base64 instantly in your browser.",
+    images: ["/icons/icon-512.png"],
+  },
 };
 
 export default function Page() {

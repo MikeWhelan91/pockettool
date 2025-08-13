@@ -7,6 +7,22 @@ export const metadata: Metadata = {
     "How Utilixy handles data, cookies, ads, and analytics. Most tools run entirely in your browser.",
   robots: { index: true, follow: true },
   alternates: { canonical: "/privacy" },
+  openGraph: {
+    title: "Privacy Policy — Utilixy",
+    description:
+      "How Utilixy handles data, cookies, ads, and analytics. Most tools run entirely in your browser.",
+    url: "/privacy",
+    siteName: "Utilixy",
+    images: [{ url: "/icons/icon-512.png", width: 512, height: 512 }],
+    type: "website",
+  },
+  twitter: {
+    card: "summary",
+    title: "Privacy Policy — Utilixy",
+    description:
+      "How Utilixy handles data, cookies, ads, and analytics. Most tools run entirely in your browser.",
+    images: ["/icons/icon-512.png"],
+  },
 };
 
 export default function Privacy() {

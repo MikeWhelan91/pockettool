@@ -6,6 +6,22 @@ export const metadata: Metadata = {
   title: "About • Utilixy",
   description:
     "Why this exists, how it’s built, and what I’m learning along the way.",
+  openGraph: {
+    title: "About • Utilixy",
+    description:
+      "Why this exists, how it’s built, and what I’m learning along the way.",
+    url: "/about",
+    siteName: "Utilixy",
+    images: [{ url: "/icons/icon-512.png", width: 512, height: 512 }],
+    type: "website",
+  },
+  twitter: {
+    card: "summary",
+    title: "About • Utilixy",
+    description:
+      "Why this exists, how it’s built, and what I’m learning along the way.",
+    images: ["/icons/icon-512.png"],
+  },
 };
 
 export default function AboutPage() {

@@ -14,6 +14,22 @@ export const metadata: Metadata = {
     "JSON formatter",
     "random generators",
   ],
+  openGraph: {
+    title: "PDF Studio & Web Tools — Utilixy",
+    description:
+      "Reorder, rotate, merge and split PDFs plus access quick tools like QR codes, image conversion and more — all local and private.",
+    url: "/",
+    siteName: "Utilixy",
+    images: [{ url: "/icons/icon-512.png", width: 512, height: 512 }],
+    type: "website",
+  },
+  twitter: {
+    card: "summary",
+    title: "PDF Studio & Web Tools — Utilixy",
+    description:
+      "Reorder, rotate, merge and split PDFs plus access quick tools like QR codes, image conversion and more — all local and private.",
+    images: ["/icons/icon-512.png"],
+  },
 };
 
 const tools = [

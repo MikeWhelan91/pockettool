@@ -178,7 +178,7 @@ function ToolHelp({
 function getToolLabel(key: keyof typeof HELP) {
   const labels: Record<keyof typeof HELP, string> = {
     reorder: "Reorder/Delete",
-    watermark: "Numbers/Watermark",
+    watermark: "Stamp",
     imagesToPdf: "Images → PDF",
     pdfToImages: "PDF → Images",
     extractText: "Extract Text",
@@ -549,7 +549,7 @@ const TOOL_LIST: { key: ToolKey; label: string }[] = [
   { key: "extractText", label: "Extract text" },
   { key: "fillFlatten", label: "Fill forms" },
   { key: "redact", label: "Redact" },
-  { key: "watermark", label: "Page numbers / Header / Footer / Watermark" },
+  { key: "watermark", label: "Stamp" },
   { key: "split", label: "Split" },
   { key: "stampQR", label: "Stamp QR" },
   { key: "meta", label: "Edit Metadata" },

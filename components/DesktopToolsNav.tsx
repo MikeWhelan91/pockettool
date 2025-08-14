@@ -14,7 +14,7 @@ const PDF_TOOLS: { key: string; label: string }[] = [
   { key: "extractText", label: "Extract Text" },
   { key: "fillFlatten", label: "Fill & Flatten" },
   { key: "redact", label: "Redact" },
-  { key: "watermark", label: "Numbers/Watermark" },
+  { key: "watermark", label: "Stamp" },
   { key: "split", label: "Split" },
   { key: "stampQR", label: "Stamp QR" },
   { key: "meta", label: "Edit Metadata" },

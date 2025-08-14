@@ -1,5 +1,5 @@
 // app/pdf/page.tsx
-import React from "react";
+import React, { Suspense } from "react";
 import ToolLayout from "@/components/ToolLayout";
 import Hero from "./Hero"; // (use your actual path)
 import Client from "./Client"; // (use your actual path)
@@ -33,11 +33,13 @@ export default function Page() {
       align="center"
       data-pdf
     >
-      {/* Left/Right grid item #1 — the hero (already centered by your styles) */}
+      {/* Left/Right grid item #1 — hero */}
       <Hero />
 
-      {/* Left/Right grid item #2 — the interactive tool stage */}
-      <Client />
+      {/* Left/Right grid item #2 — interactive tool stage (uses useSearchParams) */}
+      <Suspense fallback={<div className="p-4 text-sm text-muted">Loading PDF tool…</div>}>
+        <Client />
+      </Suspense>
     </ToolLayout>
   );
 }

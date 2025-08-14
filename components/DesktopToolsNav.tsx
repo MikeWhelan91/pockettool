@@ -1,24 +1,8 @@
-// components/DesktopToolsNav.tsx
 "use client";
 
 import Link from "next/link";
-import { usePathname, useSearchParams } from "next/navigation";
-
-const PDF_TOOLS: { key: string; label: string }[] = [
-  { key: "batchMerge", label: "Merge" },
-  { key: "reorder", label: "Reorder/Delete" },
-  { key: "rotate", label: "Rotate Pages" },
-  { key: "imagesToPdf", label: "Images → PDF" },
-  { key: "pdfToImages", label: "PDF → Images" },
-  { key: "extractText", label: "Extract Text" },
-  { key: "fillFlatten", label: "Fill & Flatten" },
-  { key: "redact", label: "Redact" },
-  { key: "watermark", label: "Watermark" },
-  { key: "split", label: "Split" },
-  { key: "stampQR", label: "Stamp QR" },
-  { key: "meta", label: "Edit Metadata" },
-  { key: "compress", label: "Compress" },
-];
+import { usePathname } from "next/navigation";
+import React from "react";
 
 function NavLink({
   href,
@@ -36,9 +20,9 @@ function NavLink({
       href={href}
       aria-current={active ? "page" : undefined}
       className={[
-        "px-3 py-1.5 rounded-md text-base font-semibold transition-colors duration-150",
+        "px-3 py-1.5 rounded-md text-sm font-bold transition-colors duration-150",
         "hover:bg-[#2B67F3] hover:text-white",
-        active ? "bg-[#2B67F3] text-white" : "text-[color:var(--text)]",
+        active ? "bg-[#2B67F3] text-white" : "text-blue-500",
         className,
       ].join(" ")}
     >
@@ -49,82 +33,117 @@ function NavLink({
 
 export default function DesktopToolsNav() {
   const pathname = usePathname();
-  const searchParams = useSearchParams();
   const isActive = (href: string) => pathname === href;
 
-  const onPdf = pathname?.startsWith("/pdf");
-  const activeTool = searchParams.get("tool");
-
   return (
+    // hidden on mobile, shown on md+
     <nav className="hidden md:flex ml-auto items-center gap-1">
-      {/* PDF with polished dropdown */}
-      <div
-        className={[
-          "relative inline-block group/pdf",
-          // Hover bridge to avoid flicker between trigger and panel
-          "after:content-[''] after:absolute after:left-0 after:right-0 after:top-full after:h-3",
-        ].join(" ")}
-      >
-        <Link
-          href="/pdf"
-          className={[
-            "px-3 py-1.5 rounded-md text-base font-semibold transition-colors duration-150",
-            "hover:bg-[#2B67F3] hover:text-white",
-            onPdf ? "bg-[#2B67F3] text-white" : "text-[color:var(--text)]",
-          ].join(" ")}
-        >
-          PDF
-        </Link>
-
+      {/* Always visible */}
+      <div className="relative group">
+        <NavLink href="/pdf" label="PDF" active={isActive("/pdf")} />
+        {/* PDF dropdown */}
         <div
-          role="menu"
-          className={[
-"absolute left-1/2 top-full mt-2 -translate-x-1/2 z-[3000]",            // Frosted panel
-            "rounded-xl p-2 ring-1 ring-[color:var(--line)]",
-            "bg-[color:var(--bg)]/92 backdrop-blur-md shadow-2xl",
-            // Layout
-            "min-w-[18rem] max-h-[70vh] overflow-auto",
-            "grid grid-cols-1 sm:grid-cols-2 gap-1",
-            // Show/Hide
-            "opacity-0 invisible translate-y-1 transition ease-out duration-150",
-            "group-hover/pdf:opacity-100 group-hover/pdf:visible group-hover/pdf:translate-y-0",
-            "focus-within:opacity-100 focus-within:visible focus-within:translate-y-0",
-          ].join(" ")}
+          className="absolute left-1/2 -translate-x-1/2 mt-2 hidden group-hover:flex flex-col bg-[color:var(--bg)] border border-[color:var(--line)] rounded-lg shadow-lg z-[3000] p-1 min-w-[180px]"
         >
-          {PDF_TOOLS.map((t) => {
-            const isThisActive = onPdf && activeTool === t.key;
-            return (
-              <Link
-                key={t.key}
-                href={`/pdf?tool=${encodeURIComponent(t.key)}`}
-                role="menuitem"
-                className={[
-                  "block w-full whitespace-nowrap",
-                  "px-3 py-2 rounded-lg text-base font-semibold",
-                  isThisActive
-                    ? "bg-[color:var(--bg-lift)] ring-1 ring-[color:var(--line)]"
-                    : "hover:bg-[#2B67F3] hover:text-white",
-                ].join(" ")}
-                aria-current={isThisActive ? "true" : undefined}
-              >
-                {t.label}
-              </Link>
-            );
-          })}
+          <Link href="/pdf?tool=reorder" className="px-3 py-2 text-sm font-bold hover:bg-[#2B67F3] hover:text-white rounded-md">
+            Reorder
+          </Link>
+          <Link href="/pdf?tool=watermark" className="px-3 py-2 text-sm font-bold hover:bg-[#2B67F3] hover:text-white rounded-md">
+            Watermark
+          </Link>
+          <Link href="/pdf?tool=imagesToPdf" className="px-3 py-2 text-sm font-bold hover:bg-[#2B67F3] hover:text-white rounded-md">
+            Images → PDF
+          </Link>
+          <Link href="/pdf?tool=pdfToImages" className="px-3 py-2 text-sm font-bold hover:bg-[#2B67F3] hover:text-white rounded-md">
+            PDF → Images
+          </Link>
+          <Link href="/pdf?tool=extractText" className="px-3 py-2 text-sm font-bold hover:bg-[#2B67F3] hover:text-white rounded-md">
+            Extract Text
+          </Link>
+          <Link href="/pdf?tool=fillFlatten" className="px-3 py-2 text-sm font-bold hover:bg-[#2B67F3] hover:text-white rounded-md">
+            Fill & Flatten
+          </Link>
+          <Link href="/pdf?tool=redact" className="px-3 py-2 text-sm font-bold hover:bg-[#2B67F3] hover:text-white rounded-md">
+            Redact
+          </Link>
+          <Link href="/pdf?tool=split" className="px-3 py-2 text-sm font-bold hover:bg-[#2B67F3] hover:text-white rounded-md">
+            Split
+          </Link>
+          <Link href="/pdf?tool=stampQR" className="px-3 py-2 text-sm font-bold hover:bg-[#2B67F3] hover:text-white rounded-md">
+            Stamp QR
+          </Link>
+          <Link href="/pdf?tool=batchMerge" className="px-3 py-2 text-sm font-bold hover:bg-[#2B67F3] hover:text-white rounded-md">
+            Merge
+          </Link>
+          <Link href="/pdf?tool=compress" className="px-3 py-2 text-sm font-bold hover:bg-[#2B67F3] hover:text-white rounded-md">
+            Compress
+          </Link>
+          <Link href="/pdf?tool=rotate" className="px-3 py-2 text-sm font-bold hover:bg-[#2B67F3] hover:text-white rounded-md">
+            Rotate
+          </Link>
+          <Link href="/pdf?tool=sign" className="px-3 py-2 text-sm font-bold hover:bg-[#2B67F3] hover:text-white rounded-md">
+            Sign
+          </Link>
+          <Link href="/pdf?tool=meta" className="px-3 py-2 text-sm font-bold hover:bg-[#2B67F3] hover:text-white rounded-md">
+            Metadata
+          </Link>
         </div>
       </div>
 
-      {/* Other main links */}
       <NavLink href="/image-converter" label="Images" active={isActive("/image-converter")} />
       <NavLink href="/random" label="Passwords" active={isActive("/random")} />
       <NavLink href="/qr" label="QR" active={isActive("/qr")} />
       <NavLink href="/format" label="Format" active={isActive("/format")} />
 
-      {/* Extra tools inline on xl+ */}
+      {/* Extra tools: show as normal links on xl+, hidden on lg/md */}
       <NavLink href="/case-converter" label="Case" active={isActive("/case-converter")} className="hidden xl:inline-flex" />
       <NavLink href="/base64" label="Base64" active={isActive("/base64")} className="hidden xl:inline-flex" />
       <NavLink href="/diff" label="Diff" active={isActive("/diff")} className="hidden xl:inline-flex" />
       <NavLink href="/regex" label="Regex" active={isActive("/regex")} className="hidden xl:inline-flex" />
+
+      {/* “More” only for md/lg; hidden on xl because all items are shown */}
+      <div
+        className={[
+          "relative inline-block group/menu xl:hidden",
+          "after:content-[''] after:absolute after:left-0 after:right-0 after:top-full after:h-3",
+        ].join(" ")}
+      >
+        <button
+          type="button"
+          className="px-3 py-1.5 rounded-md text-sm font-bold transition-colors duration-150 hover:bg-[#2B67F3] hover:text-white flex items-center gap-1"
+          aria-haspopup="menu"
+        >
+          More <span aria-hidden>▾</span>
+        </button>
+
+        <div
+          role="menu"
+          className={[
+            "absolute left-0 top-full mt-2 -ml-3",
+            "inline-flex flex-col items-stretch",
+            "rounded-lg p-1 text-left",
+            "bg-[color:var(--bg)] ring-1 ring-[color:var(--line)] shadow-lg",
+            "z-[3000]",
+            "opacity-0 invisible translate-y-1",
+            "group-hover/menu:opacity-100 group-hover/menu:visible group-hover/menu:translate-y-0",
+            "focus-within:opacity-100 focus-within:visible focus-within:translate-y-0",
+            "transition ease-out duration-150",
+          ].join(" ")}
+        >
+          <Link href="/case-converter" role="menuitem" className="px-3 py-2 text-sm font-bold hover:bg-[#2B67F3] hover:text-white rounded-md">
+            Case
+          </Link>
+          <Link href="/base64" role="menuitem" className="px-3 py-2 text-sm font-bold hover:bg-[#2B67F3] hover:text-white rounded-md">
+            Base64
+          </Link>
+          <Link href="/diff" role="menuitem" className="px-3 py-2 text-sm font-bold hover:bg-[#2B67F3] hover:text-white rounded-md">
+            Diff
+          </Link>
+          <Link href="/regex" role="menuitem" className="px-3 py-2 text-sm font-bold hover:bg-[#2B67F3] hover:text-white rounded-md">
+            Regex
+          </Link>
+        </div>
+      </div>
     </nav>
   );
 }

@@ -2,6 +2,8 @@ import "./globals.css";
 import type { Metadata, Viewport } from "next";
 import Link from "next/link";
 import Image from "next/image";
+import DesktopToolsNav from "@/components/DesktopToolsNav";
+import UtilixyLogo from "@/components/branding/UtilixyLogo";
 import Script from "next/script";
 import { Analytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/next";
@@ -178,49 +180,41 @@ export default function RootLayout({
       <body className="min-h-dvh bg-[hsl(var(--bg))] text-[hsl(var(--text))]">
         <div className="min-h-dvh flex flex-col">
           {/* Header */}
-          <header className="header bg-[hsl(var(--bg))]/90 backdrop-blur supports-[backdrop-filter]:bg-[hsl(var(--bg))]/80 border-b border-line">
-            <div className="mx-auto container-wrap h-14 md:h-16 grid grid-cols-3 items-center md:flex md:items-center md:justify-between">
-              {/* Mobile hamburger (left) */}
-              <div className="md:hidden justify-self-start">
-                <ToolMenuWrapper />
-              </div>
-
-              {/* Brand — centered on mobile, left-aligned on desktop */}
+          <header
+            className="sticky top-0 z-50 border-b border-[color:var(--line)] 
+             bg-[color:var(--bg)]/80 backdrop-blur-md"
+          >
+            <div
+              className="container-wrap h-14 flex items-center gap-3"
+              style={{
+                paddingLeft: "max(16px, env(safe-area-inset-left))",
+                paddingRight: "max(16px, env(safe-area-inset-right))",
+              }}
+            >
+              {" "}
+              {/* Hamburger menu (mobile only) */}
+              <ToolMenuWrapper />
+              {/* Logo */}
               <Link
                 href="/"
-                aria-label="Utilixy home"
-                className="col-start-2 justify-self-center md:col-auto md:justify-self-start flex items-center gap-2 no-underline"
+                className="flex items-center gap-2 absolute md:static md:translate-x-0 left-1/2 -translate-x-1/2 md:left-0"
               >
-                <Image
+                <img
                   src="/utilixy-nav.svg"
-                  alt=""
-                  aria-hidden="true"
-                  width={500}
-                  height={500}
-                  priority
-                  className="h-14 w-auto md:h-16"
+                  alt="Utilixy"
+                  className="h-12 w-auto"
                 />
-                <span className="text-[26px] md:text-[26px] tracking-tight font-semibold">
+                <span className="text-xl font-bold text-[#2B67F3]">
                   Utilixy
                 </span>
               </Link>
-
-              {/* Spacer to balance grid on mobile */}
-              <div className="md:hidden" />
-
-              {/* Desktop: menu button (right) + tagline */}
-              <div className="hidden md:flex items-center gap-4">
-                <div className="hidden md:block">
-                  <ToolMenuWrapper />
-                </div>
-                <div className="hidden md:flex items-center h-10">
-                  <span className="text-sm text-muted leading-none whitespace-nowrap">
-                    Private · Local-first · Free
-                  </span>
-                </div>
-              </div>
+              {/* Desktop nav */}
+              <DesktopToolsNav />
             </div>
           </header>
+
+          {/* Sidebar controller for hamburger */}
+          <ToolMenuWrapper />
 
           {/* Main content */}
           <main className="mx-auto container-wrap px-4 py-8 flex-1">
@@ -230,7 +224,7 @@ export default function RootLayout({
           {/* Multiplex above footer on tool pages */}
           <FooterMultiplex />
 
-          {/* Neutral footer (no brand gradient) */}
+          {/* Neutral footer */}
           <footer className="border-t border-line bg-[hsl(var(--card))]">
             <div className="mx-auto container-wrap px-4 py-5 text-sm flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
               <div className="text-muted">
@@ -239,7 +233,10 @@ export default function RootLayout({
               </div>
               <div className="flex items-center gap-4 h-10">
                 <nav className="flex items-center gap-4 leading-none">
-                  <Link href="/privacy" className="hover:underline leading-none">
+                  <Link
+                    href="/privacy"
+                    className="hover:underline leading-none"
+                  >
                     Privacy
                   </Link>
                   <Link href="/terms" className="hover:underline leading-none">

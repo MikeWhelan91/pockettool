@@ -22,20 +22,23 @@ export default function ToolMenuWrapper() {
   return (
     <>
       {/* Hamburger (fixed, compact) */}
-      <button
-        onClick={() => setOpen(true)}
-        aria-label="Open menu"
-        className="icon-btn fixed z-40 top-3 left-3"
-      >
-        <svg
-          width="20" height="20" viewBox="0 0 24 24" fill="none"
-          aria-hidden="true"
-        >
-          <path d="M4 7h16M4 12h16M4 17h16"
-                stroke="currentColor" strokeWidth="1.8"
-                strokeLinecap="round" />
-        </svg>
-      </button>
+     <button
+  onClick={() => setOpen(true)}
+  aria-label="Open menu"
+  className="icon-btn fixed z-40 top-3 left-3 md:hidden"
+>
+  <svg
+    width="20" height="20" viewBox="0 0 24 24" fill="none"
+    aria-hidden="true"
+  >
+    <path
+      d="M4 7h16M4 12h16M4 17h16"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+    />
+  </svg>
+</button>
 
       {open && (
         <div

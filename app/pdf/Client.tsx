@@ -2,6 +2,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { PDFDocument, StandardFonts, rgb, degrees } from "pdf-lib";
 import React from "react";
 
@@ -109,7 +110,9 @@ function dl(url: string, name: string) {
 }
 
 async function blobFromUint8(bytes: Uint8Array, name = "output.pdf") {
-  const blob = new Blob([bytes.buffer as ArrayBuffer], { type: "application/pdf" });
+  const blob = new Blob([bytes.buffer as ArrayBuffer], {
+    type: "application/pdf",
+  });
   const url = URL.createObjectURL(blob);
   return { blob, url, name };
 }
@@ -117,7 +120,10 @@ async function blobFromUint8(bytes: Uint8Array, name = "output.pdf") {
 // Parse page ranges like: "1,3,5-7" into zero-based indices
 function parsePageSelection(input: string, totalPages: number): number[] {
   const out = new Set<number>();
-  const parts = (input || "").split(",").map(s => s.trim()).filter(Boolean);
+  const parts = (input || "")
+    .split(",")
+    .map((s) => s.trim())
+    .filter(Boolean);
   for (const p of parts) {
     const m = p.match(/^(\d+)(?:-(\d+))?$/);
     if (!m) continue;
@@ -138,175 +144,358 @@ function ToolHelp({
   children: React.ReactNode;
 }) {
   const [open, setOpen] = React.useState(false);
+
+  // 🔄 react to ?tool= changes
+  const searchParams = useSearchParams();
+  const toolKey = searchParams.get("tool") as keyof typeof HELP | null;
+  const toolName = toolKey ? getToolLabel(toolKey) : null;
+
   React.useEffect(() => {
-    const mq = window.matchMedia('(min-width: 768px)');
+    const mq = window.matchMedia("(min-width: 768px)");
     const apply = () => setOpen(mq.matches);
     apply();
-    mq.addEventListener('change', apply);
-    return () => mq.removeEventListener('change', apply);
+    mq.addEventListener("change", apply);
+    return () => mq.removeEventListener("change", apply);
   }, []);
+
   return (
-    <details open={open} className="rounded-lg border border-neutral-800 bg-neutral-900/40 p-3">
-      <summary className="cursor-pointer text-sm font-medium">{title}</summary>
-      <div className="mt-2 text-sm text-muted space-y-2">{children}</div>
-    </details>
+    <div>
+      {toolName && <h2 className="text-xl font-bold mb-2">{toolName}</h2>}
+      <details
+        open={open}
+        className="rounded-lg border border-neutral-800 bg-neutral-900/40 p-3"
+      >
+        <summary className="cursor-pointer text-sm font-medium">
+          {title}
+        </summary>
+        <div className="mt-2 text-sm text-muted space-y-2">{children}</div>
+      </details>
+    </div>
   );
+}
+
+// Friendly label mapping
+function getToolLabel(key: keyof typeof HELP) {
+  const labels: Record<keyof typeof HELP, string> = {
+    reorder: "Reorder / Delete",
+    watermark: "Numbers / Header / Footer / Watermark",
+    imagesToPdf: "Images → PDF",
+    pdfToImages: "PDF → Images",
+    extractText: "Extract Text",
+    fillFlatten: "Fill & Flatten",
+    redact: "Redact",
+    split: "Split",
+    stampQR: "Stamp QR",
+    batchMerge: "Merge",
+    compress: "Compress",
+    rotate: "Rotate Pages",
+    sign: "Sign",
+    meta: "Edit Metadata",
+  };
+  return labels[key] || key;
 }
 
 /* --- Explanations (what/why/how) for each tool --- */
 const HELP = {
   reorder: (
     <>
-      <p><b>Why</b>: Fix wrong page order, rotate sideways scans, or remove pages before sharing.</p>
-      <p><b>How</b>:</p>
+      <p>
+        <b>Why</b>: Fix wrong page order, rotate sideways scans, or remove pages
+        before sharing.
+      </p>
+      <p>
+        <b>How</b>:
+      </p>
       <ol className="list-decimal pl-5 space-y-1">
         <li>Choose one or more PDFs.</li>
-        <li>Drag thumbnails to reorder. Right-click a page to delete. Press <kbd>R</kbd> to rotate the preview.</li>
-        <li>Click <b>Export PDF</b> to download the new document.</li>
+        <li>
+          Drag thumbnails to reorder. Right-click a page to delete. Press{" "}
+          <kbd>R</kbd> to rotate the preview.
+        </li>
+        <li>
+          Click <b>Export PDF</b> to download the new document.
+        </li>
       </ol>
-      <p><b>Notes</b>: Rotation in this tool is visual for arranging; the exported PDF preserves the chosen order.</p>
+      <p>
+        <b>Notes</b>: Rotation in this tool is visual for arranging; the
+        exported PDF preserves the chosen order.
+      </p>
     </>
   ),
   watermark: (
     <>
-      <p><b>Why</b>: Add page numbers or simple headers/footers; stamp a “CONFIDENTIAL/DRAFT” watermark for compliance.</p>
-      <p><b>How</b>:</p>
+      <p>
+        <b>Why</b>: Add page numbers or simple headers/footers; stamp a
+        “CONFIDENTIAL/DRAFT” watermark for compliance.
+      </p>
+      <p>
+        <b>How</b>:
+      </p>
       <ol className="list-decimal pl-5 space-y-1">
-        <li>Pick a PDF and a <b>Mode</b> (numbers, header, footer, watermark).</li>
+        <li>
+          Pick a PDF and a <b>Mode</b> (numbers, header, footer, watermark).
+        </li>
         <li>Set text/position, font size, and opacity.</li>
-        <li>Click <b>Apply & Download</b>.</li>
+        <li>
+          Click <b>Apply & Download</b>.
+        </li>
       </ol>
-      <p><b>Notes</b>: Page numbers default to <i>Bottom-Center</i>. “Watermark” places angled text in the center by default.</p>
+      <p>
+        <b>Notes</b>: Page numbers default to <i>Bottom-Center</i>. “Watermark”
+        places angled text in the center by default.
+      </p>
     </>
   ),
   imagesToPdf: (
     <>
-      <p><b>Why</b>: Turn photos/scans into a clean, single PDF (receipts, whiteboard shots, signed pages).</p>
-      <p><b>How</b>:</p>
+      <p>
+        <b>Why</b>: Turn photos/scans into a clean, single PDF (receipts,
+        whiteboard shots, signed pages).
+      </p>
+      <p>
+        <b>How</b>:
+      </p>
       <ol className="list-decimal pl-5 space-y-1">
         <li>Select JPG/PNG images (order usually follows the file picker).</li>
         <li>Choose page size and margins.</li>
-        <li>Click <b>Build PDF</b>.</li>
+        <li>
+          Click <b>Build PDF</b>.
+        </li>
       </ol>
-      <p><b>Tip</b>: If images are huge, shrinking them before import keeps the PDF small.</p>
+      <p>
+        <b>Tip</b>: If images are huge, shrinking them before import keeps the
+        PDF small.
+      </p>
     </>
   ),
   pdfToImages: (
     <>
-      <p><b>Why</b>: Export pages as PNGs for slides, annotation apps, or image-only sharing.</p>
-      <p><b>How</b>:</p>
+      <p>
+        <b>Why</b>: Export pages as PNGs for slides, annotation apps, or
+        image-only sharing.
+      </p>
+      <p>
+        <b>How</b>:
+      </p>
       <ol className="list-decimal pl-5 space-y-1">
-        <li>Pick a PDF; optionally enable <b>Download as .zip</b>.</li>
-        <li>Click <b>Convert</b>. Download images or a zip archive.</li>
+        <li>
+          Pick a PDF; optionally enable <b>Download as .zip</b>.
+        </li>
+        <li>
+          Click <b>Convert</b>. Download images or a zip archive.
+        </li>
       </ol>
-      <p><b>Note</b>: This renders pages (it’s not extracting embedded images one-by-one).</p>
+      <p>
+        <b>Note</b>: This renders pages (it’s not extracting embedded images
+        one-by-one).
+      </p>
     </>
   ),
   extractText: (
     <>
-      <p><b>Why</b>: Get selectable text for search, quoting, or indexing.</p>
-      <p><b>How</b>:</p>
+      <p>
+        <b>Why</b>: Get selectable text for search, quoting, or indexing.
+      </p>
+      <p>
+        <b>How</b>:
+      </p>
       <ol className="list-decimal pl-5 space-y-1">
-        <li>Choose a PDF and click <b>Extract</b>.</li>
-        <li>Copy from the output or <b>Download .txt</b>.</li>
+        <li>
+          Choose a PDF and click <b>Extract</b>.
+        </li>
+        <li>
+          Copy from the output or <b>Download .txt</b>.
+        </li>
       </ol>
-      <p><b>Limitations</b>: Scanned PDFs without OCR will produce little or no text.</p>
+      <p>
+        <b>Limitations</b>: Scanned PDFs without OCR will produce little or no
+        text.
+      </p>
     </>
   ),
   fillFlatten: (
     <>
-      <p><b>Why</b>: Fill form fields and lock the values so they can’t be edited.</p>
-      <p><b>How</b>:</p>
+      <p>
+        <b>Why</b>: Fill form fields and lock the values so they can’t be
+        edited.
+      </p>
+      <p>
+        <b>How</b>:
+      </p>
       <ol className="list-decimal pl-5 space-y-1">
-        <li>Open a PDF form, enter a field name and value, then click <b>Fill & Flatten</b>.</li>
+        <li>Open a PDF form that contains fields</li>
+        <li>You&apos;ll see all editable fields appear</li>
+        <li>Choose Copy Name next to the field you want to edit</li>
+        <li>Paste it into the Field Name</li>
+        <li>Enter your value into Value field</li>
+        <li>Click Apply Change</li>
+        <li>When you&apos;re finished click Export PDF </li>
       </ol>
-      <p><b>Notes</b>: You need the exact field name.</p>
+      
     </>
   ),
   redact: (
     <>
-      <p><b>Why</b>: Quickly hide sensitive content before sharing.</p>
-      <p><b>How</b>:</p>
+      <p>
+        <b>Why</b>: Quickly hide sensitive content before sharing.
+      </p>
+      <p>
+        <b>How</b>:
+      </p>
       <ol className="list-decimal pl-5 space-y-1">
-        <li>Open a PDF and choose <b>Redaction color</b> (black or white).</li>
-        <li>Pick a page from the dropdown, draw boxes over areas to hide. Switch pages and repeat — your boxes are kept in memory per page.</li>
-        <li>When you&apos;re done, click <b>Apply</b> once to burn all redactions into the correct pages and download.</li>
+        <li>
+          Open a PDF and choose <b>Redaction color</b> (black or white).
+        </li>
+        <li>
+          Pick a page from the dropdown, draw boxes over areas to hide. Switch
+          pages and repeat — your boxes are kept in memory per page.
+        </li>
+        <li>
+          When you&apos;re done, click <b>Apply</b> once to burn all redactions
+          into the correct pages and download.
+        </li>
       </ol>
-      <p><b>Note</b>: This is a fast on-device redaction that draws solid boxes into pages.</p>
+      <p>
+        <b>Note</b>: This is a fast on-device redaction that draws solid boxes
+        into pages.
+      </p>
     </>
   ),
   split: (
     <>
-      <p><b>Why</b>: Break large PDFs into smaller chunks for email or per-section delivery.</p>
-      <p><b>How</b>:</p>
+      <p>
+        <b>Why</b>: Break large PDFs into smaller chunks for email or
+        per-section delivery.
+      </p>
+      <p>
+        <b>How</b>:
+      </p>
       <ol className="list-decimal pl-5 space-y-1">
-        <li>Choose a PDF and a mode: <b>count</b> (every N pages), <b>max</b> (chunk size), or <b>bookmarks</b> (split by top-level outline).</li>
-        <li>Click <b>Split</b> to download parts.</li>
+        <li>
+          Choose a PDF and a mode: <b>count</b> (every N pages), <b>max</b>{" "}
+          (chunk size), or <b>bookmarks</b> (split by top-level outline).
+        </li>
+        <li>
+          Click <b>Split</b> to download parts.
+        </li>
       </ol>
-      <p><b>Note</b>: Bookmark split requires a PDF with a proper outline.</p>
+      <p>
+        <b>Note</b>: Bookmark split requires a PDF with a proper outline.
+      </p>
     </>
   ),
   stampQR: (
     <>
-      <p><b>Why</b>: Stamp a QR code (URL, ticket ID, signature link) onto every page.</p>
-      <p><b>How</b>:</p>
+      <p>
+        <b>Why</b>: Stamp a QR code (URL, ticket ID, signature link) onto every
+        page.
+      </p>
+      <p>
+        <b>How</b>:
+      </p>
       <ol className="list-decimal pl-5 space-y-1">
         <li>Open a PDF, enter the text/URL, choose size and corner.</li>
-        <li>Click <b>Stamp & Download</b>.</li>
+        <li>
+          Click <b>Stamp & Download</b>.
+        </li>
       </ol>
     </>
   ),
   batchMerge: (
     <>
-      <p><b>Why</b>: Combine multiple PDFs into one (e.g., report + appendix + invoices).</p>
-      <p><b>How</b>:</p>
+      <p>
+        <b>Why</b>: Combine multiple PDFs into one (e.g., report + appendix +
+        invoices).
+      </p>
+      <p>
+        <b>How</b>:
+      </p>
       <ol className="list-decimal pl-5 space-y-1">
         <li>Select PDFs in the order you want them merged.</li>
-        <li>Click <b>Merge & Download</b>.</li>
+        <li>
+          Click <b>Merge & Download</b>.
+        </li>
       </ol>
-      <p><b>Tip</b>: If you need to reorder after selection, use the Reorder tool on the merged file.</p>
+      <p>
+        <b>Tip</b>: If you need to reorder after selection, use the Reorder tool
+        on the merged file.
+      </p>
     </>
   ),
   compress: (
     <>
-      <p><b>Why</b>: Reduce file size for sharing, while keeping content intact.</p>
-      <p><b>How</b>:</p>
+      <p>
+        <b>Why</b>: Reduce file size for sharing, while keeping content intact.
+      </p>
+      <p>
+        <b>How</b>:
+      </p>
       <ol className="list-decimal pl-5 space-y-1">
-        <li>Select one or more PDFs and click <b>Optimize & Download</b>.</li>
+        <li>
+          Select one or more PDFs and click <b>Optimize & Download</b>.
+        </li>
       </ol>
-      <p><b>Note</b>: This is <i>lossless</i> structural optimization.</p>
+      <p>
+        <b>Note</b>: This is <i>lossless</i> structural optimization.
+      </p>
     </>
   ),
   rotate: (
     <>
-      <p><b>Why</b>: Permanently fix sideways/scanned pages across all or selected pages.</p>
-      <p><b>How</b>:</p>
+      <p>
+        <b>Why</b>: Permanently fix sideways/scanned pages across all or
+        selected pages.
+      </p>
+      <p>
+        <b>How</b>:
+      </p>
       <ol className="list-decimal pl-5 space-y-1">
         <li>Choose a PDF and a rotation (90° CW, 180°, 270° CW).</li>
-        <li>(Optional) Enter specific pages like <code>1,3,5-7</code> or leave blank for all.</li>
-        <li>Click <b>Rotate & Download</b>.</li>
+        <li>
+          (Optional) Enter specific pages like <code>1,3,5-7</code> or leave
+          blank for all.
+        </li>
+        <li>
+          Click <b>Rotate & Download</b>.
+        </li>
       </ol>
     </>
   ),
   sign: (
     <>
-      <p><b>Why</b>: Add a handwritten or image signature to your PDF.</p>
-      <p><b>How</b>:</p>
+      <p>
+        <b>Why</b>: Add a handwritten or image signature to your PDF.
+      </p>
+      <p>
+        <b>How</b>:
+      </p>
       <ol className="list-decimal pl-5 space-y-1">
         <li>Upload your PDF and a transparent PNG of your signature.</li>
         <li>Choose size, page(s), and corner position.</li>
-        <li>Click <b>Sign & Download</b>.</li>
+        <li>
+          Click <b>Sign & Download</b>.
+        </li>
       </ol>
-      <p><b>Note</b>: This places an image stamp (not a cryptographic digital signature).</p>
+      <p>
+        <b>Note</b>: This places an image stamp (not a cryptographic digital
+        signature).
+      </p>
     </>
   ),
   meta: (
     <>
-      <p><b>Why</b>: Edit Title/Author/Subject/Keywords for better document info/search.</p>
-      <p><b>How</b>:</p>
+      <p>
+        <b>Why</b>: Edit Title/Author/Subject/Keywords for better document
+        info/search.
+      </p>
+      <p>
+        <b>How</b>:
+      </p>
       <ol className="list-decimal pl-5 space-y-1">
         <li>Upload a PDF, fill in the fields you want to set.</li>
-        <li>Click <b>Save Metadata</b>.</li>
+        <li>
+          Click <b>Save Metadata</b>.
+        </li>
       </ol>
     </>
   ),
@@ -330,6 +519,26 @@ type ToolKey =
   | "sign"
   | "meta";
 
+// Valid tool keys for query param sync
+const ALL_TOOL_KEYS = [
+  "batchMerge",
+  "reorder",
+  "watermark",
+  "imagesToPdf",
+  "pdfToImages",
+  "extractText",
+  "fillFlatten",
+  "redact",
+  "split",
+  "stampQR",
+  "compress",
+  "rotate",
+] as const;
+type ToolKeyAll = (typeof ALL_TOOL_KEYS)[number];
+function isToolKey(x: string | null | undefined): x is ToolKeyAll {
+  return !!x && (ALL_TOOL_KEYS as readonly string[]).includes(x as any);
+}
+
 // replace your TOOL_LIST with this
 const TOOL_LIST: { key: ToolKey; label: string }[] = [
   { key: "batchMerge", label: "Merge" },
@@ -338,7 +547,7 @@ const TOOL_LIST: { key: ToolKey; label: string }[] = [
   { key: "imagesToPdf", label: "Images → PDF" },
   { key: "pdfToImages", label: "PDF → Images" },
   { key: "extractText", label: "Extract text" },
-  { key: "fillFlatten", label: "Fill forms & flatten" },
+  { key: "fillFlatten", label: "Fill forms" },
   { key: "redact", label: "Redact" },
   { key: "watermark", label: "Page numbers / Header / Footer / Watermark" },
   { key: "split", label: "Split" },
@@ -348,8 +557,27 @@ const TOOL_LIST: { key: ToolKey; label: string }[] = [
 ];
 
 export default function PDFStudio() {
-  const [tool, setTool] = useState<ToolKey>("batchMerge");
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const initialTool = (() => {
+    const t = searchParams.get("tool");
+    return isToolKey(t) ? (t as ToolKey) : "batchMerge";
+  })();
+  const [tool, setTool] = useState<ToolKey>(initialTool);
+  // Sync state when ?tool= changes (e.g., via navbar)
+  useEffect(() => {
+    const t = searchParams.get("tool");
+    if (isToolKey(t) && t !== tool) {
+      selectTool(t as ToolKey);
+    }
+  }, [searchParams]);
 
+  function selectTool(next: ToolKey) {
+    setTool(next);
+    const sp = new URLSearchParams(Array.from(searchParams.entries()));
+    sp.set("tool", next);
+    router.replace(`/pdf?${sp.toString()}`, { scroll: false });
+  }
   // --- Visible FAQ + JSON-LD (local to Client) ---
   const faq = [
     {
@@ -377,22 +605,28 @@ export default function PDFStudio() {
   const faqLd = {
     "@context": "https://schema.org",
     "@type": "FAQPage",
-    "mainEntity": faq.map(({ q, a }) => ({
+    mainEntity: faq.map(({ q, a }) => ({
       "@type": "Question",
-      "name": q,
-      "acceptedAnswer": { "@type": "Answer", "text": a }
-    }))
+      name: q,
+      acceptedAnswer: { "@type": "Answer", text: a },
+    })),
   };
 
   return (
-  /* IMPORTANT: remove row gaps on md+ so there’s no grid gap under the tool */
+    /* IMPORTANT: remove row gaps on md+ so there’s no grid gap under the tool */
     <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-[260px,1fr] gap-x-6 gap-y-6 md:gap-y-0 items-start">
       {/* Mobile tool selector */}
       <div className="md:hidden card p-3">
         <label className="block text-sm mb-1">Tool</label>
-        <select className="input w-full" value={tool} onChange={(e) => setTool(e.target.value as ToolKey)}>
+        <select
+          className="input w-full"
+          value={tool}
+          onChange={(e) => selectTool(e.target.value as ToolKey)}
+        >
           {TOOL_LIST.map((t) => (
-            <option key={t.key} value={t.key}>{t.label}</option>
+            <option key={t.key} value={t.key}>
+              {t.label}
+            </option>
           ))}
         </select>
       </div>
@@ -404,8 +638,12 @@ export default function PDFStudio() {
             <button
               key={t.key}
               className={`group text-left px-3 py-3 rounded-xl border border-[color:var(--line)] bg-[color:var(--bg)]/70 hover:bg-[color:var(--bg-lift)] transition-colors
-                ${tool === t.key ? "ring-2 ring-[color:var(--accent)] ring-offset-1 ring-offset-[color:var(--bg)] bg-[color:var(--bg-lift)] border-[color:var(--accent)]/40" : ""}`}
-              onClick={() => setTool(t.key)}
+                ${
+                  tool === t.key
+                    ? "ring-2 ring-[color:var(--accent)] ring-offset-1 ring-offset-[color:var(--bg)] bg-[color:var(--bg-lift)] border-[color:var(--accent)]/40"
+                    : ""
+                }`}
+              onClick={() => selectTool(t.key)}
               aria-current={tool === t.key ? "page" : undefined}
             >
               <div className="text-sm">{t.label}</div>
@@ -436,7 +674,9 @@ export default function PDFStudio() {
         {/* FAQ: sits directly under the tool, half width on md+ */}
         <section className="w-full md:w-full">
           <div className="card p-4 md:p-6">
-            <h2 className="text-lg md:text-xl font-semibold mb-2">PDF Studio — FAQ</h2>
+            <h2 className="text-lg md:text-xl font-semibold mb-2">
+              PDF Studio — FAQ
+            </h2>
             <div className="space-y-2">
               {faq.map(({ q, a }, i) => (
                 <details key={i} className="card--flat p-3">
@@ -448,7 +688,10 @@ export default function PDFStudio() {
           </div>
 
           {/* JSON-LD for rich results */}
-          <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqLd) }} />
+          <script
+            type="application/ld+json"
+            dangerouslySetInnerHTML={{ __html: JSON.stringify(faqLd) }}
+          />
         </section>
       </div>
     </div>
@@ -458,7 +701,9 @@ export default function PDFStudio() {
 
 function ToolReorder() {
   const [files, setFiles] = useState<File[]>([]);
-  const [thumbs, setThumbs] = useState<{ url: string; fileIndex: number; page: number }[]>([]);
+  const [thumbs, setThumbs] = useState<
+    { url: string; fileIndex: number; page: number }[]
+  >([]);
   const dragIndex = useRef<number | null>(null);
 
   useEffect(() => {
@@ -473,13 +718,20 @@ function ToolReorder() {
         const pages = Math.min(1000, doc.numPages);
         for (let p = 1; p <= pages; p++) {
           const page = await doc.getPage(p);
-          const vp = page.getViewport({ scale: 0.35 * (window.devicePixelRatio || 1) });
+          const vp = page.getViewport({
+            scale: 0.35 * (window.devicePixelRatio || 1),
+          });
           const canvas = document.createElement("canvas");
           canvas.width = vp.width;
           canvas.height = vp.height;
           const ctx = canvas.getContext("2d")!;
-          await page.render({ canvasContext: ctx, canvas, viewport: vp }).promise;
-          urls.push({ url: canvas.toDataURL("image/png"), fileIndex: fi, page: p - 1 });
+          await page.render({ canvasContext: ctx, canvas, viewport: vp })
+            .promise;
+          urls.push({
+            url: canvas.toDataURL("image/png"),
+            fileIndex: fi,
+            page: p - 1,
+          });
         }
       }
       setThumbs(urls);
@@ -498,7 +750,9 @@ function ToolReorder() {
     if (!files.length || !thumbs.length) return;
     const out = await PDFDocument.create();
     for (const t of thumbs) {
-      const src = await PDFDocument.load(await files[t.fileIndex].arrayBuffer());
+      const src = await PDFDocument.load(
+        await files[t.fileIndex].arrayBuffer()
+      );
       const [page] = await out.copyPages(src, [t.page]);
       out.addPage(page);
     }
@@ -520,11 +774,14 @@ function ToolReorder() {
             accept="application/pdf"
             multiple
             className="input w-full"
-            onChange={(e) => e.target.files && setFiles(Array.from(e.target.files))}
+            onChange={(e) =>
+              e.target.files && setFiles(Array.from(e.target.files))
+            }
           />
         </div>
         <div className="text-sm text-muted">
-          Drag thumbnails to reorder; right-click to <b>delete</b>; <kbd>R</kbd> to rotate (visual only).
+          Drag thumbnails to reorder; right-click to <b>delete</b>; <kbd>R</kbd>{" "}
+          to rotate (visual only).
         </div>
       </div>
 
@@ -535,7 +792,9 @@ function ToolReorder() {
             draggable
             onDragStart={() => (dragIndex.current = i)}
             onDragOver={(e) => e.preventDefault()}
-            onDrop={() => dragIndex.current !== null && onDrop(dragIndex.current, i)}
+            onDrop={() =>
+              dragIndex.current !== null && onDrop(dragIndex.current, i)
+            }
             onContextMenu={(e) => {
               e.preventDefault();
               setThumbs((a) => a.filter((_, idx) => idx !== i));
@@ -594,7 +853,13 @@ function ToolRotate() {
           className="input"
           onChange={(e) => setFile(e.target.files?.[0] ?? null)}
         />
-        <select className="input" value={angle} onChange={(e) => setAngle(parseInt(e.target.value, 10) as 90 | 180 | 270)}>
+        <select
+          className="input"
+          value={angle}
+          onChange={(e) =>
+            setAngle(parseInt(e.target.value, 10) as 90 | 180 | 270)
+          }
+        >
           <option value={90}>Rotate 90° CW</option>
           <option value={180}>Rotate 180°</option>
           <option value={270}>Rotate 270° CW</option>
@@ -607,7 +872,9 @@ function ToolRotate() {
         />
       </div>
 
-      <button className="btn" onClick={run} disabled={!file}>Rotate & Download</button>
+      <button className="btn" onClick={run} disabled={!file}>
+        Rotate & Download
+      </button>
     </div>
   );
 }
@@ -617,12 +884,14 @@ function ToolRotate() {
 function ToolWatermark() {
   const [file, setFile] = useState<File | null>(null);
 
-  const [mode, setMode] =
-    useState<"numbers" | "header" | "footer" | "watermark">("numbers");
+  const [mode, setMode] = useState<
+    "numbers" | "header" | "footer" | "watermark"
+  >("numbers");
 
   const [text, setText] = useState<string>("CONFIDENTIAL");
-  const [pos, setPos] =
-    useState<"tl" | "tc" | "tr" | "bl" | "bc" | "br" | "center">("bc");
+  const [pos, setPos] = useState<
+    "tl" | "tc" | "tr" | "bl" | "bc" | "br" | "center"
+  >("bc");
   const [opacity, setOpacity] = useState<number>(30);
   const [size, setSize] = useState<number>(12);
 
@@ -649,22 +918,43 @@ function ToolWatermark() {
       let content = text;
       if (mode === "numbers") content = `${idx + 1} / ${pages.length}`;
 
-      const effectivePos =
-        mode === "numbers" && pos === "center" ? "bc" : pos;
+      const effectivePos = mode === "numbers" && pos === "center" ? "bc" : pos;
 
       switch (effectivePos) {
-        case "tl": x = pad; y = height - pad; break;
-        case "tc": x = width / 2; y = height - pad; break;
-        case "tr": x = width - pad; y = height - pad; break;
-        case "bl": x = pad; y = pad; break;
-        case "bc": x = width / 2; y = pad; break;
-        case "br": x = width - pad; y = pad; break;
-        case "center": x = width / 2; y = height / 2; break;
+        case "tl":
+          x = pad;
+          y = height - pad;
+          break;
+        case "tc":
+          x = width / 2;
+          y = height - pad;
+          break;
+        case "tr":
+          x = width - pad;
+          y = height - pad;
+          break;
+        case "bl":
+          x = pad;
+          y = pad;
+          break;
+        case "bc":
+          x = width / 2;
+          y = pad;
+          break;
+        case "br":
+          x = width - pad;
+          y = pad;
+          break;
+        case "center":
+          x = width / 2;
+          y = height / 2;
+          break;
       }
 
       const w = font.widthOfTextAtSize(content, size);
       let drawX = x;
-      if (effectivePos.endsWith("c") || effectivePos === "center") drawX = x - w / 2;
+      if (effectivePos.endsWith("c") || effectivePos === "center")
+        drawX = x - w / 2;
       if (effectivePos.endsWith("r")) drawX = x - w;
 
       p.drawText(content, {
@@ -747,7 +1037,8 @@ function ToolWatermark() {
 
       {mode === "numbers" && (
         <div className="text-sm text-muted">
-          Page numbers default to <b>Bottom-Center</b>. Choose another position above if you like.
+          Page numbers default to <b>Bottom-Center</b>. Choose another position
+          above if you like.
         </div>
       )}
 
@@ -796,10 +1087,15 @@ function ToolImagesToPdf() {
     for (const img of images) {
       const bytes = new Uint8Array(await img.arrayBuffer());
       const isPng = img.type.includes("png");
-      const embedded = isPng ? await doc.embedPng(bytes) : await doc.embedJpg(bytes);
+      const embedded = isPng
+        ? await doc.embedPng(bytes)
+        : await doc.embedJpg(bytes);
       const [w, h] = pageSize === "A4" ? [595.28, 841.89] : [612, 792];
       const page = doc.addPage([w, h]);
-      const scale = Math.min((w - margin * 2) / embedded.width, (h - margin * 2) / embedded.height);
+      const scale = Math.min(
+        (w - margin * 2) / embedded.width,
+        (h - margin * 2) / embedded.height
+      );
       const dw = embedded.width * scale;
       const dh = embedded.height * scale;
       const x = (w - dw) / 2;
@@ -824,13 +1120,19 @@ function ToolImagesToPdf() {
             accept="image/png,image/jpeg"
             multiple
             className="input mt-1"
-            onChange={(e) => setImages(e.target.files ? Array.from(e.target.files) : [])}
+            onChange={(e) =>
+              setImages(e.target.files ? Array.from(e.target.files) : [])
+            }
           />
         </label>
         <div className="grid grid-cols-2 gap-3">
           <label className="block">
             <span className="text-sm">Page</span>
-            <select className="input mt-1" value={pageSize} onChange={(e) => setPageSize(e.target.value as any)}>
+            <select
+              className="input mt-1"
+              value={pageSize}
+              onChange={(e) => setPageSize(e.target.value as any)}
+            >
               <option value="A4">A4</option>
               <option value="Letter">Letter</option>
             </select>
@@ -882,9 +1184,12 @@ function ToolPdfToImages() {
 
     if (asZip) {
       const JSZip = await loadJSZip();
-      if (!JSZip) return alert("Install jszip to enable Zip export: npm i jszip");
+      if (!JSZip)
+        return alert("Install jszip to enable Zip export: npm i jszip");
       const zip = new JSZip();
-      urls.forEach((u, idx) => zip.file(`page-${idx + 1}.png`, u.split(",")[1], { base64: true }));
+      urls.forEach((u, idx) =>
+        zip.file(`page-${idx + 1}.png`, u.split(",")[1], { base64: true })
+      );
       const blob = await zip.generateAsync({ type: "blob" });
       const url = URL.createObjectURL(blob);
       dl(url, "pages.zip");
@@ -901,10 +1206,19 @@ function ToolPdfToImages() {
       <div className="grid md:grid-cols-2 gap-3">
         <label className="block">
           <span className="text-sm">PDF file</span>
-          <input type="file" accept="application/pdf" className="input mt-1" onChange={(e) => setFile(e.target.files?.[0] ?? null)} />
+          <input
+            type="file"
+            accept="application/pdf"
+            className="input mt-1"
+            onChange={(e) => setFile(e.target.files?.[0] ?? null)}
+          />
         </label>
         <label className="inline-flex items-center gap-2">
-          <input type="checkbox" checked={asZip} onChange={(e) => setAsZip(e.target.checked)} />
+          <input
+            type="checkbox"
+            checked={asZip}
+            onChange={(e) => setAsZip(e.target.checked)}
+          />
           Download as .zip
         </label>
       </div>
@@ -915,7 +1229,12 @@ function ToolPdfToImages() {
       {pngs.length > 0 && (
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
           {pngs.map((u, i) => (
-            <a key={i} href={u} download={`page-${i + 1}.png`} className="border rounded overflow-hidden block">
+            <a
+              key={i}
+              href={u}
+              download={`page-${i + 1}.png`}
+              className="border rounded overflow-hidden block"
+            >
               <img src={u} alt={`page ${i + 1}`} />
             </a>
           ))}
@@ -934,12 +1253,15 @@ function ToolExtractText() {
   const run = async () => {
     if (!file) return;
     const pdfjs = await loadPdfJs();
-    const doc = await pdfjs.getDocument({ data: await file.arrayBuffer() }).promise;
+    const doc = await pdfjs.getDocument({ data: await file.arrayBuffer() })
+      .promise;
     let buf = "";
     for (let i = 1; i <= doc.numPages; i++) {
       const page = await doc.getPage(i);
       const tc = await page.getTextContent();
-      const line = (tc.items as any[]).map((it: any) => ("str" in it ? it.str : "")).join("");
+      const line = (tc.items as any[])
+        .map((it: any) => ("str" in it ? it.str : ""))
+        .join("");
       buf += line + "\n\n";
     }
     setOut(buf.trim());
@@ -951,7 +1273,12 @@ function ToolExtractText() {
       <ToolHelp>{HELP.extractText}</ToolHelp>
 
       <div className="grid md:grid-cols-2 gap-3">
-        <input type="file" accept="application/pdf" className="input" onChange={(e) => setFile(e.target.files?.[0] ?? null)} />
+        <input
+          type="file"
+          accept="application/pdf"
+          className="input"
+          onChange={(e) => setFile(e.target.files?.[0] ?? null)}
+        />
         <button className="btn" onClick={run} disabled={!file}>
           Extract
         </button>
@@ -961,7 +1288,9 @@ function ToolExtractText() {
         <button
           className="btn-ghost"
           onClick={() => {
-            const url = URL.createObjectURL(new Blob([out], { type: "text/plain" }));
+            const url = URL.createObjectURL(
+              new Blob([out], { type: "text/plain" })
+            );
             dl(url, "text.txt");
           }}
         >
@@ -1062,7 +1391,9 @@ function ToolFillFlatten() {
     }
   }
 
-  function parseBulk(text: string): Record<string, string | boolean | string[]> {
+  function parseBulk(
+    text: string
+  ): Record<string, string | boolean | string[]> {
     // Try JSON first
     try {
       const obj = JSON.parse(text);
@@ -1082,7 +1413,10 @@ function ToolFillFlatten() {
         if (/^(true|false)$/i.test(raw)) {
           out[key] = /^true$/i.test(raw);
         } else if (raw.includes(",")) {
-          out[key] = raw.split(",").map((x) => x.trim()).filter(Boolean);
+          out[key] = raw
+            .split(",")
+            .map((x) => x.trim())
+            .filter(Boolean);
         } else {
           out[key] = raw;
         }
@@ -1096,7 +1430,10 @@ function ToolFillFlatten() {
         field.setText(String(val ?? ""));
         return true;
       }
-      if (typeof field.check === "function" || typeof field.uncheck === "function") {
+      if (
+        typeof field.check === "function" ||
+        typeof field.uncheck === "function"
+      ) {
         const truthy =
           typeof val === "boolean"
             ? val
@@ -1124,7 +1461,9 @@ function ToolFillFlatten() {
       try {
         field = f.getField(k);
       } catch {
-        alert(`Field "${k}" not found. Click "List fields" first to see names.`);
+        alert(
+          `Field "${k}" not found. Click "List fields" first to see names.`
+        );
         return;
       }
       if (!applyValueToField(field, v)) {
@@ -1206,7 +1545,10 @@ function ToolFillFlatten() {
       }
     }
     const bytes = await working.save({ useObjectStreams: true });
-    const { url } = await blobFromUint8(bytes, flatten ? "filled.pdf" : "filled-editable.pdf");
+    const { url } = await blobFromUint8(
+      bytes,
+      flatten ? "filled.pdf" : "filled-editable.pdf"
+    );
     dl(url, flatten ? "filled.pdf" : "filled-editable.pdf");
     trackPdfAction("fill_flatten_export");
   }
@@ -1214,17 +1556,18 @@ function ToolFillFlatten() {
   function downloadCSV() {
     const rows = [["name", "type", "value"]];
     fields.forEach((f) => rows.push([f.name, f.type, f.value ?? ""]));
-    const csv = rows.map((r) =>
-      r.map((c) => `"${String(c).replace(/"/g, '""')}"`).join(",")
-    ).join("\n");
+    const csv = rows
+      .map((r) => r.map((c) => `"${String(c).replace(/"/g, '""')}"`).join(","))
+      .join("\n");
     const url = URL.createObjectURL(new Blob([csv], { type: "text/csv" }));
     dl(url, "pdf-form-fields.csv");
   }
 
   function preloadBulkFromTable() {
     const s = q.trim().toLowerCase();
-    const list = (s ? fields.filter(f => f.name.toLowerCase().includes(s)) : fields)
-      .map((f) => `${f.name}=${f.value ?? ""}`);
+    const list = (
+      s ? fields.filter((f) => f.name.toLowerCase().includes(s)) : fields
+    ).map((f) => `${f.name}=${f.value ?? ""}`);
     setBulk(list.join("\n"));
   }
 
@@ -1271,7 +1614,11 @@ function ToolFillFlatten() {
           Flatten on export
         </label>
         <div className="flex gap-2">
-          <button className="btn-ghost" onClick={revertAll} disabled={!origBytes || busy}>
+          <button
+            className="btn-ghost"
+            onClick={revertAll}
+            disabled={!origBytes || busy}
+          >
             Revert
           </button>
           <button className="btn" onClick={exportPdf} disabled={!doc || busy}>
@@ -1374,14 +1721,20 @@ function ToolFillFlatten() {
           value={v}
           onChange={(e) => setV(e.target.value)}
         />
-        <button className="btn" onClick={fillSingle} disabled={!doc || !k || busy}>
+        <button
+          className="btn"
+          onClick={fillSingle}
+          disabled={!doc || !k || busy}
+        >
           {busy ? "Working…" : "Apply change"}
         </button>
       </div>
 
       {/* Bulk fill */}
       <div className="grid gap-2">
-        <label className="text-sm font-medium">Bulk fill (applies to current PDF in memory)</label>
+        <label className="text-sm font-medium">
+          Bulk fill (applies to current PDF in memory)
+        </label>
         <textarea
           className="input h-40 font-mono"
           placeholder={`JSON or KEY=VALUE per line
@@ -1397,7 +1750,11 @@ Interests=Reading, Music`}
           <button className="btn" onClick={fillBulk} disabled={!doc || busy}>
             {busy ? "Working…" : "Apply bulk changes"}
           </button>
-          <button className="btn-ghost" onClick={() => setBulk("")} disabled={busy}>
+          <button
+            className="btn-ghost"
+            onClick={() => setBulk("")}
+            disabled={busy}
+          >
             Clear
           </button>
           <button
@@ -1413,7 +1770,6 @@ Interests=Reading, Music`}
     </div>
   );
 }
-
 
 /* -------------------- Tool: Redact (multi-page memory) -------------------- */
 
@@ -1434,15 +1790,17 @@ function ToolRedact() {
   >({});
 
   // Canvas dims per page (for PDF coord mapping)
-  const [dimsByPage, setDimsByPage] = React.useState<Record<number, { cw: number; ch: number }>>(
-    {}
-  );
+  const [dimsByPage, setDimsByPage] = React.useState<
+    Record<number, { cw: number; ch: number }>
+  >({});
 
   // Preloaded base images per page (avoid async on drag)
   const imgElByPage = React.useRef<Record<number, HTMLImageElement>>({});
 
   const drawing = React.useRef<{ x: number; y: number } | null>(null);
-  const [redactColor, setRedactColor] = React.useState<"black" | "white">("black");
+  const [redactColor, setRedactColor] = React.useState<"black" | "white">(
+    "black"
+  );
   const scale = 1.3;
 
   async function loadPdfDoc() {
@@ -1450,13 +1808,16 @@ function ToolRedact() {
     return pdfjs.getDocument({ data: await file!.arrayBuffer() }).promise;
   }
 
-  async function rasterizePageToImageEl(p: any): Promise<{ img: HTMLImageElement; w: number; h: number }> {
+  async function rasterizePageToImageEl(
+    p: any
+  ): Promise<{ img: HTMLImageElement; w: number; h: number }> {
     const vp = p.getViewport({ scale });
     const off = document.createElement("canvas");
     off.width = vp.width;
     off.height = vp.height;
     const offctx = off.getContext("2d")!;
-    await p.render({ canvasContext: offctx, canvas: off, viewport: vp }).promise;
+    await p.render({ canvasContext: offctx, canvas: off, viewport: vp })
+      .promise;
 
     const img = new Image();
     img.src = off.toDataURL("image/png");
@@ -1480,14 +1841,22 @@ function ToolRedact() {
     ctx.drawImage(base, 0, 0);
 
     const list = rectsByPage[idx] || [];
-    ctx.fillStyle = redactColor === "black" ? "rgba(0,0,0,0.35)" : "rgba(255,255,255,0.5)";
-    ctx.strokeStyle = redactColor === "black" ? "rgba(255,255,255,0.6)" : "rgba(0,0,0,0.6)";
+    ctx.fillStyle =
+      redactColor === "black" ? "rgba(0,0,0,0.35)" : "rgba(255,255,255,0.5)";
+    ctx.strokeStyle =
+      redactColor === "black" ? "rgba(255,255,255,0.6)" : "rgba(0,0,0,0.6)";
     ctx.lineWidth = 1;
-    list.forEach((r) => { ctx.fillRect(r.x, r.y, r.w, r.h); ctx.strokeRect(r.x, r.y, r.w, r.h); });
+    list.forEach((r) => {
+      ctx.fillRect(r.x, r.y, r.w, r.h);
+      ctx.strokeRect(r.x, r.y, r.w, r.h);
+    });
   }
 
   // Redraw with optional live rect while dragging
-  function redraw(live?: { x: number; y: number; w: number; h: number }, idx = pageIndex) {
+  function redraw(
+    live?: { x: number; y: number; w: number; h: number },
+    idx = pageIndex
+  ) {
     const canvas = canvasRef.current!;
     const base = imgElByPage.current[idx];
     const dims = dimsByPage[idx];
@@ -1502,11 +1871,19 @@ function ToolRedact() {
     ctx.drawImage(base, 0, 0);
 
     const list = rectsByPage[idx] || [];
-    ctx.fillStyle = redactColor === "black" ? "rgba(0,0,0,0.35)" : "rgba(255,255,255,0.5)";
-    ctx.strokeStyle = redactColor === "black" ? "rgba(255,255,255,0.6)" : "rgba(0,0,0,0.6)";
+    ctx.fillStyle =
+      redactColor === "black" ? "rgba(0,0,0,0.35)" : "rgba(255,255,255,0.5)";
+    ctx.strokeStyle =
+      redactColor === "black" ? "rgba(255,255,255,0.6)" : "rgba(0,0,0,0.6)";
     ctx.lineWidth = 1;
-    list.forEach((r) => { ctx.fillRect(r.x, r.y, r.w, r.h); ctx.strokeRect(r.x, r.y, r.w, r.h); });
-    if (live) { ctx.fillRect(live.x, live.y, live.w, live.h); ctx.strokeRect(live.x, live.y, live.w, live.h); }
+    list.forEach((r) => {
+      ctx.fillRect(r.x, r.y, r.w, r.h);
+      ctx.strokeRect(r.x, r.y, r.w, r.h);
+    });
+    if (live) {
+      ctx.fillRect(live.x, live.y, live.w, live.h);
+      ctx.strokeRect(live.x, live.y, live.w, live.h);
+    }
   }
 
   // Load & paint a specific page (immediate first paint)
@@ -1531,10 +1908,17 @@ function ToolRedact() {
         ctx.drawImage(img, 0, 0);
         // draw any existing rects
         const list = rectsByPage[idx] || [];
-        ctx.fillStyle = redactColor === "black" ? "rgba(0,0,0,0.35)" : "rgba(255,255,255,0.5)";
-        ctx.strokeStyle = redactColor === "black" ? "rgba(255,255,255,0.6)" : "rgba(0,0,0,0.6)";
+        ctx.fillStyle =
+          redactColor === "black"
+            ? "rgba(0,0,0,0.35)"
+            : "rgba(255,255,255,0.5)";
+        ctx.strokeStyle =
+          redactColor === "black" ? "rgba(255,255,255,0.6)" : "rgba(0,0,0,0.6)";
         ctx.lineWidth = 1;
-        list.forEach((r) => { ctx.fillRect(r.x, r.y, r.w, r.h); ctx.strokeRect(r.x, r.y, r.w, r.h); });
+        list.forEach((r) => {
+          ctx.fillRect(r.x, r.y, r.w, r.h);
+          ctx.strokeRect(r.x, r.y, r.w, r.h);
+        });
       }
       return;
     }
@@ -1548,7 +1932,10 @@ function ToolRedact() {
     const rect = canvas.getBoundingClientRect();
     const scaleX = canvas.width / rect.width;
     const scaleY = canvas.height / rect.height;
-    return { x: (e.clientX - rect.left) * scaleX, y: (e.clientY - rect.top) * scaleY };
+    return {
+      x: (e.clientX - rect.left) * scaleX,
+      y: (e.clientY - rect.top) * scaleY,
+    };
   }
 
   function onMouseDown(e: React.MouseEvent) {
@@ -1669,7 +2056,9 @@ function ToolRedact() {
               <button
                 key={c}
                 type="button"
-                className={`seg-btn ${redactColor === c ? "seg-btn--active" : ""}`}
+                className={`seg-btn ${
+                  redactColor === c ? "seg-btn--active" : ""
+                }`}
                 onClick={() => setRedactColor(c)}
               >
                 {c}
@@ -1686,14 +2075,22 @@ function ToolRedact() {
             disabled={!file || pageCount === 0}
           >
             {Array.from({ length: pageCount || 1 }, (_, i) => (
-              <option key={i} value={i}>{i + 1}</option>
+              <option key={i} value={i}>
+                {i + 1}
+              </option>
             ))}
           </select>
         </div>
         <div className="flex gap-2">
-          <button className="btn-ghost" onClick={clearBoxes} disabled={!file}>Clear boxes</button>
-          <button className="btn-ghost" onClick={clearAll} disabled={!file}>Clear all</button>
-          <button className="btn" onClick={apply} disabled={!file}>Apply</button>
+          <button className="btn-ghost" onClick={clearBoxes} disabled={!file}>
+            Clear boxes
+          </button>
+          <button className="btn-ghost" onClick={clearAll} disabled={!file}>
+            Clear all
+          </button>
+          <button className="btn" onClick={apply} disabled={!file}>
+            Apply
+          </button>
         </div>
       </div>
 
@@ -1708,12 +2105,12 @@ function ToolRedact() {
       </div>
 
       <p className="text-xs text-muted">
-        Draw on any page, switch pages and draw more. Apply once to burn all redactions at once.
+        Draw on any page, switch pages and draw more. Apply once to burn all
+        redactions at once.
       </p>
     </div>
   );
 }
-
 
 /* -------------------- Tool: Split (count / size / bookmarks) -------------------- */
 
@@ -1733,7 +2130,10 @@ function ToolSplit() {
       for (let start = 0; start < total; start += count) {
         const end = Math.min(total, start + count) - 1;
         const out = await PDFDocument.create();
-        const pages = await out.copyPages(src, Array.from({ length: end - start + 1 }, (_, i) => start + i));
+        const pages = await out.copyPages(
+          src,
+          Array.from({ length: end - start + 1 }, (_, i) => start + i)
+        );
         pages.forEach((p) => out.addPage(p));
         const bytes = await out.save({ useObjectStreams: true });
         const { url } = await blobFromUint8(bytes, `split-${++idx}.pdf`);
@@ -1748,7 +2148,10 @@ function ToolSplit() {
       for (let start = 0; start < total; start += maxPages) {
         const end = Math.min(total, start + maxPages) - 1;
         const out = await PDFDocument.create();
-        const pages = await out.copyPages(src, Array.from({ length: end - start + 1 }, (_, i) => start + i));
+        const pages = await out.copyPages(
+          src,
+          Array.from({ length: end - start + 1 }, (_, i) => start + i)
+        );
         pages.forEach((p) => out.addPage(p));
         const bytes = await out.save({ useObjectStreams: true });
         const { url } = await blobFromUint8(bytes, `chunk-${++idx}.pdf`);
@@ -1760,7 +2163,8 @@ function ToolSplit() {
 
     try {
       const pdfjs = await loadPdfJs();
-      const d = await pdfjs.getDocument({ data: await file.arrayBuffer() }).promise;
+      const d = await pdfjs.getDocument({ data: await file.arrayBuffer() })
+        .promise;
       const outline = await d.getOutline();
       if (!outline?.length) return alert("No bookmarks found in this PDF.");
 
@@ -1773,10 +2177,19 @@ function ToolSplit() {
         start = thisEnd + 1;
 
         const out = await PDFDocument.create();
-        const pages = await out.copyPages(src, Array.from({ length: thisEnd - thisStart + 1 }, (_, k) => thisStart + k));
+        const pages = await out.copyPages(
+          src,
+          Array.from(
+            { length: thisEnd - thisStart + 1 },
+            (_, k) => thisStart + k
+          )
+        );
         pages.forEach((p) => out.addPage(p));
         const bytes = await out.save({ useObjectStreams: true });
-        const safe = (o.title || `section-${i + 1}`).replace(/[^a-z0-9\- _]/gi, "_");
+        const safe = (o.title || `section-${i + 1}`).replace(
+          /[^a-z0-9\- _]/gi,
+          "_"
+        );
         const { url } = await blobFromUint8(bytes, `${safe}.pdf`);
         dl(url, `${safe}.pdf`);
       }
@@ -1791,19 +2204,44 @@ function ToolSplit() {
       <ToolHelp>{HELP.split}</ToolHelp>
 
       <div className="grid md:grid-cols-3 gap-3">
-        <input type="file" accept="application/pdf" className="input" onChange={(e) => setFile(e.target.files?.[0] ?? null)} />
+        <input
+          type="file"
+          accept="application/pdf"
+          className="input"
+          onChange={(e) => setFile(e.target.files?.[0] ?? null)}
+        />
         <div className="seg">
           {(["count", "max", "bookmarks"] as const).map((m) => (
-            <button key={m} className={`seg-btn ${mode === m ? "seg-btn--active" : ""}`} onClick={() => setMode(m)}>
+            <button
+              key={m}
+              className={`seg-btn ${mode === m ? "seg-btn--active" : ""}`}
+              onClick={() => setMode(m)}
+            >
               {m}
             </button>
           ))}
         </div>
         {mode === "count" && (
-          <input type="number" className="input" min={1} value={count} onChange={(e) => setCount(Math.max(1, parseInt(e.target.value || "10", 10)))} />
+          <input
+            type="number"
+            className="input"
+            min={1}
+            value={count}
+            onChange={(e) =>
+              setCount(Math.max(1, parseInt(e.target.value || "10", 10)))
+            }
+          />
         )}
         {mode === "max" && (
-          <input type="number" className="input" min={1} value={maxPages} onChange={(e) => setMaxPages(Math.max(1, parseInt(e.target.value || "25", 10)))} />
+          <input
+            type="number"
+            className="input"
+            min={1}
+            value={maxPages}
+            onChange={(e) =>
+              setMaxPages(Math.max(1, parseInt(e.target.value || "25", 10)))
+            }
+          />
         )}
       </div>
       <button className="btn" onClick={run} disabled={!file}>
@@ -1826,7 +2264,10 @@ function ToolStampQR() {
     const QRCode = await loadQRCode();
     if (!QRCode) return alert("Install qrcode to use this tool: npm i qrcode");
 
-    const dataUrl = await QRCode.toDataURL(text, { errorCorrectionLevel: "M", margin: 0 });
+    const dataUrl = await QRCode.toDataURL(text, {
+      errorCorrectionLevel: "M",
+      margin: 0,
+    });
     const src = await PDFDocument.load(await file.arrayBuffer());
     const png = await src.embedPng(await (await fetch(dataUrl)).arrayBuffer());
 
@@ -1835,10 +2276,22 @@ function ToolStampQR() {
       const pad = 16;
       let x = width - size - pad;
       let y = pad;
-      if (pos === "tl") { x = pad; y = height - size - pad; }
-      if (pos === "tr") { x = width - size - pad; y = height - size - pad; }
-      if (pos === "bl") { x = pad; y = pad; }
-      if (pos === "br") { x = width - size - pad; y = pad; }
+      if (pos === "tl") {
+        x = pad;
+        y = height - size - pad;
+      }
+      if (pos === "tr") {
+        x = width - size - pad;
+        y = height - size - pad;
+      }
+      if (pos === "bl") {
+        x = pad;
+        y = pad;
+      }
+      if (pos === "br") {
+        x = width - size - pad;
+        y = pad;
+      }
       p.drawImage(png, { x, y, width: size, height: size });
     });
 
@@ -1853,11 +2306,32 @@ function ToolStampQR() {
       <ToolHelp>{HELP.stampQR}</ToolHelp>
 
       <div className="grid md:grid-cols-3 gap-3">
-        <input type="file" accept="application/pdf" className="input" onChange={(e) => setFile(e.target.files?.[0] ?? null)} />
-        <input className="input" value={text} onChange={(e) => setText(e.target.value)} placeholder="Text / URL" />
+        <input
+          type="file"
+          accept="application/pdf"
+          className="input"
+          onChange={(e) => setFile(e.target.files?.[0] ?? null)}
+        />
+        <input
+          className="input"
+          value={text}
+          onChange={(e) => setText(e.target.value)}
+          placeholder="Text / URL"
+        />
         <div className="grid grid-cols-2 gap-3">
-          <input type="number" className="input" min={48} max={256} value={size} onChange={(e) => setSize(parseInt(e.target.value || "96", 10))} />
-          <select className="input" value={pos} onChange={(e) => setPos(e.target.value as any)}>
+          <input
+            type="number"
+            className="input"
+            min={48}
+            max={256}
+            value={size}
+            onChange={(e) => setSize(parseInt(e.target.value || "96", 10))}
+          />
+          <select
+            className="input"
+            value={pos}
+            onChange={(e) => setPos(e.target.value as any)}
+          >
             <option value="tl">Top-Left</option>
             <option value="tr">Top-Right</option>
             <option value="bl">Bottom-Left</option>
@@ -1900,7 +2374,9 @@ function ToolBatchMerge() {
         multiple
         accept="application/pdf"
         className="input"
-        onChange={(e) => setFiles(e.target.files ? Array.from(e.target.files) : [])}
+        onChange={(e) =>
+          setFiles(e.target.files ? Array.from(e.target.files) : [])
+        }
       />
       <button className="btn" onClick={run} disabled={!files.length}>
         Merge & Download
@@ -1942,7 +2418,10 @@ function ToolMetadata() {
     // Prefill fields from the picked PDF (if any)
     if (f) await readMetadata(f);
     else {
-      setTitle(""); setAuthor(""); setSubject(""); setKeywords("");
+      setTitle("");
+      setAuthor("");
+      setSubject("");
+      setKeywords("");
     }
   }
 
@@ -1993,7 +2472,10 @@ function ToolMetadata() {
           <button
             className="btn-ghost"
             onClick={() => {
-              setTitle(""); setAuthor(""); setSubject(""); setKeywords("");
+              setTitle("");
+              setAuthor("");
+              setSubject("");
+              setKeywords("");
             }}
             disabled={loading}
           >
@@ -2034,12 +2516,12 @@ function ToolMetadata() {
       </button>
 
       <p className="text-xs text-muted">
-        Note: This reads/writes the PDF Info dictionary (Title, Author, Subject, Keywords).
+        Note: This reads/writes the PDF Info dictionary (Title, Author, Subject,
+        Keywords).
       </p>
     </div>
   );
 }
-
 
 /* -------------------- Tool: Compress (lossless optimize) -------------------- */
 
@@ -2069,13 +2551,16 @@ function ToolCompress() {
         multiple
         accept="application/pdf"
         className="input"
-        onChange={(e) => setFiles(e.target.files ? Array.from(e.target.files) : [])}
+        onChange={(e) =>
+          setFiles(e.target.files ? Array.from(e.target.files) : [])
+        }
       />
       <button className="btn" onClick={run} disabled={!files.length}>
         Optimize & Download
       </button>
       <p className="text-xs text-muted">
-        Lossless structural optimize. Image-heavy PDFs may not shrink much without lossy re-encoding (kept off by design).
+        Lossless structural optimize. Image-heavy PDFs may not shrink much
+        without lossy re-encoding (kept off by design).
       </p>
     </div>
   );

@@ -131,7 +131,7 @@ export default function HomePage() {
         <div className="relative px-6 py-10 md:px-10 md:py-14 grid gap-8">
           <div className="grid gap-3 text-center">
             <span className="mx-auto inline-flex items-center gap-2 rounded-full border border-[hsl(var(--ring)/.4)] px-3 py-1 text-xs uppercase tracking-wide">
-              Powerful · Private · Free · No sign-up
+              Private · Free · No sign-up
             </span>
             <h1 className="text-[2.3rem] leading-tight font-semibold tracking-tight md:text-[2.8rem]">
               <span className="text-[hsl(var(--ring))]">Utilixy</span> Web Tools

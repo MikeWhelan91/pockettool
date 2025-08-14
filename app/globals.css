@@ -694,17 +694,34 @@ section[data-hero="pdf"] [class*="flex-wrap"][class*="gap-2"]{
   display: none !important;
 }
 
+/* If you added <section data-pdf> around ToolLayout (recommended) */
+[data-image] :is(header, .mx-auto, .container-wrap):has(~ .tool-panels) {
+  display: none !important;
+}
+
+
 /* Also handle the case where you didn't add data-pdf but the hero exists */
 :root main:has(section[data-hero="pdf"])
   :is(header, .mx-auto, .container-wrap):has(~ .tool-panels) {
   display: none !important;
 }
 
-
 /* Hide the ToolLayout heading/intro ONLY when the PDF hero is present */
 :root section.w-full:has(section[data-hero="pdf"]) > .mx-auto:first-child {
   display: none !important;
 }
+
+/* Hide it when the Image-Converter hero is present */
+:root section.w-full:has(section[data-hero="image"]) > .mx-auto:first-child {
+  display: none !important;
+
+  
+}
+/* Hide ToolLayout heading/intro when the Image-Converter wrapper has data-image */
+[data-image] > .mx-auto:first-child {
+  display: none !important;
+}
+
 /* === PDF: make the panels grid match the tool's layout === */
 /* Left column = 260px sidebar, right column = stage (1fr) */
 @media (min-width: 768px){
@@ -790,4 +807,22 @@ main:has(#seo-content) .tool-panels{
   #seo-content .card{
     max-width: 720px;                     /* tune if you want it wider/narrower */
   }
+}
+
+/* === Non-PDF tools (e.g. Image Converter): make SEO block full width === */
+@media (min-width: 768px){
+  :not([data-pdf]) .tool-panels > .seo-half{
+    grid-column: 1 / -1 !important;
+    margin-top: 0 !important;
+  }
+  :not([data-pdf]) #seo-content{
+    grid-column: 1 / -1 !important;
+    margin-top: 0 !important;
+  }
+}
+
+/* Hide the ToolLayout heading/intro on pages that render #seo-content
+   (PDF Studio, Image Converter, and any future tool with an FAQ block) */
+:root section.w-full:has(#seo-content) > .mx-auto:first-child {
+  display: none !important;
 }

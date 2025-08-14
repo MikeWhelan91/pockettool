@@ -14,15 +14,20 @@ export default function Hero() {
       <div className="relative z-10 grid md:grid-cols-12 gap-8 items-center">
         {/* left */}
         <div className="md:col-span-7">
-          <h1 className="text-4xl md:text-6xl font-semibold tracking-tight">PDF Studio</h1>
+          <h1 className="text-4xl md:text-6xl font-semibold tracking-tight">Image Studio</h1>
           <p className="mt-3 text-base md:text-lg text-muted max-w-prose">
-            Fast, private, and powerful PDF tools — right in your browser. No uploads, no limits.
+            Fast, private, and powerful image converter & resizer — right in your browser. No limits.
           </p>
           <div className="mt-5 flex flex-wrap gap-2">
-            <span className="rounded-full border border-[color:var(--line)]/70 px-3 py-1 text-xs">Private</span>
-            <span className="rounded-full border border-[color:var(--line)]/70 px-3 py-1 text-xs">Local-first</span>
-            <span className="rounded-full border border-[color:var(--line)]/70 px-3 py-1 text-xs">Free</span>
+            <span className="rounded-full border border-[color:var(--line)]/70 px-3 py-1 text-xs">PNG</span>
+            <span className="rounded-full border border-[color:var(--line)]/70 px-3 py-1 text-xs">JPEG</span>
+            <span className="rounded-full border border-[color:var(--line)]/70 px-3 py-1 text-xs">WEBP</span>
+            <span className="rounded-full border border-[color:var(--line)]/70 px-3 py-1 text-xs">AVIF</span>
+                        <span className="rounded-full border border-[color:var(--line)]/70 px-3 py-1 text-xs">Convert</span>
+            <span className="rounded-full border border-[color:var(--line)]/70 px-3 py-1 text-xs">Resize</span>
+            <span className="rounded-full border border-[color:var(--line)]/70 px-3 py-1 text-xs">Set Quality</span>
           </div>
+
         </div>
 
         {/* right quick-cards */}

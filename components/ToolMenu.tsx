@@ -6,9 +6,9 @@ import Ad from '@/components/ads/Ad';
 const tools = [
   { href: '/', label: 'Home' },
   { href: '/pdf', label: 'PDF Studio' },
+    { href: '/image-converter', label: 'Image Studio' },
   { href: '/random', label: 'Password & Random Generators' },
   { href: '/qr', label: 'Wi-Fi QR & QR Codes' },
-  { href: '/image-converter', label: 'Image Converter (JPG / PNG / WEBP + HEIC)' },
   { href: '/case-converter', label: 'Case Converter' },
   { href: '/format', label: 'JSON / YAML / XML Formatter' },
   { href: '/base64', label: 'Base64 Encoder/Decoder' },

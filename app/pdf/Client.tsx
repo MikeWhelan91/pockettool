@@ -210,7 +210,7 @@ const HELP = {
         <li>Choose a PDF and click <b>Extract</b>.</li>
         <li>Copy from the output or <b>Download .txt</b>.</li>
       </ol>
-      <p><b>Limitations</b>: Scanned PDFs without OCR will produce little or no text (we can add client-side OCR later if you’d like).</p>
+      <p><b>Limitations</b>: Scanned PDFs without OCR will produce little or no text.</p>
     </>
   ),
   fillFlatten: (
@@ -220,7 +220,7 @@ const HELP = {
       <ol className="list-decimal pl-5 space-y-1">
         <li>Open a PDF form, enter a field name and value, then click <b>Fill & Flatten</b>.</li>
       </ol>
-      <p><b>Notes</b>: You need the exact field name. We can add a “list fields” helper if that would help your workflow.</p>
+      <p><b>Notes</b>: You need the exact field name.</p>
     </>
   ),
   redact: (
@@ -232,7 +232,7 @@ const HELP = {
         <li>Pick a page from the dropdown, draw boxes over areas to hide. Switch pages and repeat — your boxes are kept in memory per page.</li>
         <li>When you&apos;re done, click <b>Apply</b> once to burn all redactions into the correct pages and download.</li>
       </ol>
-      <p><b>Note</b>: This is a fast on-device redaction that draws solid boxes into pages. For search-grade vector redaction (removing hidden text layer), we can add an advanced tool.</p>
+      <p><b>Note</b>: This is a fast on-device redaction that draws solid boxes into pages.</p>
     </>
   ),
   split: (
@@ -274,7 +274,7 @@ const HELP = {
       <ol className="list-decimal pl-5 space-y-1">
         <li>Select one or more PDFs and click <b>Optimize & Download</b>.</li>
       </ol>
-      <p><b>Note</b>: This is <i>lossless</i> structural optimization. For stronger shrinkage (image recompression/downsizing), we can add a “lossy” mode.</p>
+      <p><b>Note</b>: This is <i>lossless</i> structural optimization.</p>
     </>
   ),
   rotate: (

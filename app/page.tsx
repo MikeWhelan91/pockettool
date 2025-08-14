@@ -40,6 +40,11 @@ const tools = [
     desc: "Reorder, rotate, merge, split, numbers, watermark, extract, redact — locally.",
   },
   {
+    href: "/image-converter",
+    title: "Image Studio",
+    desc: "Convert HEIC/JPG/PNG/WebP/AVIF.",
+  },
+  {
     href: "/random",
     title: "Password Generator",
     desc: "Strong passwords, UUIDs, colors, lorem, slugs.",
@@ -48,11 +53,6 @@ const tools = [
     href: "/qr",
     title: "QR & Wi‑Fi",
     desc: "Create QR codes. Export PNG/SVG.",
-  },
-  {
-    href: "/image-converter",
-    title: "Image Converter",
-    desc: "HEIC → JPG/PNG/WebP. Local, private.",
   },
   {
     href: "/format",
@@ -98,42 +98,28 @@ export default function HomePage() {
         <div className="relative px-6 py-10 md:px-10 md:py-14 grid gap-8">
           <div className="grid gap-3 text-center">
             <span className="mx-auto inline-flex items-center gap-2 rounded-full border border-[hsl(var(--ring)/.4)] px-3 py-1 text-xs uppercase tracking-wide">
-              New · Powerful · Private
+              Powerful · Private · Free
             </span>
             <h1 className="text-[2.3rem] leading-tight font-semibold tracking-tight md:text-[2.8rem]">
-              Meet <span className="text-[hsl(var(--ring))]">PDF Studio</span>
+            <span className="text-[hsl(var(--ring))]">Utilixy</span> Web Tools
             </h1>
-            <div className="-mt-1 text-[1.1rem] md:text-[1.15rem] text-muted/90">
-              by{" "}
-              <a
-                href="https://utilixy.com"
-                target="_blank"
-                rel="noreferrer"
-                className="font-semibold text-[hsl(var(--text))] hover:underline underline-offset-4"
-              >
-                utilixy.com
-              </a>
-            </div>
+          
 
             <p className="mx-auto mt-2 text-[1.05rem] text-muted max-w-[70ch]">
-              Reorder, rotate, merge, split, add page numbers, headers/footers,
-              watermarks, extract text, convert images↔PDF, stamp QR, redact,
-              and optimize — <b>all in your browser</b>.
+             Edit, merge, split & convert PDFs, extract text, add watermarks & page numbers, optimize images (AVIF, PNG, JPEG, WebP) — <b>fast, private, and entirely in your browser, free forever.</b>
             </p>
             {/* CTAs */}
             <div className="mt-4 flex flex-wrap items-center justify-center gap-3">
               <Link href="/pdf" className="btn">
                 Open PDF Studio
               </Link>
-              <Link href="/qr" className="btn btn-ghost">
-                QR & Wi-Fi
+              <Link href="/image-converter" className="btn">
+                Open Image Studio
               </Link>
-              <a href="#tools" className="btn btn-ghost">
+              <a href="#tools" className="btn">
                 Browse all tools
               </a>
-              <span className="text-xs text-muted">
-                Private · Nothing uploaded
-              </span>
+          
             </div>
 
             {/* Mention other tools inline */}

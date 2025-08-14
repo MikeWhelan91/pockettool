@@ -215,7 +215,7 @@ export default function RootLayout({
                 </div>
                 <div className="hidden md:flex items-center h-10">
                   <span className="text-sm text-muted leading-none whitespace-nowrap">
-                    Private · Local-first · Nothing uploaded
+                    Private · Local-first · Free
                   </span>
                 </div>
               </div>

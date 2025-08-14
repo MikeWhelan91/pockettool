@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import ToolLayout from "@/components/ToolLayout";
 import Client from "./Client";
 import Ad from "@/components/ads/Ad";
+import Hero from "./Hero";               // (use your actual path)
+
 
 export const metadata: Metadata = {
   title: "Image Converter (PNG / JPEG / WEBP + HEIC) — Utilixy",
@@ -29,8 +31,15 @@ export default function Page() {
     <ToolLayout
       title="Image Converter"
       description="Convert images locally. Choose format, quality, and background for JPEG. Drag & drop multiple files."
+data-image      
+
     >
+        <Hero />
       <Client />
+
+   
+
+
 
     </ToolLayout>
   );

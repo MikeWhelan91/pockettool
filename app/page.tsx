@@ -5,7 +5,7 @@ import Ad from "@/components/ads/Ad"; // Multiplex wrapper
 export const metadata: Metadata = {
   title: "PDF Studio & Web Tools — Utilixy",
   description:
-    "Reorder, rotate, merge and split PDFs plus access quick tools like QR codes, image conversion and more — all local and private.",
+    "Reorder, rotate, merge and split PDFs plus access quick tools like QR codes, image conversion and more — all local, private and free. No sign-up, pop-ups or redirects.",
   keywords: [
     "PDF Studio",
     "web tools",
@@ -14,11 +14,15 @@ export const metadata: Metadata = {
     "JSON formatter",
     "random generators",
     "regex tester",
+    "free online tools",
+    "no sign up",
+    "no pop ups",
+    "no redirects",
   ],
   openGraph: {
     title: "PDF Studio & Web Tools — Utilixy",
     description:
-      "Reorder, rotate, merge and split PDFs plus access quick tools like QR codes, image conversion and more — all local and private.",
+      "Reorder, rotate, merge and split PDFs plus access quick tools like QR codes, image conversion and more — all local, private and free. No sign-up, pop-ups or redirects.",
     url: "/",
     siteName: "Utilixy",
     images: [{ url: "/icons/icon-512.png", width: 512, height: 512 }],
@@ -28,7 +32,7 @@ export const metadata: Metadata = {
     card: "summary",
     title: "PDF Studio & Web Tools — Utilixy",
     description:
-      "Reorder, rotate, merge and split PDFs plus access quick tools like QR codes, image conversion and more — all local and private.",
+      "Reorder, rotate, merge and split PDFs plus access quick tools like QR codes, image conversion and more — all local, private and free. No sign-up, pop-ups or redirects.",
     images: ["/icons/icon-512.png"],
   },
 };
@@ -81,6 +85,35 @@ const tools = [
   },
 ];
 
+const faq = [
+  {
+    q: "Is Utilixy free to use?",
+    a: "Yes. Every tool is 100% free with no hidden costs or subscriptions.",
+  },
+  {
+    q: "Do I need to create an account?",
+    a: "No sign-up or registration is required — just open a tool and start working.",
+  },
+  {
+    q: "Will I see pop-ups or be redirected?",
+    a: "No. Utilixy avoids intrusive pop-ups or redirects so you can stay focused.",
+  },
+  {
+    q: "Are my files uploaded or stored anywhere?",
+    a: "Everything runs locally in your browser. Your files never leave your device.",
+  },
+];
+
+const faqLd = {
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  mainEntity: faq.map(({ q, a }) => ({
+    "@type": "Question",
+    name: q,
+    acceptedAnswer: { "@type": "Answer", text: a },
+  })),
+};
+
 export default function HomePage() {
   return (
     <div className="grid gap-10">
@@ -98,15 +131,19 @@ export default function HomePage() {
         <div className="relative px-6 py-10 md:px-10 md:py-14 grid gap-8">
           <div className="grid gap-3 text-center">
             <span className="mx-auto inline-flex items-center gap-2 rounded-full border border-[hsl(var(--ring)/.4)] px-3 py-1 text-xs uppercase tracking-wide">
-              Powerful · Private · Free
+              Powerful · Private · Free · No sign-up
             </span>
             <h1 className="text-[2.3rem] leading-tight font-semibold tracking-tight md:text-[2.8rem]">
-            <span className="text-[hsl(var(--ring))]">Utilixy</span> Web Tools
+              <span className="text-[hsl(var(--ring))]">Utilixy</span> Web Tools
             </h1>
-          
 
             <p className="mx-auto mt-2 text-[1.05rem] text-muted max-w-[70ch]">
-             Edit, merge, split & convert PDFs, extract text, add watermarks & page numbers, optimize images (AVIF, PNG, JPEG, WebP) — <b>fast, private, and entirely in your browser, free forever.</b>
+              Edit, merge, split & convert PDFs, extract text, add watermarks &
+              page numbers, optimize images (AVIF, PNG, JPEG, WebP) —{" "}
+              <b>
+                fast, private, and entirely in your browser, free forever with
+                no sign-up, pop-ups, or redirects.
+              </b>
             </p>
             {/* CTAs */}
             <div className="mt-4 flex flex-wrap items-center justify-center gap-3">
@@ -119,7 +156,6 @@ export default function HomePage() {
               <a href="#tools" className="btn">
                 Browse all tools
               </a>
-          
             </div>
 
             {/* Mention other tools inline */}
@@ -223,6 +259,28 @@ export default function HomePage() {
           ))}
         </div>
       </section>
+
+      {/* FAQ for homepage */}
+      <section className="mt-10">
+        <div className="card p-4 md:p-6">
+          <h2 className="text-lg md:text-xl font-semibold mb-2">
+            Utilixy — FAQ
+          </h2>
+          <div className="space-y-2">
+            {faq.map(({ q, a }, i) => (
+              <details key={i} className="card--flat p-3">
+                <summary className="font-medium cursor-pointer">{q}</summary>
+                <div className="mt-2 text-sm text-muted">{a}</div>
+              </details>
+            ))}
+          </div>
+        </div>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(faqLd) }}
+        />
+      </section>
+
       {/* Homepage bottom ad: Multiplex, out of the way */}
       <section className="mt-10">
         <Ad slot="homeMultiplex" format="autorelaxed" minHeight={320} />

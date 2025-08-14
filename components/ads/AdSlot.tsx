@@ -27,13 +27,19 @@ export default function AdSlot({
 }: AdSlotProps) {
   const adRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    try {
-    ((window as any).adsbygoogle = (window as any).adsbygoogle || []).push({});
-    } catch (err) {
-      console.error("AdSense push error:", err);
-    }
-  }, []);
+useEffect(() => {
+  if (typeof window === "undefined") return;
+
+  try {
+    const w = window as any;
+    // Make sure it's an array before pushing
+    if (!Array.isArray(w.adsbygoogle)) w.adsbygoogle = [];
+    (w.adsbygoogle as any[]).push({});
+  } catch (err) {
+    console.error("AdSense push error:", err);
+  }
+}, []);
+
 
  const style: React.CSSProperties =
   width && height ? { display, width, height } : { display: "block" };

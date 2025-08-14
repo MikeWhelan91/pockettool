@@ -5,6 +5,72 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { PDFDocument, StandardFonts, rgb, degrees } from "pdf-lib";
 import React from "react";
 
+/* ---------------- Ads / Conversion helpers (Google Ads) ---------------- */
+// Per-action conversion tracking. Replace LABEL_* with your real conversion labels from Google Ads.
+// Example final send_to looks like: "AW-778841432/AbCdEfGhIjkLmNoP"
+type PdfAction =
+  | "merge"
+  | "reorder"
+  | "rotate"
+  | "numbers_header_footer_watermark"
+  | "images_to_pdf"
+  | "pdf_to_images"
+  | "extract_text"
+  | "fill_flatten_export"
+  | "redact_apply"
+  | "split"
+  | "stamp_qr"
+  | "edit_metadata"
+  | "compress";
+
+const ADS_CONVERSION_ID = "AW-778841432";
+// TODO: swap placeholder labels for real ones from Google Ads
+const ACTION_LABELS: Partial<Record<PdfAction, string>> = {
+  merge: "LABEL_MERGE",
+  reorder: "LABEL_REORDER",
+  rotate: "LABEL_ROTATE",
+  numbers_header_footer_watermark: "LABEL_ANNOTE",
+  images_to_pdf: "LABEL_IMG2PDF",
+  pdf_to_images: "LABEL_PDF2IMG",
+  extract_text: "LABEL_EXTRACT",
+  fill_flatten_export: "LABEL_FILLFLATTEN",
+  redact_apply: "LABEL_REDACT",
+  split: "LABEL_SPLIT",
+  stamp_qr: "LABEL_STAMPQR",
+  edit_metadata: "LABEL_EDITMETA",
+  compress: "LABEL_COMPRESS",
+};
+
+function safeGtagEvent(sendTo: string) {
+  try {
+    if (typeof window === "undefined") return;
+    const g = (window as any).gtag;
+    if (typeof g === "function") g("event", "conversion", { send_to: sendTo });
+  } catch {}
+}
+
+// De-dupe once per session per action (so a spammy user doesn't nuke your signal).
+function hasFired(action: PdfAction) {
+  try {
+    return sessionStorage.getItem(`uxy_conv_${action}`) === "1";
+  } catch {
+    return false;
+  }
+}
+function markFired(action: PdfAction) {
+  try {
+    sessionStorage.setItem(`uxy_conv_${action}`, "1");
+  } catch {}
+}
+
+function trackPdfAction(action: PdfAction) {
+  const label = ACTION_LABELS[action];
+  if (!label) return; // no label set yet; skip to avoid bad data
+  if (hasFired(action)) return;
+  safeGtagEvent(`${ADS_CONVERSION_ID}/${label}`);
+  markFired(action);
+}
+
 /* ---------------- Shared helpers ---------------- */
 
 async function loadPdfJs() {
@@ -439,6 +505,7 @@ function ToolReorder() {
     const bytes = await out.save({ useObjectStreams: true });
     const { url } = await blobFromUint8(bytes, "reordered.pdf");
     dl(url, "reordered.pdf");
+    trackPdfAction("reorder");
   };
 
   return (
@@ -513,6 +580,7 @@ function ToolRotate() {
     const bytes = await doc.save({ useObjectStreams: true });
     const { url } = await blobFromUint8(bytes, "rotated.pdf");
     dl(url, "rotated.pdf");
+    trackPdfAction("rotate");
   };
 
   return (
@@ -616,6 +684,7 @@ function ToolWatermark() {
     const bytes = await src.save({ useObjectStreams: true });
     const { url } = await blobFromUint8(bytes, `annotated.pdf`);
     dl(url, `annotated.pdf`);
+    trackPdfAction("numbers_header_footer_watermark");
   };
 
   return (
@@ -740,6 +809,7 @@ function ToolImagesToPdf() {
     const bytes = await doc.save({ useObjectStreams: true });
     const { url } = await blobFromUint8(bytes, "images.pdf");
     dl(url, "images.pdf");
+    trackPdfAction("images_to_pdf");
   };
 
   return (
@@ -819,6 +889,9 @@ function ToolPdfToImages() {
       const url = URL.createObjectURL(blob);
       dl(url, "pages.zip");
     }
+
+    // Track once conversion finished (regardless of zip vs individual)
+    trackPdfAction("pdf_to_images");
   };
 
   return (
@@ -870,6 +943,7 @@ function ToolExtractText() {
       buf += line + "\n\n";
     }
     setOut(buf.trim());
+    trackPdfAction("extract_text");
   };
 
   return (
@@ -1134,6 +1208,7 @@ function ToolFillFlatten() {
     const bytes = await working.save({ useObjectStreams: true });
     const { url } = await blobFromUint8(bytes, flatten ? "filled.pdf" : "filled-editable.pdf");
     dl(url, flatten ? "filled.pdf" : "filled-editable.pdf");
+    trackPdfAction("fill_flatten_export");
   }
 
   function downloadCSV() {
@@ -1548,6 +1623,7 @@ function ToolRedact() {
     const bytes = await src.save({ useObjectStreams: true });
     const { url } = await blobFromUint8(bytes, "redacted.pdf");
     dl(url, "redacted.pdf");
+    trackPdfAction("redact_apply");
   }
 
   // Initial paint when a file is chosen
@@ -1663,6 +1739,7 @@ function ToolSplit() {
         const { url } = await blobFromUint8(bytes, `split-${++idx}.pdf`);
         dl(url, `split-${idx}.pdf`);
       }
+      trackPdfAction("split");
       return;
     }
 
@@ -1677,6 +1754,7 @@ function ToolSplit() {
         const { url } = await blobFromUint8(bytes, `chunk-${++idx}.pdf`);
         dl(url, `chunk-${idx}.pdf`);
       }
+      trackPdfAction("split");
       return;
     }
 
@@ -1702,6 +1780,7 @@ function ToolSplit() {
         const { url } = await blobFromUint8(bytes, `${safe}.pdf`);
         dl(url, `${safe}.pdf`);
       }
+      trackPdfAction("split");
     } catch {
       alert("Could not read bookmarks in this PDF.");
     }
@@ -1766,6 +1845,7 @@ function ToolStampQR() {
     const bytes = await src.save({ useObjectStreams: true });
     const { url } = await blobFromUint8(bytes, "stamped.pdf");
     dl(url, "stamped.pdf");
+    trackPdfAction("stamp_qr");
   };
 
   return (
@@ -1808,6 +1888,7 @@ function ToolBatchMerge() {
     const bytes = await out.save({ useObjectStreams: true });
     const { url } = await blobFromUint8(bytes, "merged.pdf");
     dl(url, "merged.pdf");
+    trackPdfAction("merge");
   };
 
   return (
@@ -1845,8 +1926,7 @@ function ToolMetadata() {
       setTitle(doc.getTitle() ?? "");
       setAuthor(doc.getAuthor() ?? "");
       setSubject(doc.getSubject() ?? "");
-      const kws = doc.getKeywords?.();
-      // pdf-lib's getKeywords may not exist in older versions; guard it:
+      const kws = (doc as any).getKeywords?.();
       const kwList = Array.isArray(kws) ? kws : [];
       setKeywords(kwList.join(", "));
     } catch (e) {
@@ -1880,11 +1960,12 @@ function ToolMetadata() {
         .split(",")
         .map((k) => k.trim())
         .filter(Boolean);
-      doc.setKeywords(kw);
+      (doc as any).setKeywords?.(kw);
 
       const bytes = await doc.save({ useObjectStreams: true });
       const { url } = await blobFromUint8(bytes, "metadata.pdf");
       dl(url, "metadata.pdf");
+      trackPdfAction("edit_metadata");
     } finally {
       setLoading(false);
     }
@@ -1976,6 +2057,7 @@ function ToolCompress() {
     const bytes = await out.save({ useObjectStreams: true });
     const { url } = await blobFromUint8(bytes, "compressed.pdf");
     dl(url, "compressed.pdf");
+    trackPdfAction("compress");
   };
 
   return (

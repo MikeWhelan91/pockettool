@@ -2,6 +2,7 @@ import "./globals.css";
 import type { Metadata, Viewport } from "next";
 import Link from "next/link";
 import Image from "next/image";
+import Script from "next/script";
 import { Analytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import ToolMenuWrapper from "@/components/ToolMenuWrapper";
@@ -102,30 +103,69 @@ export default function RootLayout({
       className={`${ibmPlexSans.variable} ${jetBrainsMono.variable}`}
     >
       <head>
-        <script
+        {/* Consent defaults BEFORE any Google tags */}
+        <Script
+          id="consent-defaults"
+          strategy="beforeInteractive"
           dangerouslySetInnerHTML={{
             __html: `
-        window.dataLayer = window.dataLayer || [];
-        function gtag(){dataLayer.push(arguments);}
-        gtag('consent', 'default', {
-          ad_user_data: 'denied',
-          ad_personalization: 'denied',
-          ad_storage: 'denied',
-          analytics_storage: 'denied'
-        });
-      `,
+              window.dataLayer = window.dataLayer || [];
+              function gtag(){dataLayer.push(arguments);}
+              gtag('consent', 'default', {
+                ad_user_data: 'denied',
+                ad_personalization: 'denied',
+                ad_storage: 'denied',
+                analytics_storage: 'denied'
+              });
+            `,
           }}
         />
 
-        <script
+        {/* Google Ads / gtag base (sitewide) */}
+        <Script
+          id="gtag-src"
+          src="https://www.googletagmanager.com/gtag/js?id=AW-778841432"
+          strategy="afterInteractive"
+        />
+        <Script
+          id="gtag-init"
+          strategy="afterInteractive"
+          dangerouslySetInnerHTML={{
+            __html: `
+              window.dataLayer = window.dataLayer || [];
+              function gtag(){dataLayer.push(arguments);}
+              gtag('js', new Date());
+              // Base config for Google Ads (AW)
+              gtag('config', 'AW-778841432');
+
+              // Small helper so components can fire conversions:
+              // window.utilixyTrack('AW-778841432/XXXXXyyyyZzz');
+              window.utilixyTrack = function(sendTo){
+                try {
+                  if (typeof gtag === 'function') {
+                    gtag('event', 'conversion', { send_to: sendTo });
+                  }
+                } catch (e) { /* no-op */ }
+              };
+            `,
+          }}
+        />
+
+        {/* AdSense library (sitewide). It will honor your consent mode. */}
+        <Script
+          id="adsbygoogle"
           async
           src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1257499604453174"
           crossOrigin="anonymous"
+          strategy="afterInteractive"
         />
 
         {/* Ensure theme class is set before paint */}
-        <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
+        <Script id="theme-init" strategy="beforeInteractive">
+          {themeInitScript}
+        </Script>
 
+        {/* Structured data */}
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
@@ -136,11 +176,7 @@ export default function RootLayout({
         />
       </head>
       <body className="min-h-dvh bg-[hsl(var(--bg))] text-[hsl(var(--text))]">
-        {/* Collapsible sidebar trigger (hamburger lives here; compact styling in component) */}
-
         <div className="min-h-dvh flex flex-col">
-          {/* Neutral glass header */}
-
           {/* Header */}
           <header className="header bg-[hsl(var(--bg))]/90 backdrop-blur supports-[backdrop-filter]:bg-[hsl(var(--bg))]/80 border-b border-line">
             <div className="mx-auto container-wrap h-14 md:h-16 grid grid-cols-3 items-center md:flex md:items-center md:justify-between">
@@ -191,7 +227,7 @@ export default function RootLayout({
             {children}
           </main>
 
-                    {/* Multiplex above footer on tool pages */}
+          {/* Multiplex above footer on tool pages */}
           <FooterMultiplex />
 
           {/* Neutral footer (no brand gradient) */}
@@ -203,10 +239,7 @@ export default function RootLayout({
               </div>
               <div className="flex items-center gap-4 h-10">
                 <nav className="flex items-center gap-4 leading-none">
-                  <Link
-                    href="/privacy"
-                    className="hover:underline leading-none"
-                  >
+                  <Link href="/privacy" className="hover:underline leading-none">
                     Privacy
                   </Link>
                   <Link href="/terms" className="hover:underline leading-none">
@@ -223,6 +256,8 @@ export default function RootLayout({
             </div>
           </footer>
         </div>
+
+        {/* Analytics */}
         <Analytics />
         <SpeedInsights />
       </body>

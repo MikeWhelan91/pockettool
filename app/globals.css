@@ -240,3 +240,554 @@ a{ text-underline-offset:3px; }
 .card { min-width: 0; }
 textarea.input { width: 100%; min-width: 0; overflow-wrap: anywhere; }
 .seg { flex-wrap: wrap; }
+
+/* =====================
+   PDF Studio – additive-only patch
+   (Append to the very end of app/globals.css)
+   Addresses:
+   1) Hero centering/size
+   2) Boxed sidebar with active highlight
+   3) Light-mode box contrast + missing tokens
+   ===================== */
+
+/* --- Tokens some components expect --- */
+:root{
+  /* alias ring -> accent; provide bg-lift & stroke used in components */
+  --accent: var(--ring);
+  --bg-lift: var(--elev);
+  --stroke: var(--line);
+}
+.theme-dark{
+  --accent: var(--ring);
+  --bg-lift: var(--elev);
+  --stroke: var(--line);
+}
+
+/* --- 1) Make the first tool panel (hero) span both columns and scale up --- */
+@media (min-width: 768px){
+  .tool-panels > .tool-panel:first-child{ grid-column: 1 / -1; }
+}
+.tool-panels > .tool-panel:first-child > section{
+  border-radius: var(--radius);
+  border: 1px solid hsl(var(--line));
+  background: hsl(var(--card));
+  padding: clamp(1.25rem, 3vw, 3.25rem);
+  min-height: 280px;
+}
+
+/* --- 2) Boxed sidebar items with clear active highlight --- */
+.tool-panels aside .grid > .group{
+  border: 1px solid hsl(var(--line));
+  background: hsl(var(--card));
+  border-radius: 12px;
+}
+.tool-panels aside .grid > .group:hover{
+  background: hsl(var(--elev));
+}
+/* active item (driven by aria-current="page" in your Client.tsx) */
+.tool-panels aside .grid > .group[aria-current="page"]{
+  background: hsl(var(--elev));
+  border-color: hsl(var(--accent) / .45);
+  box-shadow: 0 0 0 2px hsl(var(--accent) / .50);
+}
+
+/* --- 3) Light-mode card contrast touch-up (safe, global) --- */
+:root .card{
+  background: hsl(var(--card));
+  border-color: hsl(var(--line));
+}
+:root .card:hover{
+  background: hsl(var(--elev));
+}
+
+/* ===========================
+   PDF Studio – additive patch #2
+   1) Tighten hero quick-cards
+   2) Light-mode hero depth
+   3) Light-mode details/card dark block fix
+   =========================== */
+
+/* 1) Tighten hero quick-cards (reduce padding & spacing)
+   Targets the three cards inside the PDF hero without changing TSX. */
+.tool-panels > .tool-panel:first-child > section .grid.grid-cols-3 > div > div.rounded-2xl.text-center {
+  padding: 0.875rem; /* ~ p-3.5 (was p-5) */
+}
+.tool-panels > .tool-panel:first-child > section .grid.grid-cols-3 > div > div.rounded-2xl.text-center .text-sm {
+  margin-bottom: 0.125rem; /* tighten title-to-desc spacing */
+}
+
+/* 2) Light-mode hero depth: subtle gradient + soft shadow so it isn't flat */
+:root .tool-panels > .tool-panel:first-child > section{
+  /* layered radial accents + base card */
+  background:
+    radial-gradient(1200px 480px at 85% 20%, color-mix(in oklab, #2b5df5 14%, transparent), transparent 60%),
+    radial-gradient(900px 480px at 10% 100%, color-mix(in oklab, #8b5cf6 12%, transparent), transparent 60%),
+    hsl(var(--card));
+  border-color: hsl(var(--line));
+  box-shadow:
+    0 12px 40px -10px hsl(var(--ring) / .18),
+    inset 0 1px 0 hsl(var(--line) / .60);
+}
+
+/* 3) Light-mode dark box fix inside details cards ("What this does & how to use it")
+   Force a light card and ensure inner content doesn't carry a dark bg. */
+:root details.card{
+  background: hsl(var(--card));
+  border-color: hsl(var(--line));
+}
+:root details.card > *{
+  background: transparent;
+}
+/* ===========================
+   PDF Studio – patch #3 (additive only)
+   Fix: light-mode dark block in ToolHelp, improve light hero depth,
+   and tighten hero quick-cards spacing.
+   =========================== */
+
+/* 1) Light-mode fix for the "What this does & how to use it" details card
+   (ToolHelp uses dark utilities; force a light card inside .card contexts) */
+:root .card details {
+  background: hsl(var(--card)) !important;
+  border-color: hsl(var(--line)) !important;
+  box-shadow: inset 0 1px 0 hsl(var(--line) / .60);
+}
+:root .card details > * {
+  background: transparent !important;
+}
+:root .card details > summary {
+  color: hsl(var(--text));
+}
+:root .card details .text-muted {
+  color: hsl(var(--muted));
+}
+
+/* 2) Make the hero feel less flat in light mode (subtle depth + gradient) */
+:root .tool-panels > .tool-panel:first-child > section {
+  /* layered radial accents + base card */
+  background:
+    radial-gradient(1200px 480px at 85% 20%, color-mix(in oklab, #2b5df5 16%, transparent), transparent 60%),
+    radial-gradient(900px 480px at 10% 100%, color-mix(in oklab, #8b5cf6 14%, transparent), transparent 60%),
+    hsl(var(--card));
+  border-color: hsl(var(--line));
+  box-shadow:
+    0 18px 45px -12px hsl(var(--ring) / .22),
+    inset 0 1px 0 hsl(var(--line) / .65);
+}
+
+/* 3) Tighten padding on the three quick-cards (Merge, Reorder, Convert) */
+.tool-panels > .tool-panel:first-child > section .grid.grid-cols-3 > div > div.rounded-2xl {
+  padding: 0.875rem;            /* was quite roomy; this is ~p-3.5 */
+  border-radius: 16px;
+}
+.tool-panels > .tool-panel:first-child > section .grid.grid-cols-3 > div > div.rounded-2xl .text-sm {
+  margin-bottom: 0.125rem;      /* tighten title/desc spacing */
+}
+/* ===========================
+   PDF Studio — patch #4 (additive only)
+   - Shrink hero quick-cards (boxes, not text)
+   - Light-mode page tint & hero depth
+   - Ensure ToolHelp card is light in light mode
+   =========================== */
+
+/* 1) Make the three hero quick-cards smaller (same text size) */
+.tool-panels > .tool-panel:first-child > section .grid.grid-cols-3 {
+  gap: .5rem;                    /* tighter spacing between cards */
+  max-width: 520px;              /* keeps the 3-up from feeling oversized */
+  justify-self: end;             /* hugs the right side nicely */
+}
+.tool-panels > .tool-panel:first-child > section .grid.grid-cols-3 > div > div.rounded-2xl {
+  padding: .65rem;               /* smaller box (was ~p-5) */
+  border-radius: 12px;           /* a little less pill-y */
+}
+
+/* 2) Light mode: reduce the “washed out” feel with a subtle page tint
+   (non-interactive overlay; has no effect in dark mode) */
+:root body::before {
+  content: ""; position: fixed; inset: 0; pointer-events: none; z-index: -1;
+  background:
+    radial-gradient(1200px 600px at 70% -10%, rgba(37,99,235,.08), transparent 60%),
+    radial-gradient(1000px 600px at 0% 110%, rgba(139,92,246,.08), transparent 60%);
+}
+
+/* Give the hero a touch more structure in light mode (not flat) */
+:root .tool-panels > .tool-panel:first-child > section {
+  box-shadow:
+    0 18px 45px -12px hsl(var(--ring) / .22),
+    inset 0 1px 0 hsl(var(--line) / .65);
+  background:
+    radial-gradient(1200px 480px at 85% 20%, color-mix(in oklab, #2b5df5 16%, transparent), transparent 60%),
+    radial-gradient(900px 480px at 10% 100%, color-mix(in oklab, #8b5cf6 14%, transparent), transparent 60%),
+    hsl(var(--card));
+}
+/* if any bg-* utility slipped in, neutralize it */
+:root .card details[class*="bg-"] { background-color: hsl(var(--card)) !important; }
+:root .card details > * { background: transparent !important; }
+:root .card details > summary { color: hsl(var(--text)); }
+:root .card details .text-muted { color: hsl(var(--muted)); }
+/* ===========================
+   PDF — Hero: remove tiles and restyle (additive only)
+   Targets real markup from Hero.tsx and ToolLayout
+   =========================== */
+
+/* Make the hero panel span full width on desktop */
+@media (min-width: 768px){
+  .tool-panels > .tool-panel:first-child{ grid-column: 1 / -1; }
+}
+
+/* Modern, tasteful hero surface (works in both themes) */
+section[data-hero="pdf"]{
+  position: relative;
+  isolation: isolate;
+  border-radius: var(--radius);
+  border: 1px solid hsl(var(--line));
+  background:
+    radial-gradient(1200px 600px at 90% -20%,
+      color-mix(in oklab, hsl(var(--ring)), transparent 86%),
+      transparent 60%),
+    linear-gradient(180deg, hsl(var(--elev)) 0%, hsl(var(--card)) 100%);
+  box-shadow:
+    0 22px 60px -20px hsl(var(--ring) / .24),
+    inset 0 1px 0 hsl(var(--line) / .60);
+  padding: clamp(1.25rem, 3vw, 3rem);
+}
+
+/* Remove the 3 quick tiles (no TSX changes needed) */
+section[data-hero="pdf"] .grid.grid-cols-3{
+  display: none !important;
+}
+
+/* When tiles are gone, let the left content span full width */
+@media (min-width: 768px){
+  /* grid container in Hero.tsx is `.grid md:grid-cols-12` */
+  section[data-hero="pdf"] .md\:grid-cols-12 > :first-child{
+    grid-column: 1 / -1 !important;
+  }
+}
+
+/* Subtle type polish */
+section[data-hero="pdf"] h1{
+  font-size: clamp(2.6rem, 5.5vw, 4rem);
+  line-height: 1.05;
+  letter-spacing: -0.02em;
+}
+section[data-hero="pdf"] p{
+  font-size: clamp(1rem, 1.2vw, 1.15rem);
+  opacity: .9;
+}
+/* ===========================
+   PDF — Hero 2025 restyle (additive only)
+   - Works with current Hero.tsx (uses [data-hero="pdf"])
+   - No tiles (you already hid them)
+   - Premium aurora glow + glass chips
+   =========================== */
+
+/* Full-width hero on desktop (safe) */
+@media (min-width: 768px){
+  .tool-panels > .tool-panel:first-child{ grid-column: 1 / -1; }
+}
+
+/* Base surface */
+section[data-hero="pdf"]{
+  position: relative;
+  isolation: isolate;
+  border-radius: var(--radius);
+  border: 1px solid hsl(var(--line));
+  background:
+    radial-gradient(1100px 560px at 85% -10%, color-mix(in oklab, hsl(var(--ring)), transparent 86%), transparent 60%),
+    linear-gradient(180deg, hsl(var(--elev)) 0%, hsl(var(--card)) 100%);
+  box-shadow:
+    0 22px 60px -18px hsl(var(--ring) / .24),
+    inset 0 1px 0 hsl(var(--line) / .55);
+  padding: clamp(1.25rem, 3vw, 3rem);
+}
+
+/* Aurora ribbon (animated, very subtle) */
+section[data-hero="pdf"]::before{
+  content:"";
+  position:absolute; inset:-20% -10% auto -10%; height:80%;
+  background:
+    conic-gradient(from 200deg at 60% 40%,
+      color-mix(in oklab, #7dd3fc 35%, transparent) 0%,
+      color-mix(in oklab, #a78bfa 30%, transparent) 20%,
+      color-mix(in oklab, #60a5fa 35%, transparent) 40%,
+      transparent 60%);
+  filter: blur(42px);
+  opacity:.35;
+  pointer-events:none;
+  animation: pdf-aurora 14s linear infinite alternate;
+}
+@keyframes pdf-aurora{
+  0%   { transform: translate3d(-2%, -1%, 0) rotate(0deg) scale(1.0); }
+  100% { transform: translate3d(2%,  1%, 0) rotate(3deg) scale(1.02); }
+}
+
+/* Vignette to focus the content */
+section[data-hero="pdf"]::after{
+  content:"";
+  position:absolute; inset:0; pointer-events:none;
+  background:
+    radial-gradient(140% 100% at 50% 100%, rgba(0,0,0,.18), transparent 55%),
+    radial-gradient(120% 90% at 0% 0%, rgba(0,0,0,.08), transparent 45%);
+  mix-blend-mode: soft-light;
+  border-radius: inherit;
+}
+
+/* Type polish */
+section[data-hero="pdf"] h1{
+  font-size: clamp(2.6rem, 5.5vw, 4rem);
+  line-height: 1.05;
+  letter-spacing: -0.02em;
+}
+section[data-hero="pdf"] p{
+  font-size: clamp(1rem, 1.2vw, 1.15rem);
+  opacity: .92;
+}
+
+/* Glass chips row (uses your existing three span pills) */
+section[data-hero="pdf"] [class*="flex-wrap"][class*="gap-2"] > *{
+  display:inline-flex; align-items:center; gap:.4rem;
+  padding:.42rem .7rem;
+  border-radius:999px;
+  border:1px solid hsl(var(--line) / .65);
+  background: hsl(var(--card) / .28);
+  color: hsl(var(--text));
+  backdrop-filter: blur(6px) saturate(115%);
+  box-shadow:
+    0 6px 18px rgba(0,0,0,.12),
+    inset 0 1px 0 hsl(var(--line) / .8);
+  transition: transform .12s ease, box-shadow .18s ease, border-color .18s ease, background .18s ease;
+  font-size:.92rem;
+}
+section[data-hero="pdf"] [class*="flex-wrap"][class*="gap-2"] > *:hover{
+  transform: translateY(-1px);
+  border-color: hsl(var(--ring));
+  background: hsl(var(--card) / .40);
+  box-shadow: 0 10px 26px rgba(0,0,0,.16), inset 0 1px 0 hsl(var(--line));
+}
+
+/* Optional: if any leftover tiles try to render again, keep them off */
+section[data-hero="pdf"] .grid.grid-cols-3{ display:none !important; }
+/* ===========================
+   PDF — Hero “2025 mesh” restyle (additive)
+   - Clears old pseudo art
+   - Modern mesh on the right (no boxes)
+   - Clean type + gradient underline
+   =========================== */
+
+/* 0) Nuke any earlier ::before/::after art you may have added */
+section[data-hero="pdf"]::before,
+section[data-hero="pdf"]::after{
+  content: none !important;
+}
+
+/* 1) Base surface: neutral + gentle depth (works in light/dark) */
+section[data-hero="pdf"]{
+  position: relative;
+  border-radius: var(--radius);
+  border: 1px solid hsl(var(--line));
+  background:
+    linear-gradient(180deg, hsl(var(--elev)) 0%, hsl(var(--card)) 100%);
+  box-shadow:
+    0 20px 55px -18px hsl(var(--ring) / .20),
+    inset 0 1px 0 hsl(var(--line) / .55);
+  padding: clamp(1.25rem, 3vw, 3rem);
+  overflow: hidden; /* so our mesh stays inside */
+}
+
+/* 2) Mesh gradient on the right — elegant, not noisy */
+section[data-hero="pdf"]::after{
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(900px 560px at 82% 15%, color-mix(in oklab, hsl(var(--ring)), transparent 86%), transparent 60%),
+    radial-gradient(640px 360px at 95% 70%, color-mix(in oklab, #8b5cf6 22%, transparent), transparent 65%),
+    radial-gradient(520px 320px at 70% 90%, color-mix(in oklab, #60a5fa 16%, transparent), transparent 70%);
+  /* fade the mesh as it approaches the left so text stays clean */
+  -webkit-mask-image: linear-gradient(to left, black 58%, transparent 92%);
+          mask-image: linear-gradient(to left, black 58%, transparent 92%);
+  opacity: .85;
+}
+
+/* 3) Hero title – crisp scale + subtle gradient underline */
+section[data-hero="pdf"] h1{
+  font-size: clamp(2.6rem, 5.6vw, 4rem);
+  line-height: 1.05;
+  letter-spacing: -0.02em;
+  position: relative;
+}
+section[data-hero="pdf"] h1::after{
+  content:"";
+  display:block;
+  height: 3px;
+  width: clamp(120px, 18vw, 220px);
+  margin-top: .6rem;
+  border-radius: 999px;
+  background: linear-gradient(90deg,
+    hsl(var(--ring)),
+    color-mix(in oklab, hsl(var(--ring)), transparent 30%));
+  box-shadow: 0 4px 14px hsl(var(--ring) / .35);
+}
+
+/* 4) Body copy readability */
+section[data-hero="pdf"] p{
+  font-size: clamp(1rem, 1.2vw, 1.15rem);
+  opacity: .92;
+}
+
+/* 5) Glassy chips – neat but subtle */
+section[data-hero="pdf"] [class*="flex-wrap"][class*="gap-2"] > *{
+  display:inline-flex; align-items:center; gap:.4rem;
+  padding:.42rem .7rem;
+  border-radius:999px;
+  border:1px solid hsl(var(--line) / .65);
+  background: hsl(var(--card) / .35);
+  backdrop-filter: blur(6px) saturate(120%);
+  box-shadow: 0 6px 18px rgba(0,0,0,.10), inset 0 1px 0 hsl(var(--line) / .8);
+  transition: transform .12s ease, border-color .18s ease, background .18s ease;
+}
+section[data-hero="pdf"] [class*="flex-wrap"][class*="gap-2"] > *:hover{
+  transform: translateY(-1px);
+  border-color: hsl(var(--ring));
+  background: hsl(var(--card) / .48);
+}
+
+/* 6) Keep it full-width on desktop */
+@media (min-width: 768px){
+  .tool-panels > .tool-panel:first-child{ grid-column: 1 / -1; }
+  /* left column spans fully (since tiles are gone) */
+  section[data-hero="pdf"] .md\:grid-cols-12 > :first-child{ grid-column: 1 / -1 !important; }
+}
+/* ===========================
+   PDF — center hero content
+   =========================== */
+
+/* make the left hero column span & center its content */
+@media (min-width: 768px){
+  section[data-hero="pdf"] .md\:grid-cols-12 > :first-child{
+    grid-column: 1 / -1 !important;
+  }
+}
+
+/* center all text + keep a comfortable max width */
+section[data-hero="pdf"] .md\:grid-cols-12 > :first-child{
+  text-align: center;
+  margin-inline: auto;
+  max-width: min(900px, 92%);
+}
+
+/* center the gradient underline under the H1 */
+section[data-hero="pdf"] h1::after{
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* center the chips row */
+section[data-hero="pdf"] [class*="flex-wrap"][class*="gap-2"]{
+  justify-content: center;
+}
+/* PDF: hide ToolLayout heading/intro that precedes the tool panels */
+
+/* If you added <section data-pdf> around ToolLayout (recommended) */
+[data-pdf] :is(header, .mx-auto, .container-wrap):has(~ .tool-panels) {
+  display: none !important;
+}
+
+/* Also handle the case where you didn't add data-pdf but the hero exists */
+:root main:has(section[data-hero="pdf"])
+  :is(header, .mx-auto, .container-wrap):has(~ .tool-panels) {
+  display: none !important;
+}
+
+
+/* Hide the ToolLayout heading/intro ONLY when the PDF hero is present */
+:root section.w-full:has(section[data-hero="pdf"]) > .mx-auto:first-child {
+  display: none !important;
+}
+/* === PDF: make the panels grid match the tool's layout === */
+/* Left column = 260px sidebar, right column = stage (1fr) */
+@media (min-width: 768px){
+  [data-pdf] .tool-panels{
+    grid-template-columns: 260px minmax(0,1fr) !important;
+    align-items: start;
+  }
+}
+
+/* Place the SEO section in the right column, snug to the tool */
+.tool-panels > .seo-half{ grid-column: 1 / -1; }             /* mobile = full width */
+@media (min-width: 768px){
+  .tool-panels > .seo-half{
+    grid-column: 2 / 3 !important;  /* right column, beside sidebar */
+    margin-top: -1.5rem;            /* cancel the grid row gap so it’s snug */
+  }
+}
+
+/* Safety: if anything adds extra margin above the card, neutralize it */
+@media (min-width: 768px){
+  .tool-panels > .seo-half > .card{ margin-top: 0; }
+}
+/* PDF: pull the SEO card up tighter under the tool on desktop  */
+@media (min-width: 768px){
+  /* slightly reduce the overall row gap for the PDF panels */
+  [data-pdf] .tool-panels{
+    row-gap: 1rem !important;                  /* was larger (gap-6/8) */
+  }
+
+  /* keep it in the right column and lift it further */
+  .tool-panels > .seo-half{
+    grid-column: 2 / 3 !important;
+    margin-top: -2.25rem !important;           /* lift more than the grid gap */
+  }
+}
+
+/* On larger screens, lift a bit more so it's snug even on wide layouts */
+@media (min-width: 1024px){
+  .tool-panels > .seo-half{
+    margin-top: -2.75rem !important;           /* tighten under the tool */
+  }
+}
+
+/* Only affect pages that render the SEO block */
+main:has(#seo-content) .tool-panels{
+  row-gap: 1rem !important;             /* tighter vertical spacing on PDF page */
+}
+
+/* Put the SEO block under the tool, right column, and pull it up */
+@media (min-width: 768px){
+  #seo-content{
+    grid-column: 2 / 3 !important;      /* right column of the two-col grid */
+    align-self: start;
+    margin-top: -1.25rem !important;    /* lift it closer to the tool */
+  }
+}
+
+@media (min-width: 1024px){
+  #seo-content{
+    margin-top: -1.75rem !important;    /* a touch tighter on wider screens */
+  }
+}
+
+/* Safety: ensure nothing inside the card re-introduces top spacing */
+#seo-content > .card { margin-top: 0 !important; }
+#seo-content > *:first-child { margin-top: 0 !important; }
+/* === PDF: put the SEO block snug under the tool, right column === */
+/* Target the actual grid item that WRAPS #seo-content */
+@media (min-width: 768px){
+  [data-pdf] .tool-panels{
+    row-gap: 0.75rem !important;         /* tighter spacing overall */
+  }
+
+  [data-pdf] .tool-panels > :has(> #seo-content){
+    grid-column: 2 / 3 !important;       /* right of the sidebar */
+    justify-self: start;                  /* align with the tool’s left edge */
+    margin-top: -1.25rem !important;     /* pull up under the tool */
+  }
+}
+
+/* keep it from feeling too wide on huge screens, but still half-ish width */
+@media (min-width: 1024px){
+  #seo-content .card{
+    max-width: 720px;                     /* tune if you want it wider/narrower */
+  }
+}

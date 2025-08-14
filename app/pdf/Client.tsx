@@ -166,7 +166,7 @@ const HELP = {
         <li>Pick a page from the dropdown, draw boxes over areas to hide. Switch pages and repeat — your boxes are kept in memory per page.</li>
         <li>When you&apos;re done, click <b>Apply</b> once to burn all redactions into the correct pages and download.</li>
       </ol>
-      <p><b>Note</b>: This is a fast on‑device redaction that draws solid boxes into pages. For search‑grade vector redaction (removing hidden text layer), we can add an advanced tool.</p>
+      <p><b>Note</b>: This is a fast on-device redaction that draws solid boxes into pages. For search-grade vector redaction (removing hidden text layer), we can add an advanced tool.</p>
     </>
   ),
   split: (
@@ -267,14 +267,14 @@ type ToolKey =
 // replace your TOOL_LIST with this
 const TOOL_LIST: { key: ToolKey; label: string }[] = [
   { key: "batchMerge", label: "Merge" },
-  { key: "reorder", label: "Reorder / Rotate / Delete" },
+  { key: "reorder", label: "Reorder / Delete" },
   { key: "rotate", label: "Rotate Pages" },
-  { key: "watermark", label: "Page numbers / Header / Footer / Watermark" },
   { key: "imagesToPdf", label: "Images → PDF" },
   { key: "pdfToImages", label: "PDF → Images" },
   { key: "extractText", label: "Extract text" },
   { key: "fillFlatten", label: "Fill forms & flatten" },
   { key: "redact", label: "Redact" },
+  { key: "watermark", label: "Page numbers / Header / Footer / Watermark" },
   { key: "split", label: "Split" },
   { key: "stampQR", label: "Stamp QR" },
   { key: "meta", label: "Edit Metadata" },
@@ -284,19 +284,49 @@ const TOOL_LIST: { key: ToolKey; label: string }[] = [
 export default function PDFStudio() {
   const [tool, setTool] = useState<ToolKey>("batchMerge");
 
+  // --- Visible FAQ + JSON-LD (local to Client) ---
+  const faq = [
+    {
+      q: "Is this PDF toolkit really private and local-first?",
+      a: "Yes. Everything runs entirely in your browser — no files are uploaded; your PDFs never leave your device.",
+    },
+    {
+      q: "What kinds of PDFs can I merge?",
+      a: "Any standard PDF files. Select them in the order you want, then click Merge & Download.",
+    },
+    {
+      q: "Can I convert images to a single PDF?",
+      a: "Yes. Use Images → PDF to combine PNG/JPG/WebP into a single PDF document.",
+    },
+    {
+      q: "How do I add page numbers or a simple header/footer?",
+      a: "Open Page numbers / Header / Footer, choose a mode, position, and font size, then Apply & Download.",
+    },
+    {
+      q: "Does compression reduce quality?",
+      a: "Compression reduces file size with minimal quality loss for most documents. Choose a higher setting if needed.",
+    },
+  ];
+
+  const faqLd = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": faq.map(({ q, a }) => ({
+      "@type": "Question",
+      "name": q,
+      "acceptedAnswer": { "@type": "Answer", "text": a }
+    }))
+  };
+
   return (
-<div className="md:col-span-2 grid grid-cols-1 md:grid-cols-[220px,1fr] gap-6 items-start">      {/* Mobile tool selector */}
+  /* IMPORTANT: remove row gaps on md+ so there’s no grid gap under the tool */
+    <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-[260px,1fr] gap-x-6 gap-y-6 md:gap-y-0 items-start">
+      {/* Mobile tool selector */}
       <div className="md:hidden card p-3">
         <label className="block text-sm mb-1">Tool</label>
-        <select
-          className="input w-full"
-          value={tool}
-          onChange={(e) => setTool(e.target.value as ToolKey)}
-        >
+        <select className="input w-full" value={tool} onChange={(e) => setTool(e.target.value as ToolKey)}>
           {TOOL_LIST.map((t) => (
-            <option key={t.key} value={t.key}>
-              {t.label}
-            </option>
+            <option key={t.key} value={t.key}>{t.label}</option>
           ))}
         </select>
       </div>
@@ -307,37 +337,57 @@ export default function PDFStudio() {
           {TOOL_LIST.map((t) => (
             <button
               key={t.key}
-              className={`text-left px-3 py-2 rounded-lg hover:bg-neutral-800 ${
-                tool === t.key ? "bg-neutral-800 font-medium" : ""
-              }`}
+              className={`group text-left px-3 py-3 rounded-xl border border-[color:var(--line)] bg-[color:var(--bg)]/70 hover:bg-[color:var(--bg-lift)] transition-colors
+                ${tool === t.key ? "ring-2 ring-[color:var(--accent)] ring-offset-1 ring-offset-[color:var(--bg)] bg-[color:var(--bg-lift)] border-[color:var(--accent)]/40" : ""}`}
               onClick={() => setTool(t.key)}
+              aria-current={tool === t.key ? "page" : undefined}
             >
-              {t.label}
+              <div className="text-sm">{t.label}</div>
             </button>
           ))}
         </div>
       </aside>
 
-      {/* Main stage */}
-      <main className="grid gap-6">
-        {tool === "reorder" && <ToolReorder />}
-        {tool === "rotate" && <ToolRotate />}
-        {tool === "watermark" && <ToolWatermark />}
-        {tool === "imagesToPdf" && <ToolImagesToPdf />}
-        {tool === "pdfToImages" && <ToolPdfToImages />}
-        {tool === "extractText" && <ToolExtractText />}
-        {tool === "fillFlatten" && <ToolFillFlatten />}
-        {tool === "redact" && <ToolRedact />}
-        {tool === "split" && <ToolSplit />}
-        {tool === "stampQR" && <ToolStampQR />}
-        {tool === "batchMerge" && <ToolBatchMerge />}
-        {tool === "meta" && <ToolMetadata />}
-        {tool === "compress" && <ToolCompress />}
-      </main>
+      {/* === STAGE COLUMN (tool + FAQ in the SAME grid cell) === */}
+      <div className="md:[grid-column:2/3] grid gap-3">
+        {/* Main stage (the tools) */}
+        <main className="grid gap-6">
+          {tool === "reorder" && <ToolReorder />}
+          {tool === "rotate" && <ToolRotate />}
+          {tool === "watermark" && <ToolWatermark />}
+          {tool === "imagesToPdf" && <ToolImagesToPdf />}
+          {tool === "pdfToImages" && <ToolPdfToImages />}
+          {tool === "extractText" && <ToolExtractText />}
+          {tool === "fillFlatten" && <ToolFillFlatten />}
+          {tool === "redact" && <ToolRedact />}
+          {tool === "split" && <ToolSplit />}
+          {tool === "stampQR" && <ToolStampQR />}
+          {tool === "batchMerge" && <ToolBatchMerge />}
+          {tool === "meta" && <ToolMetadata />}
+          {tool === "compress" && <ToolCompress />}
+        </main>
+
+        {/* FAQ: sits directly under the tool, half width on md+ */}
+        <section className="w-full md:w-full">
+          <div className="card p-4 md:p-6">
+            <h2 className="text-lg md:text-xl font-semibold mb-2">PDF Studio — FAQ</h2>
+            <div className="space-y-2">
+              {faq.map(({ q, a }, i) => (
+                <details key={i} className="card--flat p-3">
+                  <summary className="font-medium cursor-pointer">{q}</summary>
+                  <div className="mt-2 text-sm text-muted">{a}</div>
+                </details>
+              ))}
+            </div>
+          </div>
+
+          {/* JSON-LD for rich results */}
+          <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqLd) }} />
+        </section>
+      </div>
     </div>
   );
 }
-
 /* -------------------- Tool: Reorder / Rotate / Delete -------------------- */
 
 function ToolReorder() {

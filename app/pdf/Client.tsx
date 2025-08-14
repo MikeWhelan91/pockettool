@@ -177,8 +177,8 @@ function ToolHelp({
 // Friendly label mapping
 function getToolLabel(key: keyof typeof HELP) {
   const labels: Record<keyof typeof HELP, string> = {
-    reorder: "Reorder / Delete",
-    watermark: "Numbers / Header / Footer / Watermark",
+    reorder: "Reorder/Delete",
+    watermark: "Numbers/Watermark",
     imagesToPdf: "Images → PDF",
     pdfToImages: "PDF → Images",
     extractText: "Extract Text",

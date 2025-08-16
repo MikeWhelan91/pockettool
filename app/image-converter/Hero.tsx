@@ -1,4 +1,3 @@
-// app/pdf/Hero.tsx
 export default function Hero() {
   return (
     <section
@@ -20,11 +19,13 @@ export default function Hero() {
           <h1 className="text-4xl md:text-6xl font-semibold tracking-tight">
             Image Studio
           </h1>
-          <p className="mt-3 text-base md:text-lg text-muted max-w-prose">
+          {/* paragraph hidden on mobile */}
+          <p className="mt-3 text-base md:text-lg text-muted max-w-prose hidden md:block">
             Free, private, and powerful image converter & resizer — right in
             your browser. No sign-ups, pop-ups, or redirects.
           </p>
-          <div className="mt-5 flex flex-wrap gap-2">
+          {/* chips row hidden on mobile */}
+          <div className="mt-5 flex flex-wrap gap-2 hidden md:flex">
             <span className="rounded-full border border-[color:var(--line)]/70 px-3 py-1 text-xs">
               PNG
             </span>
@@ -52,7 +53,7 @@ export default function Hero() {
           </div>
         </div>
 
-        {/* right quick-cards */}
+        {/* right quick-cards (unchanged) */}
         <div className="md:col-span-5">
           <div className="grid grid-cols-3 gap-3">
             {[

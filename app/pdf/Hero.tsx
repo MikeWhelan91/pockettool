@@ -20,11 +20,13 @@ export default function Hero() {
           <h1 className="text-4xl md:text-6xl font-semibold tracking-tight">
             PDF Studio
           </h1>
-          <p className="mt-3 text-base md:text-lg text-muted max-w-prose">
+          {/* Hidden on mobile, visible on md+ */}
+          <p className="hidden md:block mt-3 text-base md:text-lg text-muted max-w-prose">
             Free, private, and powerful PDF tools — right in your browser. No
             sign-ups, pop-ups, redirects, or uploads.
           </p>
-          <div className="mt-5 flex flex-wrap gap-2">
+          {/* Chips: hidden on mobile, visible on md+ */}
+          <div className="hidden md:flex mt-5 flex flex-wrap gap-2">
             <span className="rounded-full border border-[color:var(--line)]/70 px-3 py-1 text-xs">
               Private
             </span>

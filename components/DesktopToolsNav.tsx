@@ -53,54 +53,101 @@ export default function DesktopToolsNav() {
   const isActive = (href: string) => pathname === href;
   const onPdf = pathname?.startsWith("/pdf");
 
+  // touch-friendly dropdown state
+  const [pdfOpen, setPdfOpen] = React.useState(false);
+  const [moreOpen, setMoreOpen] = React.useState(false);
+  const pdfRef = React.useRef<HTMLDivElement | null>(null);
+  const moreRef = React.useRef<HTMLDivElement | null>(null);
+
+  React.useEffect(() => {
+    function onDocClick(e: MouseEvent) {
+      if (
+        pdfRef.current &&
+        !pdfRef.current.contains(e.target as Node)
+      ) {
+        setPdfOpen(false);
+      }
+      if (
+        moreRef.current &&
+        !moreRef.current.contains(e.target as Node)
+      ) {
+        setMoreOpen(false);
+      }
+    }
+    function onEsc(e: KeyboardEvent) {
+      if (e.key === "Escape") {
+        setPdfOpen(false);
+        setMoreOpen(false);
+      }
+    }
+    document.addEventListener("click", onDocClick);
+    document.addEventListener("keydown", onEsc);
+    return () => {
+      document.removeEventListener("click", onDocClick);
+      document.removeEventListener("keydown", onEsc);
+    };
+  }, []);
+
   return (
     <nav className="hidden md:flex ml-auto items-center gap-1">
-      {/* PDF with polished, centered dropdown */}
+      {/* PDF: click-to-open for iPad; hover also works on desktop */}
       <div
-        className={[
-          "relative inline-block group/pdf",
-          // hover bridge to avoid flicker between trigger and panel
-          "after:content-[''] after:absolute after:left-0 after:right-0 after:top-full after:h-3",
-        ].join(" ")}
+        ref={pdfRef}
+        className="relative inline-block"
+        onMouseEnter={() => setPdfOpen(true)}
+        onMouseLeave={() => setPdfOpen(false)}
       >
-        <Link
-          href="/pdf"
+        <button
+          type="button"
+          aria-haspopup="menu"
+          aria-expanded={pdfOpen}
+          onClick={() => setPdfOpen((v) => !v)}
           className={[
             "px-3 py-1.5 rounded-md text-base font-semibold transition-colors duration-150",
             "hover:bg-[#2B67F3] hover:text-white",
             onPdf ? "bg-[#2B67F3] text-white" : "text-[#2B67F3]",
+            "inline-flex items-center gap-1",
           ].join(" ")}
         >
           PDF
-        </Link>
+          <svg
+            aria-hidden
+            viewBox="0 0 20 20"
+            className="h-4 w-4 translate-y-px"
+            fill="currentColor"
+          >
+            <path d="M5.23 7.21a.75.75 0 011.06.02L10 10.94l3.71-3.71a.75.75 0 111.06 1.06l-4.24 4.24a.75.75 0 01-1.06 0L5.21 8.29a.75.75 0 01.02-1.08z" />
+          </svg>
+        </button>
 
+        {/* Menu */}
         <div
           role="menu"
           className={[
-            // centered under the PDF tab
             "absolute left-1/2 -translate-x-1/2 top-full mt-2 z-[3000]",
-            // frosted panel
             "rounded-xl p-2 ring-1 ring-[color:var(--line)]",
             "bg-[color:var(--bg)]/92 backdrop-blur-md shadow-2xl",
-            // layout
             "min-w-[18rem] max-h-[70vh] overflow-auto",
             "grid grid-cols-1 sm:grid-cols-2 gap-1",
-            // show/hide
-            "opacity-0 invisible translate-y-1 transition ease-out duration-150",
-            "group-hover/pdf:opacity-100 group-hover/pdf:visible group-hover/pdf:translate-y-0",
-            "focus-within:opacity-100 focus-within:visible focus-within:translate-y-0",
+            pdfOpen ? "opacity-100 visible translate-y-0" : "opacity-0 invisible translate-y-1",
+            "transition ease-out duration-150",
           ].join(" ")}
         >
+          {/* Make the first item go to /pdf home */}
+          <Link
+            href="/pdf"
+            role="menuitem"
+            className="block w-full whitespace-nowrap px-3 py-2 rounded-lg text-base font-semibold hover:bg-[#2B67F3] hover:text-white"
+          >
+            PDF Home
+          </Link>
           {PDF_TOOLS.map((t) => (
             <Link
               key={t.key}
               href={`/pdf?tool=${encodeURIComponent(t.key)}`}
               role="menuitem"
-              className={[
-                "block w-full whitespace-nowrap",
-                "px-3 py-2 rounded-lg text-base font-semibold",
-                "hover:bg-[#2B67F3] hover:text-white",
-              ].join(" ")}
+              className="block w-full whitespace-nowrap px-3 py-2 rounded-lg text-base font-semibold hover:bg-[#2B67F3] hover:text-white"
+              onClick={() => setPdfOpen(false)}
             >
               {t.label}
             </Link>
@@ -108,17 +155,68 @@ export default function DesktopToolsNav() {
         </div>
       </div>
 
-      {/* Other main links */}
+      {/* Main links */}
       <NavLink href="/image-converter" label="Images" active={isActive("/image-converter")} />
       <NavLink href="/random" label="Passwords" active={isActive("/random")} />
       <NavLink href="/qr" label="QR" active={isActive("/qr")} />
       <NavLink href="/format" label="Format" active={isActive("/format")} />
 
-      {/* Extra tools inline on xl+; otherwise use your mobile menu */}
+      {/* Extra tools inline on xl+ */}
       <NavLink href="/case-converter" label="Case" active={isActive("/case-converter")} className="hidden xl:inline-flex" />
       <NavLink href="/base64" label="Base64" active={isActive("/base64")} className="hidden xl:inline-flex" />
       <NavLink href="/diff" label="Diff" active={isActive("/diff")} className="hidden xl:inline-flex" />
       <NavLink href="/regex" label="Regex" active={isActive("/regex")} className="hidden xl:inline-flex" />
+
+      {/* More menu for md–lg (iPad widths) */}
+      <div
+        ref={moreRef}
+        className="relative inline-block xl:hidden"
+        onMouseEnter={() => setMoreOpen(true)}
+        onMouseLeave={() => setMoreOpen(false)}
+      >
+        <button
+          type="button"
+          aria-haspopup="menu"
+          aria-expanded={moreOpen}
+          onClick={() => setMoreOpen((v) => !v)}
+          className="px-3 py-1.5 rounded-md text-base font-semibold transition-colors duration-150 text-[#2B67F3] hover:bg-[#2B67F3] hover:text-white inline-flex items-center gap-1"
+        >
+          More
+          <svg
+            aria-hidden
+            viewBox="0 0 20 20"
+            className="h-4 w-4 translate-y-px"
+            fill="currentColor"
+          >
+            <path d="M5.23 7.21a.75.75 0 011.06.02L10 10.94l3.71-3.71a.75.75 0 111.06 1.06l-4.24 4.24a.75.75 0 01-1.06 0L5.21 8.29a.75.75 0 01.02-1.08z" />
+          </svg>
+        </button>
+
+        <div
+          role="menu"
+          className={[
+            "absolute right-0 top-full mt-2 z-[3000]",
+            "rounded-xl p-2 ring-1 ring-[color:var(--line)]",
+            "bg-[color:var(--bg)]/92 backdrop-blur-md shadow-2xl",
+            "min-w-[12rem] grid gap-1",
+            moreOpen ? "opacity-100 visible translate-y-0" : "opacity-0 invisible translate-y-1",
+            "transition ease-out duration-150",
+          ].join(" ")}
+        >
+          <Link href="/case-converter" role="menuitem" className="px-3 py-2 rounded-lg text-base font-semibold hover:bg-[#2B67F3] hover:text-white" onClick={() => setMoreOpen(false)}>
+            Case
+          </Link>
+          <Link href="/base64" role="menuitem" className="px-3 py-2 rounded-lg text-base font-semibold hover:bg-[#2B67F3] hover:text-white" onClick={() => setMoreOpen(false)}>
+            Base64
+          </Link>
+          <Link href="/diff" role="menuitem" className="px-3 py-2 rounded-lg text-base font-semibold hover:bg-[#2B67F3] hover:text-white" onClick={() => setMoreOpen(false)}>
+            Diff
+          </Link>
+          <Link href="/regex" role="menuitem" className="px-3 py-2 rounded-lg text-base font-semibold hover:bg-[#2B67F3] hover:text-white" onClick={() => setMoreOpen(false)}>
+            Regex
+          </Link>
+        </div>
+      </div>
     </nav>
   );
 }

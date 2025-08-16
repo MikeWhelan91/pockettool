@@ -3,7 +3,7 @@ import type { Metadata, Viewport } from "next";
 import Link from "next/link";
 import Image from "next/image";
 import DesktopToolsNav from "@/components/DesktopToolsNav";
-import UtilixyLogo from "@/components/branding/UtilixyLogo";
+import GAListener from '@/components/GAListener';
 import Script from "next/script";
 import { Analytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/next";
@@ -152,6 +152,8 @@ export default function RootLayout({
             `,
           }}
         />
+
+          <GAListener />
 
         {/* AdSense library (sitewide). It will honor your consent mode. */}
         <Script

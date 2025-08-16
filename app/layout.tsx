@@ -126,7 +126,7 @@ export default function RootLayout({
         {/* Google Ads / gtag base (sitewide) */}
         <Script
           id="gtag-src"
-          src="https://www.googletagmanager.com/gtag/js?id=G-EGRRVM4LCF"
+          src="https://www.googletagmanager.com/gtag/js?id=G-ZWTPWWSGYF"
           strategy="afterInteractive"
         />
         <Script
@@ -138,10 +138,10 @@ export default function RootLayout({
               function gtag(){dataLayer.push(arguments);}
               gtag('js', new Date());
               // Base config for Google Ads (AW)
-              gtag('config', 'G-EGRRVM4LCF');
+              gtag('config', 'G-ZWTPWWSGYF');
 
               // Small helper so components can fire conversions:
-              // window.utilixyTrack('G-EGRRVM4LCF');
+              // window.utilixyTrack('G-ZWTPWWSGYF');
               window.utilixyTrack = function(sendTo){
                 try {
                   if (typeof gtag === 'function') {

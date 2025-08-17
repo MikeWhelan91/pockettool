@@ -10,7 +10,8 @@ export default function GAListener() {
 
   useEffect(() => {
     if (!pathname) return;
-    const url = `${window.location.origin}${pathname}${searchParams?.toString() ? `?${searchParams}` : ''}`;
+    const qs = searchParams?.toString();
+    const url = `${window.location.origin}${pathname}${qs ? `?${qs}` : ''}`;
     pageview(url);
   }, [pathname, searchParams]);
 

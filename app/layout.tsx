@@ -3,13 +3,14 @@ import type { Metadata, Viewport } from "next";
 import Link from "next/link";
 import Image from "next/image";
 import DesktopToolsNav from "@/components/DesktopToolsNav";
-import GAListener from '@/components/GAListener';
+import GAListener from "@/components/GAListener";
 import Script from "next/script";
 import { Analytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import ToolMenuWrapper from "@/components/ToolMenuWrapper";
 import ThemeToggle from "@/components/ThemeToggle";
 import FooterMultiplex from "@/components/ads/FooterMultiplex";
+import { Suspense } from "react";
 
 import { IBM_Plex_Sans, JetBrains_Mono } from "next/font/google";
 
@@ -137,11 +138,10 @@ export default function RootLayout({
               window.dataLayer = window.dataLayer || [];
               function gtag(){dataLayer.push(arguments);}
               gtag('js', new Date());
-              // Base config for Google Ads (AW)
-              gtag('config', 'G-ZWTPWWSGYF');
+              // Configure GA4; disable auto page_view so SPA tracking is manual
+              gtag('config', 'G-ZWTPWWSGYF', { send_page_view: false });
 
               // Small helper so components can fire conversions:
-              // window.utilixyTrack('G-ZWTPWWSGYF');
               window.utilixyTrack = function(sendTo){
                 try {
                   if (typeof gtag === 'function') {
@@ -152,8 +152,6 @@ export default function RootLayout({
             `,
           }}
         />
-
-          <GAListener />
 
         {/* AdSense library (sitewide). It will honor your consent mode. */}
         <Script
@@ -179,7 +177,13 @@ export default function RootLayout({
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLdOrg) }}
         />
       </head>
+
       <body className="min-h-dvh bg-[hsl(var(--bg))] text-[hsl(var(--text))]">
+        {/* GA route-change tracker must be inside body and under Suspense */}
+        <Suspense fallback={null}>
+          <GAListener />
+        </Suspense>
+
         <div className="min-h-dvh flex flex-col">
           {/* Header */}
           <header
@@ -193,7 +197,6 @@ export default function RootLayout({
                 paddingRight: "max(16px, env(safe-area-inset-right))",
               }}
             >
-              {" "}
               {/* Hamburger menu (mobile only) */}
               <ToolMenuWrapper />
               {/* Logo */}
@@ -235,10 +238,7 @@ export default function RootLayout({
               </div>
               <div className="flex items-center gap-4 h-10">
                 <nav className="flex items-center gap-4 leading-none">
-                  <Link
-                    href="/privacy"
-                    className="hover:underline leading-none"
-                  >
+                  <Link href="/privacy" className="hover:underline leading-none">
                     Privacy
                   </Link>
                   <Link href="/terms" className="hover:underline leading-none">

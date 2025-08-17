@@ -382,6 +382,13 @@ export default function Client() {
     return await createImageBitmap(file);
   }
   async function encodeCanvas(canvas: HTMLCanvasElement, targetFmt: OutFmt, q: number): Promise<Blob> {
+    if (targetFmt === "image/avif" && !avifOK) {
+      const { encode } = await import("@jsquash/avif");
+      const ctx = canvas.getContext("2d")!;
+      const img = ctx.getImageData(0, 0, canvas.width, canvas.height);
+      const avifBuffer = await encode(img, { quality: Math.round(q * 63) });
+      return new Blob([avifBuffer], { type: "image/avif" });
+    }
     return new Promise<Blob>((resolve, reject) => {
       canvas.toBlob(
         (b) => (b ? resolve(b) : reject(new Error("Failed to encode canvas"))),
@@ -511,8 +518,7 @@ export default function Client() {
             outFmt = fmt;
             q = fmt === "image/png" ? 0.92 : quality;
             if (outFmt === "image/avif" && !avifOK) {
-              addLog("⚠ AVIF encode not supported in this browser. Falling back to WEBP.");
-              outFmt = "image/webp";
+              addLog("⚠ AVIF encode not supported natively. Using WebAssembly encoder (slower).");
             }
           }
 

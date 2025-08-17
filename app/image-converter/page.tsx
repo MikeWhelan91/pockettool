@@ -35,6 +35,25 @@ export default function Page() {
       <Suspense fallback={<div className="p-4 text-sm text-muted">Loading image tool…</div>}>
         <Client />
       </Suspense>
+      <div className="mx-auto w-full max-w-7xl px-4 md:px-6 lg:px-8 mt-6 grid grid-cols-1 md:grid-cols-[260px_1fr] gap-4">
+        <section id="seo-content" className="seo-half md:col-start-2">
+          <div className="card p-4 md:p-6 lg:max-w-none lg:mx-0 lg:w-full">
+            <h2 className="text-lg md:text-xl font-semibold mb-2">Image Studio — FAQ</h2>
+            <div className="space-y-2">
+              {faq.map(({ q, a }, i) => (
+                <details key={i} className="card--flat p-3">
+                  <summary className="font-medium cursor-pointer">{q}</summary>
+                  <div className="mt-2 text-sm text-muted">{a}</div>
+                </details>
+              ))}
+            </div>
+          </div>
+          <script
+            type="application/ld+json"
+            dangerouslySetInnerHTML={{ __html: JSON.stringify(faqLd) }}
+          />
+        </section>
+      </div>
     </>
   );
 }

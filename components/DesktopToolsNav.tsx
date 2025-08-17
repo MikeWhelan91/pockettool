@@ -53,20 +53,27 @@ export default function DesktopToolsNav() {
   const isActive = (href: string) => pathname === href;
   const onPdf = pathname?.startsWith("/pdf");
 
-  // touch-friendly dropdown state
   const [pdfOpen, setPdfOpen] = React.useState(false);
   const [moreOpen, setMoreOpen] = React.useState(false);
+
   const pdfRef = React.useRef<HTMLDivElement | null>(null);
   const moreRef = React.useRef<HTMLDivElement | null>(null);
 
+  // Detect “desktop hover” capability
+  const [canHover, setCanHover] = React.useState(false);
+  React.useEffect(() => {
+    const mq = window.matchMedia("(hover: hover) and (pointer: fine)");
+    const apply = () => setCanHover(mq.matches);
+    apply();
+    mq.addEventListener("change", apply);
+    return () => mq.removeEventListener("change", apply);
+  }, []);
+
+  // Close on outside click / Esc
   React.useEffect(() => {
     function onDocClick(e: MouseEvent) {
-      if (pdfRef.current && !pdfRef.current.contains(e.target as Node)) {
-        setPdfOpen(false);
-      }
-      if (moreRef.current && !moreRef.current.contains(e.target as Node)) {
-        setMoreOpen(false);
-      }
+      if (pdfRef.current && !pdfRef.current.contains(e.target as Node)) setPdfOpen(false);
+      if (moreRef.current && !moreRef.current.contains(e.target as Node)) setMoreOpen(false);
     }
     function onEsc(e: KeyboardEvent) {
       if (e.key === "Escape") {
@@ -84,18 +91,19 @@ export default function DesktopToolsNav() {
 
   return (
     <nav className="hidden md:flex ml-auto items-center gap-1">
-      {/* PDF: click-to-open for iPad; hover also works on desktop */}
+      {/* PDF */}
       <div
         ref={pdfRef}
         className="relative inline-block"
-        onMouseEnter={() => setPdfOpen(true)}
-        onMouseLeave={() => setPdfOpen(false)}
+        // Hover only on desktop; mobile/tablet uses click
+        onMouseEnter={canHover ? () => setPdfOpen(true) : undefined}
+        onMouseLeave={canHover ? () => setPdfOpen(false) : undefined}
       >
         <button
           type="button"
           aria-haspopup="menu"
           aria-expanded={pdfOpen}
-          onClick={() => setPdfOpen((v) => !v)}
+          onClick={!canHover ? () => setPdfOpen((v) => !v) : undefined}
           className={[
             "px-3 py-1.5 rounded-md text-base font-semibold transition-colors duration-150",
             "hover:bg-[#2B67F3] hover:text-white",
@@ -104,29 +112,24 @@ export default function DesktopToolsNav() {
           ].join(" ")}
         >
           PDF
-          <svg
-            aria-hidden
-            viewBox="0 0 20 20"
-            className="h-4 w-4 translate-y-px"
-            fill="currentColor"
-          >
+          <svg aria-hidden viewBox="0 0 20 20" className="h-4 w-4 translate-y-px" fill="currentColor">
             <path d="M5.23 7.21a.75.75 0 011.06.02L10 10.94l3.71-3.71a.75.75 0 111.06 1.06l-4.24 4.24a.75.75 0 01-1.06 0L5.21 8.29a.75.75 0 01.02-1.08z" />
           </svg>
         </button>
 
-        {/* Menu */}
+        {/* Menu (kept inside same wrapper → no hover gap) */}
         <div
           role="menu"
+          aria-hidden={!pdfOpen}
           className={[
             "absolute left-1/2 -translate-x-1/2 top-full mt-2 z-[3000]",
-            "rounded-xl p-2 glass", // frosted background with real blur
+            "rounded-xl p-2 glass",
             "min-w-[18rem] max-h-[70vh] overflow-auto",
             "grid grid-cols-1 sm:grid-cols-2 gap-1",
             pdfOpen ? "opacity-100 visible translate-y-0" : "opacity-0 invisible translate-y-1",
             "transition ease-out duration-150",
           ].join(" ")}
         >
-          {/* Make the first item go to /pdf home */}
           <Link
             href="/pdf"
             role="menuitem"
@@ -161,36 +164,32 @@ export default function DesktopToolsNav() {
       <NavLink href="/diff" label="Diff" active={isActive("/diff")} className="hidden xl:inline-flex" />
       <NavLink href="/regex" label="Regex" active={isActive("/regex")} className="hidden xl:inline-flex" />
 
-      {/* More menu for md–lg (iPad widths) */}
+      {/* More (same hover/click rules) */}
       <div
         ref={moreRef}
         className="relative inline-block xl:hidden"
-        onMouseEnter={() => setMoreOpen(true)}
-        onMouseLeave={() => setMoreOpen(false)}
+        onMouseEnter={canHover ? () => setMoreOpen(true) : undefined}
+        onMouseLeave={canHover ? () => setMoreOpen(false) : undefined}
       >
         <button
           type="button"
           aria-haspopup="menu"
           aria-expanded={moreOpen}
-          onClick={() => setMoreOpen((v) => !v)}
+          onClick={!canHover ? () => setMoreOpen((v) => !v) : undefined}
           className="px-3 py-1.5 rounded-md text-base font-semibold transition-colors duration-150 text-[#2B67F3] hover:bg-[#2B67F3] hover:text-white inline-flex items-center gap-1"
         >
           More
-          <svg
-            aria-hidden
-            viewBox="0 0 20 20"
-            className="h-4 w-4 translate-y-px"
-            fill="currentColor"
-          >
+          <svg aria-hidden viewBox="0 0 20 20" className="h-4 w-4 translate-y-px" fill="currentColor">
             <path d="M5.23 7.21a.75.75 0 011.06.02L10 10.94l3.71-3.71a.75.75 0 111.06 1.06l-4.24 4.24a.75.75 0 01-1.06 0L5.21 8.29a.75.75 0 01.02-1.08z" />
           </svg>
         </button>
 
         <div
           role="menu"
+          aria-hidden={!moreOpen}
           className={[
             "absolute right-0 top-full mt-2 z-[3000]",
-            "rounded-xl p-2 glass", // frosted background with real blur
+            "rounded-xl p-2 glass",
             "min-w-[12rem] grid gap-1",
             moreOpen ? "opacity-100 visible translate-y-0" : "opacity-0 invisible translate-y-1",
             "transition ease-out duration-150",

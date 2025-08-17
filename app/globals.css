@@ -832,14 +832,16 @@ main:has(#seo-content) .tool-panels{
   --line-rgb: 70 76 90;   /* adjust to match var(--line) */
 }
 
-/* Frosted glass utility */
+
+/* stronger frost for dropdowns */
 .glass {
-  background-color: rgb(var(--bg-rgb) / 0.60);
-  -webkit-backdrop-filter: blur(12px) saturate(140%);
-  backdrop-filter: blur(12px) saturate(140%);
-  border: 1px solid rgb(var(--line-rgb) / 0.65);
+  background-color: rgb(var(--bg-rgb, 15 18 26) / 0.50);
+  -webkit-backdrop-filter: blur(18px) saturate(160%);
+  backdrop-filter: blur(18px) saturate(160%);
+  border: 1px solid rgb(var(--line-rgb, 70 76 90) / 0.65);
   box-shadow: 0 10px 30px rgb(0 0 0 / 0.35);
 }
+
 
 /* Fallback for browsers without backdrop-filter */
 @supports not (backdrop-filter: blur(1px)) {

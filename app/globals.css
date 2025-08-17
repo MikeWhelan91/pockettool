@@ -835,10 +835,10 @@ main:has(#seo-content) .tool-panels{
 
 /* stronger frost for dropdowns */
 .glass {
-  background-color: rgb(var(--bg-rgb, 15 18 26) / 0.50);
-  -webkit-backdrop-filter: blur(18px) saturate(160%);
-  backdrop-filter: blur(18px) saturate(160%);
-  border: 1px solid rgb(var(--line-rgb, 70 76 90) / 0.65);
+  background-color: rgb(var(--bg-rgb) / 0.65);
+  -webkit-backdrop-filter: blur(60px) saturate(160%);
+  backdrop-filter: blur(60px) saturate(160%);
+  border: 1px solid rgb(var(--line-rgb) / 0.65);
   box-shadow: 0 10px 30px rgb(0 0 0 / 0.35);
 }
 

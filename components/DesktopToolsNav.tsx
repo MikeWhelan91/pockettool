@@ -69,6 +69,34 @@ export default function DesktopToolsNav() {
   const [imageOpen, setImageOpen] = React.useState(false);
   const [moreOpen, setMoreOpen] = React.useState(false);
 
+  // small delay before closing menus to avoid flicker when moving cursor
+  const pdfTimer = React.useRef<ReturnType<typeof setTimeout> | null>(null);
+  const imageTimer = React.useRef<ReturnType<typeof setTimeout> | null>(null);
+  const moreTimer = React.useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const clearTimer = (ref: React.MutableRefObject<ReturnType<typeof setTimeout> | null>) => {
+    if (ref.current) {
+      clearTimeout(ref.current);
+      ref.current = null;
+    }
+  };
+
+  const openWith = (
+    setter: React.Dispatch<React.SetStateAction<boolean>>,
+    timerRef: React.MutableRefObject<ReturnType<typeof setTimeout> | null>
+  ) => () => {
+    clearTimer(timerRef);
+    setter(true);
+  };
+
+  const closeWith = (
+    setter: React.Dispatch<React.SetStateAction<boolean>>,
+    timerRef: React.MutableRefObject<ReturnType<typeof setTimeout> | null>
+  ) => () => {
+    clearTimer(timerRef);
+    timerRef.current = setTimeout(() => setter(false), 100);
+  };
+
   const pdfRef = React.useRef<HTMLDivElement | null>(null);
   const imageRef = React.useRef<HTMLDivElement | null>(null);
   const moreRef = React.useRef<HTMLDivElement | null>(null);
@@ -112,14 +140,8 @@ export default function DesktopToolsNav() {
         ref={pdfRef}
         className="relative inline-block"
         // Hover only on desktop; mobile/tablet uses click
-        onMouseEnter={canHover ? () => setPdfOpen(true) : undefined}
-        onMouseLeave={
-          canHover
-            ? (e) => {
-                if (!e.currentTarget.contains(e.relatedTarget as Node)) setPdfOpen(false);
-              }
-            : undefined
-        }
+        onMouseEnter={canHover ? openWith(setPdfOpen, pdfTimer) : undefined}
+        onMouseLeave={canHover ? closeWith(setPdfOpen, pdfTimer) : undefined}
       >
         <button
           type="button"
@@ -178,14 +200,8 @@ export default function DesktopToolsNav() {
       <div
         ref={imageRef}
         className="relative inline-block"
-        onMouseEnter={canHover ? () => setImageOpen(true) : undefined}
-        onMouseLeave={
-          canHover
-            ? (e) => {
-                if (!e.currentTarget.contains(e.relatedTarget as Node)) setImageOpen(false);
-              }
-            : undefined
-        }
+        onMouseEnter={canHover ? openWith(setImageOpen, imageTimer) : undefined}
+        onMouseLeave={canHover ? closeWith(setImageOpen, imageTimer) : undefined}
       >
         <button
           type="button"
@@ -254,14 +270,8 @@ export default function DesktopToolsNav() {
       <div
         ref={moreRef}
         className="relative inline-block xl:hidden"
-        onMouseEnter={canHover ? () => setMoreOpen(true) : undefined}
-        onMouseLeave={
-          canHover
-            ? (e) => {
-                if (!e.currentTarget.contains(e.relatedTarget as Node)) setMoreOpen(false);
-              }
-            : undefined
-        }
+        onMouseEnter={canHover ? openWith(setMoreOpen, moreTimer) : undefined}
+        onMouseLeave={canHover ? closeWith(setMoreOpen, moreTimer) : undefined}
       >
         <button
           type="button"

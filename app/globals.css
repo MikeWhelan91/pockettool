@@ -786,7 +786,7 @@ main:has(#seo-content) .tool-panels{
 }
 
 /* Safety: ensure nothing inside the card re-introduces top spacing */
-#seo-content > .card { margin-top: 0 !important; }
+#seo-content > .card { margin: 0 auto !important; }
 #seo-content > *:first-child { margin-top: 0 !important; }
 /* === PDF: put the SEO block snug under the tool, right column === */
 /* Target the actual grid item that WRAPS #seo-content */
@@ -822,6 +822,16 @@ main:has(#seo-content) .tool-panels{
     margin-top: 0 !important;
   }
 }
+
+/* Image Studio: keep FAQ aligned with results column */
+@media (min-width: 768px){
+  [data-image] #seo-content{
+    grid-column: 2 / 3 !important;
+  }
+}
+
+/* Image Studio: don't center the FAQ card */
+[data-image] #seo-content > .card { margin: 0 !important; }
 
 /* Hide the ToolLayout heading/intro on pages that render #seo-content
    (PDF Studio, Image Converter, and any future tool with an FAQ block) */

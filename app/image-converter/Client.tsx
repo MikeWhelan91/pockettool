@@ -692,7 +692,7 @@ export default function Client() {
   /* ───────────────────────── UI ───────────────────────── */
 
   return (
-    <section className="mx-auto w-full max-w-7xl px-4 md:px-6 lg:px-8 mt-6">
+    <section data-image className="mx-auto w-full max-w-7xl px-4 md:px-6 lg:px-8 mt-6">
       <div className="grid grid-cols-1 md:grid-cols-[260px_1fr] gap-4 items-start">
         {/* Sidebar (unchanged) */}
         <aside className="card p-3 h-fit hidden md:block">

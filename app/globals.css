@@ -806,6 +806,8 @@ main:has(#seo-content) .tool-panels{
 @media (min-width: 1024px){
   #seo-content .card{
     max-width: 720px;                     /* tune if you want it wider/narrower */
+    margin-left: auto;
+    margin-right: auto;
   }
 }
 

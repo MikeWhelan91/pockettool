@@ -833,64 +833,43 @@ main:has(#seo-content) .tool-panels{
 }
 
 
-/* stronger frost for dropdowns */
-.glass {
-  background-color: rgb(var(--bg-rgb) / 0.65);
-  -webkit-backdrop-filter: blur(60px) saturate(160%);
-  backdrop-filter: blur(60px) saturate(160%);
-  border: 1px solid rgb(var(--line-rgb) / 0.65);
-  box-shadow: 0 10px 30px rgb(0 0 0 / 0.35);
-}
-
-
-/* Fallback for browsers without backdrop-filter */
-@supports not (backdrop-filter: blur(1px)) {
-  .glass {
-    background-color: rgb(var(--bg-rgb) / 0.92);
-  }
-}
-/* === Theme RGB palettes just for frosted panels === */
+/* === Frosted dropdown (theme-aware, consolidated) =================== */
+/* Panel colors (don’t borrow the page bg; use stable tones per theme)  */
 :root {
-  /* Light theme panel (slate) */
-  --panel-rgb: 48 56 66;          /* darker than page so text pops */
+  /* Light theme */
+  --panel-rgb: 48 56 66;         /* slatey, readable */
   --panel-border-rgb: 90 98 112;
 }
+/* If you toggle via .theme-dark (your ThemeToggle does), map here */
+.theme-dark {
+  --panel-rgb: 20 24 32;         /* deep, neutral */
+  --panel-border-rgb: 80 86 100;
+}
 
+/* Also support OS-pref for anyone not using the toggle class */
 @media (prefers-color-scheme: dark) {
-  :root {
-    /* Dark theme panel */
+  :root:not(.theme-dark) {
     --panel-rgb: 20 24 32;
     --panel-border-rgb: 80 86 100;
   }
 }
 
-/* If you flip themes via a class or data-attr, keep these too */
-:root[data-theme="light"] {
-  --panel-rgb: 48 56 66;
-  --panel-border-rgb: 90 98 112;
-}
-:root[data-theme="dark"] {
-  --panel-rgb: 20 24 32;
-  --panel-border-rgb: 80 86 100;
-}
-
-/* === Frosted dropdown utility (strong, fully obscuring) === */
+/* Single source of truth for the dropdown surface */
 .glass {
-  /* FORCE translucency so blur is visible */
+  /* Force translucency so backdrop-filter actually shows */
   background-color: rgb(var(--panel-rgb) / 0.82) !important;
 
-  /* Heavy blur to smear background text completely */
+  /* Heavy blur = background text unreadable */
   -webkit-backdrop-filter: blur(36px) saturate(160%);
   backdrop-filter: blur(36px) saturate(160%);
 
-  border: 1px solid rgb(var(--panel-border-rgb) / 0.6);
+  border: 1px solid rgb(var(--panel-border-rgb) / 0.60);
   box-shadow: 0 12px 36px rgb(0 0 0 / 0.35);
-  background-clip: padding-box; /* crisper border on Safari */
+  background-clip: padding-box; /* sharper edge on Safari */
+  will-change: opacity, transform, backdrop-filter;
 }
 
-/* Fallback for browsers without backdrop-filter (or disabled in FF) */
+/* Fallback (Firefox with backdrop disabled, etc.) */
 @supports not (backdrop-filter: blur(1px)) {
-  .glass {
-    background-color: rgb(var(--panel-rgb) / 0.94) !important; /* near-solid */
-  }
+  .glass { background-color: rgb(var(--panel-rgb) / 0.94) !important; }
 }

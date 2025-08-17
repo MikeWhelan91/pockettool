@@ -113,7 +113,13 @@ export default function DesktopToolsNav() {
         className="relative inline-block"
         // Hover only on desktop; mobile/tablet uses click
         onMouseEnter={canHover ? () => setPdfOpen(true) : undefined}
-        onMouseLeave={canHover ? () => setPdfOpen(false) : undefined}
+        onMouseLeave={
+          canHover
+            ? (e) => {
+                if (!e.currentTarget.contains(e.relatedTarget as Node)) setPdfOpen(false);
+              }
+            : undefined
+        }
       >
         <button
           type="button"
@@ -173,7 +179,13 @@ export default function DesktopToolsNav() {
         ref={imageRef}
         className="relative inline-block"
         onMouseEnter={canHover ? () => setImageOpen(true) : undefined}
-        onMouseLeave={canHover ? () => setImageOpen(false) : undefined}
+        onMouseLeave={
+          canHover
+            ? (e) => {
+                if (!e.currentTarget.contains(e.relatedTarget as Node)) setImageOpen(false);
+              }
+            : undefined
+        }
       >
         <button
           type="button"
@@ -243,7 +255,13 @@ export default function DesktopToolsNav() {
         ref={moreRef}
         className="relative inline-block xl:hidden"
         onMouseEnter={canHover ? () => setMoreOpen(true) : undefined}
-        onMouseLeave={canHover ? () => setMoreOpen(false) : undefined}
+        onMouseLeave={
+          canHover
+            ? (e) => {
+                if (!e.currentTarget.contains(e.relatedTarget as Node)) setMoreOpen(false);
+              }
+            : undefined
+        }
       >
         <button
           type="button"

@@ -35,6 +35,7 @@ export default function Page() {
       <Suspense fallback={<div className="p-4 text-sm text-muted">Loading image tool…</div>}>
         <Client />
       </Suspense>
+
       <div className="mx-auto w-full max-w-7xl px-4 md:px-6 lg:px-8 mt-6 grid grid-cols-1 md:grid-cols-[260px_1fr] gap-4">
         <section id="seo-content" className="seo-half md:col-start-2">
           <div className="card p-4 md:p-6 lg:max-w-none lg:mx-0 lg:w-full">

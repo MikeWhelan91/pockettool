@@ -428,6 +428,48 @@ export default function Client() {
     router.replace(`/image-converter?${sp.toString()}`, { scroll: false });
   };
 
+  // FAQ content
+  const faq = [
+    {
+      q: "Do my images upload to a server?",
+      a: "No. All conversions run locally in your browser—files never leave your device.",
+    },
+    {
+      q: "Which formats can I convert?",
+      a: "PNG, JPG, WebP, AVIF and HEIC are supported. You can also export images as a single PDF.",
+    },
+    {
+      q: "What editing tools are available?",
+      a: "Crop, resize, rotate/flip, compress by quality, add text watermarks, strip EXIF metadata, and even combine images into a PDF.",
+    },
+    {
+      q: "Can I convert to AVIF?",
+      a: "Yes. The app can encode AVIF directly in your browser. If your browser lacks native support, a built-in WebAssembly encoder is used automatically.",
+    },
+    {
+      q: "Can I batch-resize or download as ZIP?",
+      a: "Yes. Add multiple images, set options, and download them individually or as a ZIP archive.",
+    },
+    {
+      q: "Is the tool free?",
+      a: "Yes—100% free and ad-supported. No sign-up required.",
+    },
+    {
+      q: "Does it work offline?",
+      a: "Once loaded, it continues working without internet because all processing is client-side JavaScript.",
+    },
+  ];
+
+  const faqLd = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: faq.map(({ q, a }) => ({
+      "@type": "Question",
+      name: q,
+      acceptedAnswer: { "@type": "Answer", text: a },
+    })),
+  };
+
   // uploader
   function onPick(files: File[]) {
     const arr = files.map((f) => ({

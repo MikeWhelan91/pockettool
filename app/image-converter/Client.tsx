@@ -1,7 +1,13 @@
 /* eslint-disable @next/next/no-img-element */
 "use client";
 
-import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 
 /* ───────────────────────── helpers ───────────────────────── */
@@ -14,7 +20,10 @@ function clamp(n: number, min: number, max: number) {
 function ToolHelp({
   title = "What this does & how to use it",
   children,
-}: { title?: string; children: React.ReactNode }) {
+}: {
+  title?: string;
+  children: React.ReactNode;
+}) {
   const [open, setOpen] = React.useState(false);
   useEffect(() => {
     const mq = window.matchMedia("(min-width: 768px)");
@@ -63,17 +72,30 @@ function DropZoneInline({
     <div className="w-full">
       <label className="block text-sm text-neutral-300 mb-1">{label}</label>
       <div
-        onDragEnter={(e) => { e.preventDefault(); setDrag(true); }}
-        onDragOver={(e) => { e.preventDefault(); setDrag(true); }}
-        onDragLeave={(e) => { e.preventDefault(); setDrag(false); }}
+        onDragEnter={(e) => {
+          e.preventDefault();
+          setDrag(true);
+        }}
+        onDragOver={(e) => {
+          e.preventDefault();
+          setDrag(true);
+        }}
+        onDragLeave={(e) => {
+          e.preventDefault();
+          setDrag(false);
+        }}
         onDrop={onDrop}
         onClick={() => inputRef.current?.click()}
         role="button"
         tabIndex={0}
-        onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") inputRef.current?.click(); }}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" || e.key === " ") inputRef.current?.click();
+        }}
         className={
           "flex items-center justify-center rounded-lg border-2 border-dashed px-4 py-10 transition " +
-          (drag ? "border-blue-500 bg-blue-500/10" : "border-line hover:bg-card")
+          (drag
+            ? "border-blue-500 bg-blue-500/10"
+            : "border-line hover:bg-card")
         }
         aria-label="Drop images here or click to browse"
       >
@@ -108,7 +130,11 @@ function CropperInline({
   rect: { x: number; y: number; w: number; h: number };
   onChange: (r: { x: number; y: number; w: number; h: number }) => void;
   aspect: "free" | "1:1" | "4:3" | "16:9";
-  previewTransform: { flipH: boolean; flipV: boolean; rotate: 0 | 90 | 180 | 270 };
+  previewTransform: {
+    flipH: boolean;
+    flipV: boolean;
+    rotate: 0 | 90 | 180 | 270;
+  };
   height?: number;
   visible?: boolean;
 }) {
@@ -147,11 +173,19 @@ function CropperInline({
     return { x: clamp(x, 0, 100), y: clamp(y, 0, 100) };
   }
 
-  function startDrag(e: React.PointerEvent, type: "move" | "nw" | "ne" | "sw" | "se") {
+  function startDrag(
+    e: React.PointerEvent,
+    type: "move" | "nw" | "ne" | "sw" | "se",
+  ) {
     e.preventDefault();
     e.stopPropagation(); // so corner doesn’t trigger move
     const pt = pctFromPointer(e);
-    dragRef.current = { type, startX: pt.x, startY: pt.y, startRect: { ...rect } };
+    dragRef.current = {
+      type,
+      startX: pt.x,
+      startY: pt.y,
+      startRect: { ...rect },
+    };
     (e.target as Element).setPointerCapture(e.pointerId);
     window.addEventListener("pointermove", onDrag);
     window.addEventListener("pointerup", endDrag);
@@ -172,13 +206,17 @@ function CropperInline({
       return;
     }
 
-    let nx = startRect.x, ny = startRect.y, nw = startRect.w, nh = startRect.h;
+    let nx = startRect.x,
+      ny = startRect.y,
+      nw = startRect.w,
+      nh = startRect.h;
     if (type === "nw") {
       const rx = clamp(startRect.x + dx, 0, startRect.x + startRect.w - 1);
       const ry = clamp(startRect.y + dy, 0, startRect.y + startRect.h - 1);
       nw = startRect.w + (startRect.x - rx);
       nh = startRect.h + (startRect.y - ry);
-      nx = rx; ny = ry;
+      nx = rx;
+      ny = ry;
     } else if (type === "ne") {
       const ry = clamp(startRect.y + dy, 0, startRect.y + startRect.h - 1);
       nw = clamp(startRect.w + dx, 1, 100 - startRect.x);
@@ -201,7 +239,8 @@ function CropperInline({
       nw = Math.min(nw, 100 - nx);
       nh = Math.min(nh, 100 - ny);
     }
-    nw = Math.max(1, nw); nh = Math.max(1, nh);
+    nw = Math.max(1, nw);
+    nh = Math.max(1, nh);
     onChange({ x: nx, y: ny, w: nw, h: nh });
   }
 
@@ -235,15 +274,47 @@ function CropperInline({
         {visible && (
           <>
             {/* outside masks */}
-            <div className="absolute bg-black/40 pointer-events-none" style={{ left: 0, top: 0, width: `${rect.x}%`, height: "100%" }} />
-            <div className="absolute bg-black/40 pointer-events-none" style={{ left: `${rect.x + rect.w}%`, top: 0, right: 0, height: "100%" }} />
-            <div className="absolute bg-black/40 pointer-events-none" style={{ left: `${rect.x}%`, top: 0, width: `${rect.w}%`, height: `${rect.y}%` }} />
-            <div className="absolute bg-black/40 pointer-events-none" style={{ left: `${rect.x}%`, top: `${rect.y + rect.h}%`, width: `${rect.w}%`, bottom: 0 }} />
+            <div
+              className="absolute bg-black/40 pointer-events-none"
+              style={{ left: 0, top: 0, width: `${rect.x}%`, height: "100%" }}
+            />
+            <div
+              className="absolute bg-black/40 pointer-events-none"
+              style={{
+                left: `${rect.x + rect.w}%`,
+                top: 0,
+                right: 0,
+                height: "100%",
+              }}
+            />
+            <div
+              className="absolute bg-black/40 pointer-events-none"
+              style={{
+                left: `${rect.x}%`,
+                top: 0,
+                width: `${rect.w}%`,
+                height: `${rect.y}%`,
+              }}
+            />
+            <div
+              className="absolute bg-black/40 pointer-events-none"
+              style={{
+                left: `${rect.x}%`,
+                top: `${rect.y + rect.h}%`,
+                width: `${rect.w}%`,
+                bottom: 0,
+              }}
+            />
 
             {/* crop box */}
             <div
               className="absolute border-2 border-blue-500"
-              style={{ left: `${rect.x}%`, top: `${rect.y}%`, width: `${rect.w}%`, height: `${rect.h}%` }}
+              style={{
+                left: `${rect.x}%`,
+                top: `${rect.y}%`,
+                width: `${rect.w}%`,
+                height: `${rect.h}%`,
+              }}
               onPointerDown={(e) => startDrag(e, "move")}
               aria-label="Crop area"
             >
@@ -359,6 +430,11 @@ export default function Client() {
   const [picked, setPicked] = useState<Picked[]>([]);
   const [activeIdx, setActiveIdx] = useState(0);
 
+  const activeLabel = useMemo(
+    () => TOOLS.find((t) => t.id === active)?.label ?? "",
+    [active],
+  );
+
   // results
   const [busy, setBusy] = useState(false);
   const [results, setResults] = useState<Result[]>([]);
@@ -382,15 +458,27 @@ export default function Client() {
   }, []);
 
   // Resize
-  const [resizeMode, setResizeMode] = useState<"exact" | "fit" | "percent">("fit");
+  const [resizeMode, setResizeMode] = useState<"exact" | "fit" | "percent">(
+    "fit",
+  );
   const [resizeW, setResizeW] = useState<number>(1920);
   const [resizeH, setResizeH] = useState<number>(1080);
   const [resizePct, setResizePct] = useState<number>(50);
 
   // Crop (default = Free)
-  const [cropAspect, setCropAspect] = useState<"free" | "1:1" | "4:3" | "16:9">("free");
-  const [cropRect, setCropRect] = useState<{ x: number; y: number; w: number; h: number }>({
-    x: 20, y: 20, w: 60, h: 60,
+  const [cropAspect, setCropAspect] = useState<"free" | "1:1" | "4:3" | "16:9">(
+    "free",
+  );
+  const [cropRect, setCropRect] = useState<{
+    x: number;
+    y: number;
+    w: number;
+    h: number;
+  }>({
+    x: 20,
+    y: 20,
+    w: 60,
+    h: 60,
   });
 
   // Rotate / flip
@@ -400,16 +488,24 @@ export default function Client() {
 
   // Watermark options (new; defaults match old behavior)
   const [wmText, setWmText] = useState("Generated by Utilixy");
-  const [wmPos, setWmPos] = useState<"top-left" | "top-right" | "bottom-left" | "bottom-right">("top-right");
+  const [wmPos, setWmPos] = useState<
+    "top-left" | "top-right" | "bottom-left" | "bottom-right"
+  >("top-right");
   const [wmSize, setWmSize] = useState<number>(16);
   const [wmOpacity, setWmOpacity] = useState<number>(0.45);
 
   const accept = useMemo(
-    () => ["image/jpeg", "image/png", "image/webp", "image/avif", "image/*"].join(","),
-    []
+    () =>
+      ["image/jpeg", "image/png", "image/webp", "image/avif", "image/*"].join(
+        ",",
+      ),
+    [],
   );
   const addLog = (m: string) => setLog((p) => [...p, m]);
-  const clear = () => { setResults([]); setLog([]); };
+  const clear = () => {
+    setResults([]);
+    setLog([]);
+  };
 
   // Sync state when ?tool= changes (e.g., via navbar)
   useEffect(() => {
@@ -485,7 +581,9 @@ export default function Client() {
   }
 
   useEffect(() => {
-    return () => { picked.forEach((p) => URL.revokeObjectURL(p.url)); };
+    return () => {
+      picked.forEach((p) => URL.revokeObjectURL(p.url));
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -493,7 +591,11 @@ export default function Client() {
   async function decodeFileToBitmap(file: File): Promise<ImageBitmap> {
     return await createImageBitmap(file);
   }
-  async function encodeCanvas(canvas: HTMLCanvasElement, targetFmt: OutFmt, q: number): Promise<Blob> {
+  async function encodeCanvas(
+    canvas: HTMLCanvasElement,
+    targetFmt: OutFmt,
+    q: number,
+  ): Promise<Blob> {
     if (targetFmt === "image/avif" && !avifOK) {
       const { encode } = await import("@jsquash/avif");
       const ctx = canvas.getContext("2d")!;
@@ -505,33 +607,47 @@ export default function Client() {
       canvas.toBlob(
         (b) => (b ? resolve(b) : reject(new Error("Failed to encode canvas"))),
         targetFmt,
-        targetFmt === "image/png" ? undefined : q
+        targetFmt === "image/png" ? undefined : q,
       );
     });
   }
   function drawOp(
     bmp: ImageBitmap,
-    draw: (ctx: CanvasRenderingContext2D, sw: number, sh: number) => { w: number; h: number }
+    draw: (
+      ctx: CanvasRenderingContext2D,
+      sw: number,
+      sh: number,
+    ) => { w: number; h: number },
   ): HTMLCanvasElement {
     const c = document.createElement("canvas");
     const ctx = c.getContext("2d")!;
     const sw = bmp.width;
     const sh = bmp.height;
     const { w, h } = draw(ctx, sw, sh);
-    c.width = w; c.height = h;
+    c.width = w;
+    c.height = h;
     draw(ctx, sw, sh);
     return c;
   }
   function applyResize(sw: number, sh: number): { dw: number; dh: number } {
     if (resizeMode === "percent") {
       const f = Math.max(1, Math.min(100, resizePct)) / 100;
-      return { dw: Math.max(1, Math.round(sw * f)), dh: Math.max(1, Math.round(sh * f)) };
+      return {
+        dw: Math.max(1, Math.round(sw * f)),
+        dh: Math.max(1, Math.round(sh * f)),
+      };
     }
     if (resizeMode === "exact") {
-      return { dw: Math.max(1, Math.round(resizeW)), dh: Math.max(1, Math.round(resizeH)) };
+      return {
+        dw: Math.max(1, Math.round(resizeW)),
+        dh: Math.max(1, Math.round(resizeH)),
+      };
     }
     const r = Math.min(resizeW / sw, resizeH / sh);
-    return { dw: Math.max(1, Math.round(sw * r)), dh: Math.max(1, Math.round(sh * r)) };
+    return {
+      dw: Math.max(1, Math.round(sw * r)),
+      dh: Math.max(1, Math.round(sh * r)),
+    };
   }
   function applyTransform(ctx: CanvasRenderingContext2D, w: number, h: number) {
     ctx.translate(w / 2, h / 2);
@@ -548,12 +664,22 @@ export default function Client() {
     ctx.font = `${wmSize}px system-ui, -apple-system, Segoe UI, Roboto, Inter, Arial, sans-serif`;
     const tw = ctx.measureText(text).width;
     const th = wmSize;
-    let x = 16, y = 16 + th;
+    let x = 16,
+      y = 16 + th;
 
     switch (wmPos) {
-      case "top-right":    x = w - tw - 16; y = 16 + th; break;
-      case "bottom-left":  x = 16;          y = h - 16;  break;
-      case "bottom-right": x = w - tw - 16; y = h - 16;  break;
+      case "top-right":
+        x = w - tw - 16;
+        y = 16 + th;
+        break;
+      case "bottom-left":
+        x = 16;
+        y = h - 16;
+        break;
+      case "bottom-right":
+        x = w - tw - 16;
+        y = h - 16;
+        break;
       // top-left default already set
     }
     ctx.fillText(text, x, y);
@@ -568,7 +694,9 @@ export default function Client() {
       setResults([]);
       setLog([]);
       try {
-        const bitmaps = await Promise.all(picked.map((p) => decodeFileToBitmap(p.file)));
+        const bitmaps = await Promise.all(
+          picked.map((p) => decodeFileToBitmap(p.file)),
+        );
         const pdfPages: { dataUrl: string; w: number; h: number }[] = [];
 
         for (let i = 0; i < picked.length; i++) {
@@ -576,7 +704,10 @@ export default function Client() {
 
           const canvas = drawOp(bmp, (ctx, sw, sh) => {
             // Crop first
-            let sx = 0, sy = 0, csw = sw, csh = sh;
+            let sx = 0,
+              sy = 0,
+              csw = sw,
+              csh = sh;
             if (mode === "crop") {
               const rx = clamp(cropRect.x, 0, 100) / 100;
               const ry = clamp(cropRect.y, 0, 100) / 100;
@@ -591,10 +722,12 @@ export default function Client() {
             }
 
             // Resize
-            let dw = csw, dh = csh;
+            let dw = csw,
+              dh = csh;
             if (mode === "resize") {
               const r = applyResize(csw, csh);
-              dw = r.dw; dh = r.dh;
+              dw = r.dw;
+              dh = r.dh;
             }
 
             // Prepare canvas
@@ -626,11 +759,17 @@ export default function Client() {
           // choose output format for convert/compress/metadata
           let outFmt: OutFmt = "image/png";
           let q = 0.92;
-          if (mode === "convert" || mode === "compress" || mode === "metadata") {
+          if (
+            mode === "convert" ||
+            mode === "compress" ||
+            mode === "metadata"
+          ) {
             outFmt = fmt;
             q = fmt === "image/png" ? 0.92 : quality;
             if (outFmt === "image/avif" && !avifOK) {
-              addLog("⚠ AVIF encode not supported natively. Using WebAssembly encoder (slower).");
+              addLog(
+                "⚠ AVIF encode not supported natively. Using WebAssembly encoder (slower).",
+              );
             }
           }
 
@@ -643,9 +782,13 @@ export default function Client() {
           }
 
           const ext =
-            outFmt === "image/jpeg" ? "jpg" :
-            outFmt === "image/webp" ? "webp" :
-            outFmt === "image/avif" ? "avif" : "png";
+            outFmt === "image/jpeg"
+              ? "jpg"
+              : outFmt === "image/webp"
+                ? "webp"
+                : outFmt === "image/avif"
+                  ? "avif"
+                  : "png";
           const renamed = `${picked[i].name}-${canvas.width}x${canvas.height}.${ext}`;
           const url = URL.createObjectURL(blob);
           setResults((p) => [...p, { name: renamed, url, blob }]);
@@ -659,10 +802,18 @@ export default function Client() {
 
           for (const p of pdfPages) {
             const page = pdf.addPage([p.w, p.h]);
-            const pngBytes = Uint8Array.from(atob(p.dataUrl.split(",")[1]), (c) => c.charCodeAt(0));
+            const pngBytes = Uint8Array.from(
+              atob(p.dataUrl.split(",")[1]),
+              (c) => c.charCodeAt(0),
+            );
             const img = await pdf.embedPng(pngBytes);
             page.drawImage(img, { x: 0, y: 0, width: p.w, height: p.h });
-            page.drawText("Generated by Utilixy", { x: 12, y: 12, size: 10, font });
+            page.drawText("Generated by Utilixy", {
+              x: 12,
+              y: 12,
+              size: 10,
+              font,
+            });
           }
           const pdfBytes = await pdf.save(); // Uint8Array
           const ab = new ArrayBuffer(pdfBytes.byteLength);
@@ -681,18 +832,35 @@ export default function Client() {
     },
     [
       picked,
-      fmt, quality, stripMeta, avifOK,
-      resizeMode, resizeW, resizeH, resizePct,
-      cropRect.x, cropRect.y, cropRect.w, cropRect.h,
-      rotation, flipH, flipV,
-      wmText, wmPos, wmSize, wmOpacity,
-    ]
+      fmt,
+      quality,
+      stripMeta,
+      avifOK,
+      resizeMode,
+      resizeW,
+      resizeH,
+      resizePct,
+      cropRect.x,
+      cropRect.y,
+      cropRect.w,
+      cropRect.h,
+      rotation,
+      flipH,
+      flipV,
+      wmText,
+      wmPos,
+      wmSize,
+      wmOpacity,
+    ],
   );
 
   /* ───────────────────────── UI ───────────────────────── */
 
   return (
-    <section data-image className="mx-auto w-full max-w-7xl px-4 md:px-6 lg:px-8 mt-6">
+    <section
+      data-image
+      className="mx-auto w-full max-w-7xl px-4 md:px-6 lg:px-8 mt-6"
+    >
       <div className="grid grid-cols-1 md:grid-cols-[260px_1fr] gap-4 items-start">
         {/* Sidebar (unchanged) */}
         <aside className="card p-3 h-fit hidden md:block">
@@ -720,7 +888,9 @@ export default function Client() {
             onChange={(e) => changeTool(e.target.value as ToolId)}
           >
             {TOOLS.map((t) => (
-              <option key={t.id} value={t.id}>{t.label}</option>
+              <option key={t.id} value={t.id}>
+                {t.label}
+              </option>
             ))}
           </select>
         </div>
@@ -730,7 +900,10 @@ export default function Client() {
           <div className="grid lg:grid-cols-2 gap-4">
             {/* Left: preview + thumbs (unchanged) */}
             <div className="order-2 lg:order-1">
-              <div className="text-sm font-medium mb-2">Live Preview</div>
+              {activeLabel && (
+                <h2 className="text-base font-semibold mb-1">{activeLabel}</h2>
+              )}
+              <h3 className="text-sm font-medium mb-2">Live Preview</h3>
 
               {picked.length > 0 ? (
                 <>
@@ -756,7 +929,11 @@ export default function Client() {
                           style={{ width: 72, height: 54 }}
                           title={p.name}
                         >
-                          <img src={p.url} alt={p.name} className="w-full h-full object-cover" />
+                          <img
+                            src={p.url}
+                            alt={p.name}
+                            className="w-full h-full object-cover"
+                          />
                         </button>
                       ))}
                     </div>
@@ -767,7 +944,9 @@ export default function Client() {
                   className="rounded bg-black/20 border border-dashed border-line flex items-center justify-center"
                   style={{ height: 420 }}
                 >
-                  <p className="text-sm text-muted">Add images using the uploader in the tool panel →</p>
+                  <p className="text-sm text-muted">
+                    Add images using the uploader in the tool panel →
+                  </p>
                 </div>
               )}
             </div>
@@ -778,189 +957,40 @@ export default function Client() {
                 <div className="space-y-4">
                   <ToolHelp>
                     <>
-                      <p><b>Why</b>: Convert images between JPG, PNG, WebP, and AVIF; strip metadata for privacy.</p>
-                      <p><b>How</b>:</p>
+                      <p>
+                        <b>Why</b>: Convert images between JPG, PNG, WebP, and
+                        AVIF; strip metadata for privacy.
+                      </p>
+                      <p>
+                        <b>How</b>:
+                      </p>
                       <ol className="list-decimal pl-5 space-y-1">
                         <li>Add images here.</li>
                         <li>Select output format and quality.</li>
-                        <li>Click <b>Convert</b>.</li>
+                        <li>
+                          Click <b>Convert</b>.
+                        </li>
                       </ol>
                     </>
                   </ToolHelp>
 
-                  <DropZoneInline accept={accept} multiple onFiles={onPick} label="Images" />
+                  <DropZoneInline
+                    accept={accept}
+                    multiple
+                    onFiles={onPick}
+                    label="Images"
+                  />
 
                   <div className="grid sm:grid-cols-2 gap-3">
-                    <div>
-                      <label className="block text-sm text-neutral-300 mb-1">Output format</label>
-                      <select className="input" value={fmt} onChange={(e) => setFmt(e.target.value as OutFmt)}>
-                        <option value="image/jpeg">JPG</option>
-                        <option value="image/png">PNG</option>
-                        <option value="image/webp">WEBP</option>
-                        <option value="image/avif">AVIF</option>
-                      </select>
-                      {fmt === "image/avif" && !avifOK && (
-                        <p className="mt-1 text-xs text-yellow-400">Browser can’t encode AVIF — will fall back to WEBP.</p>
-                      )}
-                    </div>
                     <div>
                       <label className="block text-sm text-neutral-300 mb-1">
-                        Quality {fmt === "image/png" ? "(lossless)" : `(${Math.round(quality * 100)}%)`}
+                        Output format
                       </label>
-                      <input
-                        type="range"
-                        min={0.5}
-                        max={1}
-                        step={0.05}
-                        value={quality}
-                        disabled={fmt === "image/png"}
-                        onChange={(e) => setQuality(parseFloat(e.target.value))}
-                        className="w-full"
-                      />
-                    </div>
-                    <label className="inline-flex items-center gap-2">
-                      <input type="checkbox" checked={stripMeta} onChange={(e) => setStripMeta(e.target.checked)} />
-                      <span className="text-sm">Strip metadata (EXIF)</span>
-                    </label>
-                  </div>
-
-                  <div className="flex gap-2">
-                    <button className="btn" onClick={() => processAll("convert")} disabled={busy || picked.length === 0}>
-                      {busy ? "Working…" : "Convert"}
-                    </button>
-                  </div>
-                </div>
-              )}
-
-              {active === "resize" && (
-                <div className="space-y-4">
-                  <ToolHelp>
-                    <>
-                      <p><b>Why</b>: Create web-friendly sizes.</p>
-                      <p><b>How</b>: Pick a mode, set size, then click <b>Resize</b>.</p>
-                    </>
-                  </ToolHelp>
-
-                  <DropZoneInline accept={accept} multiple onFiles={onPick} label="Images" />
-
-                  <div className="grid sm:grid-cols-3 gap-3">
-                    <div>
-                      <label className="block text-sm mb-1">Mode</label>
-                      <select className="input" value={resizeMode} onChange={(e) => setResizeMode(e.target.value as any)}>
-                        <option value="fit">Fit within box</option>
-                        <option value="exact">Exact size</option>
-                        <option value="percent">Percent</option>
-                      </select>
-                    </div>
-                    <div>
-                      <label className="block text-sm mb-1">Width</label>
-                      <input type="number" className="input" value={resizeW} onChange={(e) => setResizeW(parseInt(e.target.value, 10) || 1)} />
-                    </div>
-                    <div>
-                      <label className="block text-sm mb-1">Height</label>
-                      <input type="number" className="input" value={resizeH} onChange={(e) => setResizeH(parseInt(e.target.value, 10) || 1)} />
-                      {resizeMode === "percent" && (
-                        <div className="mt-3">
-                          <label className="block text-sm mb-1">Percent</label>
-                          <input type="range" min={1} max={300} value={resizePct} onChange={(e) => setResizePct(parseInt(e.target.value, 10))} className="w-full" />
-                        </div>
-                      )}
-                    </div>
-                  </div>
-
-                  <button className="btn" onClick={() => processAll("resize")} disabled={busy || picked.length === 0}>
-                    {busy ? "Working…" : "Resize"}
-                  </button>
-                </div>
-              )}
-
-              {active === "crop" && (
-                <div className="space-y-4">
-                  <ToolHelp>
-                    <>
-                      <p><b>Why</b>: Trim images to the important region.</p>
-                      <p><b>How</b>: Drag the corners or move the box. Lock aspect if needed.</p>
-                    </>
-                  </ToolHelp>
-
-                    <DropZoneInline accept={accept} multiple onFiles={onPick} label="Images" />
-
-                  <div className="grid sm:grid-cols-3 gap-3">
-                    <div>
-                      <label className="block text-sm mb-1">Aspect</label>
-                      <select className="input" value={cropAspect} onChange={(e) => setCropAspect(e.target.value as any)}>
-                        <option value="free">Free</option>
-                        <option value="1:1">1:1 (Square)</option>
-                        <option value="4:3">4:3</option>
-                        <option value="16:9">16:9</option>
-                      </select>
-                    </div>
-                    <div className="sm:col-span-2 flex items-end">
-                      <button className="btn-ghost" onClick={() => setCropRect({ x: 20, y: 20, w: 60, h: 60 })}>
-                        Reset crop
-                      </button>
-                    </div>
-                  </div>
-
-                  <button className="btn" onClick={() => processAll("crop")} disabled={busy || picked.length === 0}>
-                    {busy ? "Working…" : "Crop"}
-                  </button>
-                </div>
-              )}
-
-              {active === "rotate" && (
-                <div className="space-y-4">
-                  <ToolHelp>
-                    <>
-                      <p><b>Why</b>: Fix orientation or mirror.</p>
-                      <p><b>How</b>: Pick rotation/flip and click <b>Apply</b>.</p>
-                    </>
-                  </ToolHelp>
-
-                  <DropZoneInline accept={accept} multiple onFiles={onPick} label="Images" />
-
-                  <div className="grid sm:grid-cols-3 gap-3">
-                    <div>
-                      <label className="block text-sm mb-1">Rotation</label>
-                      <select className="input" value={rotation} onChange={(e) => setRotation(parseInt(e.target.value, 10) as any)}>
-                        <option value={0}>0°</option>
-                        <option value={90}>90°</option>
-                        <option value={180}>180°</option>
-                        <option value={270}>270°</option>
-                      </select>
-                    </div>
-                    <label className="inline-flex items-center gap-2 mt-7">
-                      <input type="checkbox" checked={flipH} onChange={(e) => setFlipH(e.target.checked)} />
-                      <span className="text-sm">Flip horizontal</span>
-                    </label>
-                    <label className="inline-flex items-center gap-2 mt-7">
-                      <input type="checkbox" checked={flipV} onChange={(e) => setFlipV(e.target.checked)} />
-                      <span className="text-sm">Flip vertical</span>
-                    </label>
-                  </div>
-
-                  <button className="btn" onClick={() => processAll("rotate")} disabled={busy || picked.length === 0}>
-                    {busy ? "Working…" : "Apply"}
-                  </button>
-                </div>
-              )}
-
-              {active === "compress" && (
-                <div className="space-y-4">
-                  <ToolHelp>
-                    <>
-                      <p><b>Why</b>: Smaller files for the web.</p>
-                      <p><b>How</b>: Choose output format/quality, then run <b>Compress</b>.</p>
-                    </>
-                  </ToolHelp>
-
-                  <DropZoneInline accept={accept} multiple onFiles={onPick} label="Images" />
-
-                  {/* added controls */}
-                  <div className="grid sm:grid-cols-2 gap-3">
-                    <div>
-                      <label className="block text-sm text-neutral-300 mb-1">Output format</label>
-                      <select className="input" value={fmt} onChange={(e) => setFmt(e.target.value as OutFmt)}>
+                      <select
+                        className="input"
+                        value={fmt}
+                        onChange={(e) => setFmt(e.target.value as OutFmt)}
+                      >
                         <option value="image/jpeg">JPG</option>
                         <option value="image/png">PNG</option>
                         <option value="image/webp">WEBP</option>
@@ -974,7 +1004,297 @@ export default function Client() {
                     </div>
                     <div>
                       <label className="block text-sm text-neutral-300 mb-1">
-                        Quality {fmt === "image/png" ? "(lossless)" : `(${Math.round(quality * 100)}%)`}
+                        Quality{" "}
+                        {fmt === "image/png"
+                          ? "(lossless)"
+                          : `(${Math.round(quality * 100)}%)`}
+                      </label>
+                      <input
+                        type="range"
+                        min={0.5}
+                        max={1}
+                        step={0.05}
+                        value={quality}
+                        disabled={fmt === "image/png"}
+                        onChange={(e) => setQuality(parseFloat(e.target.value))}
+                        className="w-full"
+                      />
+                    </div>
+                    <label className="inline-flex items-center gap-2">
+                      <input
+                        type="checkbox"
+                        checked={stripMeta}
+                        onChange={(e) => setStripMeta(e.target.checked)}
+                      />
+                      <span className="text-sm">Strip metadata (EXIF)</span>
+                    </label>
+                  </div>
+
+                  <div className="flex gap-2">
+                    <button
+                      className="btn"
+                      onClick={() => processAll("convert")}
+                      disabled={busy || picked.length === 0}
+                    >
+                      {busy ? "Working…" : "Convert"}
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {active === "resize" && (
+                <div className="space-y-4">
+                  <ToolHelp>
+                    <>
+                      <p>
+                        <b>Why</b>: Create web-friendly sizes.
+                      </p>
+                      <p>
+                        <b>How</b>: Pick a mode, set size, then click{" "}
+                        <b>Resize</b>.
+                      </p>
+                    </>
+                  </ToolHelp>
+
+                  <DropZoneInline
+                    accept={accept}
+                    multiple
+                    onFiles={onPick}
+                    label="Images"
+                  />
+
+                  <div className="grid sm:grid-cols-3 gap-3">
+                    <div>
+                      <label className="block text-sm mb-1">Mode</label>
+                      <select
+                        className="input"
+                        value={resizeMode}
+                        onChange={(e) => setResizeMode(e.target.value as any)}
+                      >
+                        <option value="fit">Fit within box</option>
+                        <option value="exact">Exact size</option>
+                        <option value="percent">Percent</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-sm mb-1">Width</label>
+                      <input
+                        type="number"
+                        className="input"
+                        value={resizeW}
+                        onChange={(e) =>
+                          setResizeW(parseInt(e.target.value, 10) || 1)
+                        }
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm mb-1">Height</label>
+                      <input
+                        type="number"
+                        className="input"
+                        value={resizeH}
+                        onChange={(e) =>
+                          setResizeH(parseInt(e.target.value, 10) || 1)
+                        }
+                      />
+                      {resizeMode === "percent" && (
+                        <div className="mt-3">
+                          <label className="block text-sm mb-1">Percent</label>
+                          <input
+                            type="range"
+                            min={1}
+                            max={300}
+                            value={resizePct}
+                            onChange={(e) =>
+                              setResizePct(parseInt(e.target.value, 10))
+                            }
+                            className="w-full"
+                          />
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  <button
+                    className="btn"
+                    onClick={() => processAll("resize")}
+                    disabled={busy || picked.length === 0}
+                  >
+                    {busy ? "Working…" : "Resize"}
+                  </button>
+                </div>
+              )}
+
+              {active === "crop" && (
+                <div className="space-y-4">
+                  <ToolHelp>
+                    <>
+                      <p>
+                        <b>Why</b>: Trim images to the important region.
+                      </p>
+                      <p>
+                        <b>How</b>: Drag the corners or move the box. Lock
+                        aspect if needed.
+                      </p>
+                    </>
+                  </ToolHelp>
+
+                  <DropZoneInline
+                    accept={accept}
+                    multiple
+                    onFiles={onPick}
+                    label="Images"
+                  />
+
+                  <div className="grid sm:grid-cols-3 gap-3">
+                    <div>
+                      <label className="block text-sm mb-1">Aspect</label>
+                      <select
+                        className="input"
+                        value={cropAspect}
+                        onChange={(e) => setCropAspect(e.target.value as any)}
+                      >
+                        <option value="free">Free</option>
+                        <option value="1:1">1:1 (Square)</option>
+                        <option value="4:3">4:3</option>
+                        <option value="16:9">16:9</option>
+                      </select>
+                    </div>
+                    <div className="sm:col-span-2 flex items-end">
+                      <button
+                        className="btn-ghost"
+                        onClick={() =>
+                          setCropRect({ x: 20, y: 20, w: 60, h: 60 })
+                        }
+                      >
+                        Reset crop
+                      </button>
+                    </div>
+                  </div>
+
+                  <button
+                    className="btn"
+                    onClick={() => processAll("crop")}
+                    disabled={busy || picked.length === 0}
+                  >
+                    {busy ? "Working…" : "Crop"}
+                  </button>
+                </div>
+              )}
+
+              {active === "rotate" && (
+                <div className="space-y-4">
+                  <ToolHelp>
+                    <>
+                      <p>
+                        <b>Why</b>: Fix orientation or mirror.
+                      </p>
+                      <p>
+                        <b>How</b>: Pick rotation/flip and click <b>Apply</b>.
+                      </p>
+                    </>
+                  </ToolHelp>
+
+                  <DropZoneInline
+                    accept={accept}
+                    multiple
+                    onFiles={onPick}
+                    label="Images"
+                  />
+
+                  <div className="grid sm:grid-cols-3 gap-3">
+                    <div>
+                      <label className="block text-sm mb-1">Rotation</label>
+                      <select
+                        className="input"
+                        value={rotation}
+                        onChange={(e) =>
+                          setRotation(parseInt(e.target.value, 10) as any)
+                        }
+                      >
+                        <option value={0}>0°</option>
+                        <option value={90}>90°</option>
+                        <option value={180}>180°</option>
+                        <option value={270}>270°</option>
+                      </select>
+                    </div>
+                    <label className="inline-flex items-center gap-2 mt-7">
+                      <input
+                        type="checkbox"
+                        checked={flipH}
+                        onChange={(e) => setFlipH(e.target.checked)}
+                      />
+                      <span className="text-sm">Flip horizontal</span>
+                    </label>
+                    <label className="inline-flex items-center gap-2 mt-7">
+                      <input
+                        type="checkbox"
+                        checked={flipV}
+                        onChange={(e) => setFlipV(e.target.checked)}
+                      />
+                      <span className="text-sm">Flip vertical</span>
+                    </label>
+                  </div>
+
+                  <button
+                    className="btn"
+                    onClick={() => processAll("rotate")}
+                    disabled={busy || picked.length === 0}
+                  >
+                    {busy ? "Working…" : "Apply"}
+                  </button>
+                </div>
+              )}
+
+              {active === "compress" && (
+                <div className="space-y-4">
+                  <ToolHelp>
+                    <>
+                      <p>
+                        <b>Why</b>: Smaller files for the web.
+                      </p>
+                      <p>
+                        <b>How</b>: Choose output format/quality, then run{" "}
+                        <b>Compress</b>.
+                      </p>
+                    </>
+                  </ToolHelp>
+
+                  <DropZoneInline
+                    accept={accept}
+                    multiple
+                    onFiles={onPick}
+                    label="Images"
+                  />
+
+                  {/* added controls */}
+                  <div className="grid sm:grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-sm text-neutral-300 mb-1">
+                        Output format
+                      </label>
+                      <select
+                        className="input"
+                        value={fmt}
+                        onChange={(e) => setFmt(e.target.value as OutFmt)}
+                      >
+                        <option value="image/jpeg">JPG</option>
+                        <option value="image/png">PNG</option>
+                        <option value="image/webp">WEBP</option>
+                        <option value="image/avif">AVIF</option>
+                      </select>
+                      {fmt === "image/avif" && !avifOK && (
+                        <p className="mt-1 text-xs text-yellow-400">
+                          Browser can’t encode AVIF — will fall back to WEBP.
+                        </p>
+                      )}
+                    </div>
+                    <div>
+                      <label className="block text-sm text-neutral-300 mb-1">
+                        Quality{" "}
+                        {fmt === "image/png"
+                          ? "(lossless)"
+                          : `(${Math.round(quality * 100)}%)`}
                       </label>
                       <input
                         type="range"
@@ -989,7 +1309,11 @@ export default function Client() {
                     </div>
                   </div>
 
-                  <button className="btn" onClick={() => processAll("compress")} disabled={busy || picked.length === 0}>
+                  <button
+                    className="btn"
+                    onClick={() => processAll("compress")}
+                    disabled={busy || picked.length === 0}
+                  >
                     {busy ? "Working…" : "Compress"}
                   </button>
                 </div>
@@ -999,22 +1323,40 @@ export default function Client() {
                 <div className="space-y-4">
                   <ToolHelp>
                     <>
-                      <p><b>Why</b>: Add a simple text footer mark.</p>
-                      <p><b>How</b>: Set text, position, size, opacity; then click <b>Apply</b>.</p>
+                      <p>
+                        <b>Why</b>: Add a simple text footer mark.
+                      </p>
+                      <p>
+                        <b>How</b>: Set text, position, size, opacity; then
+                        click <b>Apply</b>.
+                      </p>
                     </>
                   </ToolHelp>
 
-                  <DropZoneInline accept={accept} multiple onFiles={onPick} label="Images" />
+                  <DropZoneInline
+                    accept={accept}
+                    multiple
+                    onFiles={onPick}
+                    label="Images"
+                  />
 
                   {/* added controls */}
                   <div className="grid sm:grid-cols-2 gap-3">
                     <div>
                       <label className="block text-sm mb-1">Text</label>
-                      <input className="input" value={wmText} onChange={(e) => setWmText(e.target.value)} />
+                      <input
+                        className="input"
+                        value={wmText}
+                        onChange={(e) => setWmText(e.target.value)}
+                      />
                     </div>
                     <div>
                       <label className="block text-sm mb-1">Position</label>
-                      <select className="input" value={wmPos} onChange={(e) => setWmPos(e.target.value as any)}>
+                      <select
+                        className="input"
+                        value={wmPos}
+                        onChange={(e) => setWmPos(e.target.value as any)}
+                      >
                         <option value="top-left">Top-left</option>
                         <option value="top-right">Top-right</option>
                         <option value="bottom-left">Bottom-left</option>
@@ -1022,31 +1364,43 @@ export default function Client() {
                       </select>
                     </div>
                     <div>
-                      <label className="block text-sm mb-1">Font size (px)</label>
+                      <label className="block text-sm mb-1">
+                        Font size (px)
+                      </label>
                       <input
                         type="number"
                         className="input"
                         min={8}
                         max={96}
                         value={wmSize}
-                        onChange={(e) => setWmSize(parseInt(e.target.value, 10) || 16)}
+                        onChange={(e) =>
+                          setWmSize(parseInt(e.target.value, 10) || 16)
+                        }
                       />
                     </div>
                     <div>
-                      <label className="block text-sm mb-1">Opacity ({Math.round(wmOpacity * 100)}%)</label>
+                      <label className="block text-sm mb-1">
+                        Opacity ({Math.round(wmOpacity * 100)}%)
+                      </label>
                       <input
                         type="range"
                         min={0.1}
                         max={1}
                         step={0.05}
                         value={wmOpacity}
-                        onChange={(e) => setWmOpacity(parseFloat(e.target.value))}
+                        onChange={(e) =>
+                          setWmOpacity(parseFloat(e.target.value))
+                        }
                         className="w-full"
                       />
                     </div>
                   </div>
 
-                  <button className="btn" onClick={() => processAll("watermark")} disabled={busy || picked.length === 0}>
+                  <button
+                    className="btn"
+                    onClick={() => processAll("watermark")}
+                    disabled={busy || picked.length === 0}
+                  >
                     {busy ? "Working…" : "Apply"}
                   </button>
                 </div>
@@ -1056,12 +1410,21 @@ export default function Client() {
                 <div className="space-y-4">
                   <ToolHelp>
                     <>
-                      <p><b>Why</b>: Remove EXIF (camera/location) for privacy.</p>
-                      <p><b>How</b>: Re-encodes via canvas to strip metadata.</p>
+                      <p>
+                        <b>Why</b>: Remove EXIF (camera/location) for privacy.
+                      </p>
+                      <p>
+                        <b>How</b>: Re-encodes via canvas to strip metadata.
+                      </p>
                     </>
                   </ToolHelp>
 
-                  <DropZoneInline accept={accept} multiple onFiles={onPick} label="Images" />
+                  <DropZoneInline
+                    accept={accept}
+                    multiple
+                    onFiles={onPick}
+                    label="Images"
+                  />
 
                   {/* added control */}
                   <label className="inline-flex items-center gap-2">
@@ -1073,7 +1436,11 @@ export default function Client() {
                     <span className="text-sm">Strip metadata (EXIF)</span>
                   </label>
 
-                  <button className="btn" onClick={() => processAll("metadata")} disabled={busy || picked.length === 0}>
+                  <button
+                    className="btn"
+                    onClick={() => processAll("metadata")}
+                    disabled={busy || picked.length === 0}
+                  >
                     {busy ? "Working…" : "Strip"}
                   </button>
                 </div>
@@ -1083,14 +1450,28 @@ export default function Client() {
                 <div className="space-y-4">
                   <ToolHelp>
                     <>
-                      <p><b>Why</b>: Bundle multiple images into a single PDF.</p>
-                      <p><b>How</b>: Add images here in order, then click <b>Create PDF</b>.</p>
+                      <p>
+                        <b>Why</b>: Bundle multiple images into a single PDF.
+                      </p>
+                      <p>
+                        <b>How</b>: Add images here in order, then click{" "}
+                        <b>Create PDF</b>.
+                      </p>
                     </>
                   </ToolHelp>
 
-                  <DropZoneInline accept={accept} multiple onFiles={onPick} label="Images (JPG/PNG/WEBP/AVIF)" />
+                  <DropZoneInline
+                    accept={accept}
+                    multiple
+                    onFiles={onPick}
+                    label="Images (JPG/PNG/WEBP/AVIF)"
+                  />
 
-                  <button className="btn" onClick={() => processAll("pdf")} disabled={busy || picked.length === 0}>
+                  <button
+                    className="btn"
+                    onClick={() => processAll("pdf")}
+                    disabled={busy || picked.length === 0}
+                  >
                     {busy ? "Working…" : "Create PDF"}
                   </button>
                 </div>
@@ -1100,10 +1481,14 @@ export default function Client() {
         </div>
 
         {/* Results */}
-<div className="card p-4 md:col-start-2">          <div className="flex items-center justify-between">
+        <div className="card p-4 md:col-start-2">
+          {" "}
+          <div className="flex items-center justify-between">
             <h2 className="text-lg font-semibold">Results</h2>
             <div className="flex gap-2">
-              <button className="btn-ghost" onClick={clear}>Clear</button>
+              <button className="btn-ghost" onClick={clear}>
+                Clear
+              </button>
               {results.length > 1 && (
                 <button
                   className="btn"
@@ -1127,28 +1512,37 @@ export default function Client() {
               )}
             </div>
           </div>
-
           {results.length === 0 ? (
-            <p className="text-sm text-muted mt-2">Nothing yet — pick a tool, add images, and run it.</p>
+            <p className="text-sm text-muted mt-2">
+              Nothing yet — pick a tool, add images, and run it.
+            </p>
           ) : (
             <div className="grid sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 mt-3">
               {results.map((r) => (
-                <a key={r.url} href={r.url} download={r.name} className="block border rounded overflow-hidden">
+                <a
+                  key={r.url}
+                  href={r.url}
+                  download={r.name}
+                  className="block border rounded overflow-hidden"
+                >
                   <img src={r.url} alt={r.name} className="block w-full" />
                   <div className="px-2 py-1 text-xs truncate">{r.name}</div>
                 </a>
               ))}
             </div>
           )}
-
           {log.length > 0 && (
-            <pre className="mt-4 p-3 bg-black/30 rounded text-xs overflow-auto max-h-60">{log.join("\n")}</pre>
+            <pre className="mt-4 p-3 bg-black/30 rounded text-xs overflow-auto max-h-60">
+              {log.join("\n")}
+            </pre>
           )}
         </div>
 
         <section id="seo-content" className="md:col-start-2">
           <div className="card p-4 md:p-6">
-            <h2 className="text-lg md:text-xl font-semibold mb-2">Image Studio — FAQ</h2>
+            <h2 className="text-lg md:text-xl font-semibold mb-2">
+              Image Studio — FAQ
+            </h2>
             <div className="space-y-2">
               {faq.map(({ q, a }, i) => (
                 <details key={i} className="card--flat p-3">

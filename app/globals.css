@@ -849,3 +849,48 @@ main:has(#seo-content) .tool-panels{
     background-color: rgb(var(--bg-rgb) / 0.92);
   }
 }
+/* === Theme RGB palettes just for frosted panels === */
+:root {
+  /* Light theme panel (slate) */
+  --panel-rgb: 48 56 66;          /* darker than page so text pops */
+  --panel-border-rgb: 90 98 112;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    /* Dark theme panel */
+    --panel-rgb: 20 24 32;
+    --panel-border-rgb: 80 86 100;
+  }
+}
+
+/* If you flip themes via a class or data-attr, keep these too */
+:root[data-theme="light"] {
+  --panel-rgb: 48 56 66;
+  --panel-border-rgb: 90 98 112;
+}
+:root[data-theme="dark"] {
+  --panel-rgb: 20 24 32;
+  --panel-border-rgb: 80 86 100;
+}
+
+/* === Frosted dropdown utility (strong, fully obscuring) === */
+.glass {
+  /* FORCE translucency so blur is visible */
+  background-color: rgb(var(--panel-rgb) / 0.82) !important;
+
+  /* Heavy blur to smear background text completely */
+  -webkit-backdrop-filter: blur(36px) saturate(160%);
+  backdrop-filter: blur(36px) saturate(160%);
+
+  border: 1px solid rgb(var(--panel-border-rgb) / 0.6);
+  box-shadow: 0 12px 36px rgb(0 0 0 / 0.35);
+  background-clip: padding-box; /* crisper border on Safari */
+}
+
+/* Fallback for browsers without backdrop-filter (or disabled in FF) */
+@supports not (backdrop-filter: blur(1px)) {
+  .glass {
+    background-color: rgb(var(--panel-rgb) / 0.94) !important; /* near-solid */
+  }
+}

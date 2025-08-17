@@ -61,16 +61,10 @@ export default function DesktopToolsNav() {
 
   React.useEffect(() => {
     function onDocClick(e: MouseEvent) {
-      if (
-        pdfRef.current &&
-        !pdfRef.current.contains(e.target as Node)
-      ) {
+      if (pdfRef.current && !pdfRef.current.contains(e.target as Node)) {
         setPdfOpen(false);
       }
-      if (
-        moreRef.current &&
-        !moreRef.current.contains(e.target as Node)
-      ) {
+      if (moreRef.current && !moreRef.current.contains(e.target as Node)) {
         setMoreOpen(false);
       }
     }
@@ -125,8 +119,7 @@ export default function DesktopToolsNav() {
           role="menu"
           className={[
             "absolute left-1/2 -translate-x-1/2 top-full mt-2 z-[3000]",
-            "rounded-xl p-2 ring-1 ring-[color:var(--line)]",
-            "bg-[color:var(--bg)]/92 backdrop-blur-md shadow-2xl",
+            "rounded-xl p-2 glass", // frosted background with real blur
             "min-w-[18rem] max-h-[70vh] overflow-auto",
             "grid grid-cols-1 sm:grid-cols-2 gap-1",
             pdfOpen ? "opacity-100 visible translate-y-0" : "opacity-0 invisible translate-y-1",
@@ -138,6 +131,7 @@ export default function DesktopToolsNav() {
             href="/pdf"
             role="menuitem"
             className="block w-full whitespace-nowrap px-3 py-2 rounded-lg text-base font-semibold hover:bg-[#2B67F3] hover:text-white"
+            onClick={() => setPdfOpen(false)}
           >
             PDF Home
           </Link>
@@ -196,8 +190,7 @@ export default function DesktopToolsNav() {
           role="menu"
           className={[
             "absolute right-0 top-full mt-2 z-[3000]",
-            "rounded-xl p-2 ring-1 ring-[color:var(--line)]",
-            "bg-[color:var(--bg)]/92 backdrop-blur-md shadow-2xl",
+            "rounded-xl p-2 glass", // frosted background with real blur
             "min-w-[12rem] grid gap-1",
             moreOpen ? "opacity-100 visible translate-y-0" : "opacity-0 invisible translate-y-1",
             "transition ease-out duration-150",

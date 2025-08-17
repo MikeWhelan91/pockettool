@@ -826,3 +826,24 @@ main:has(#seo-content) .tool-panels{
 :root section.w-full:has(#seo-content) > .mx-auto:first-child {
   display: none !important;
 }
+:root {
+  /* Your theme background as RGB values */
+  --bg-rgb: 15 18 26;     /* adjust to match var(--bg) */
+  --line-rgb: 70 76 90;   /* adjust to match var(--line) */
+}
+
+/* Frosted glass utility */
+.glass {
+  background-color: rgb(var(--bg-rgb) / 0.60);
+  -webkit-backdrop-filter: blur(12px) saturate(140%);
+  backdrop-filter: blur(12px) saturate(140%);
+  border: 1px solid rgb(var(--line-rgb) / 0.65);
+  box-shadow: 0 10px 30px rgb(0 0 0 / 0.35);
+}
+
+/* Fallback for browsers without backdrop-filter */
+@supports not (backdrop-filter: blur(1px)) {
+  .glass {
+    background-color: rgb(var(--bg-rgb) / 0.92);
+  }
+}

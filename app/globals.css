@@ -804,7 +804,7 @@ main:has(#seo-content) .tool-panels{
 
 /* keep it from feeling too wide on huge screens, but still half-ish width */
 @media (min-width: 1024px){
-  #seo-content .card{
+  [data-pdf] #seo-content .card{
     max-width: 720px;                     /* tune if you want it wider/narrower */
     margin-left: auto;
     margin-right: auto;

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Hero from "./Hero";
 import Client from "./Client";
+import { Suspense } from "react";
 
 export const metadata: Metadata = {
   title:
@@ -72,7 +73,9 @@ export default function Page() {
   return (
     <>
       <Hero />
-      <Client />
+      <Suspense fallback={<div className="p-4 text-sm text-muted">Loading image tool…</div>}>
+        <Client />
+      </Suspense>
       <section id="seo-content" className="seo-half">
         <div className="card p-4 md:p-6">
           <h2 className="text-lg md:text-xl font-semibold mb-2">Image Studio — FAQ</h2>

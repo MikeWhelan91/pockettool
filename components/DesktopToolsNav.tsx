@@ -21,6 +21,17 @@ const PDF_TOOLS: { key: string; label: string }[] = [
   { key: "compress", label: "Compress" },
 ];
 
+const IMAGE_TOOLS: { key: string; label: string }[] = [
+  { key: "convert", label: "Convert" },
+  { key: "resize", label: "Resize" },
+  { key: "crop", label: "Crop" },
+  { key: "rotate", label: "Rotate / Flip" },
+  { key: "compress", label: "Compress" },
+  { key: "watermark", label: "Watermark" },
+  { key: "metadata", label: "Strip metadata" },
+  { key: "pdf", label: "Images → PDF" },
+];
+
 function NavLink({
   href,
   label,
@@ -52,11 +63,14 @@ export default function DesktopToolsNav() {
   const pathname = usePathname();
   const isActive = (href: string) => pathname === href;
   const onPdf = pathname?.startsWith("/pdf");
+  const onImages = pathname?.startsWith("/image-converter");
 
   const [pdfOpen, setPdfOpen] = React.useState(false);
+  const [imageOpen, setImageOpen] = React.useState(false);
   const [moreOpen, setMoreOpen] = React.useState(false);
 
   const pdfRef = React.useRef<HTMLDivElement | null>(null);
+  const imageRef = React.useRef<HTMLDivElement | null>(null);
   const moreRef = React.useRef<HTMLDivElement | null>(null);
 
   // Detect “desktop hover” capability
@@ -73,11 +87,13 @@ export default function DesktopToolsNav() {
   React.useEffect(() => {
     function onDocClick(e: MouseEvent) {
       if (pdfRef.current && !pdfRef.current.contains(e.target as Node)) setPdfOpen(false);
+      if (imageRef.current && !imageRef.current.contains(e.target as Node)) setImageOpen(false);
       if (moreRef.current && !moreRef.current.contains(e.target as Node)) setMoreOpen(false);
     }
     function onEsc(e: KeyboardEvent) {
       if (e.key === "Escape") {
         setPdfOpen(false);
+        setImageOpen(false);
         setMoreOpen(false);
       }
     }
@@ -152,8 +168,66 @@ export default function DesktopToolsNav() {
         </div>
       </div>
 
+      {/* Images */}
+      <div
+        ref={imageRef}
+        className="relative inline-block"
+        onMouseEnter={canHover ? () => setImageOpen(true) : undefined}
+        onMouseLeave={canHover ? () => setImageOpen(false) : undefined}
+      >
+        <button
+          type="button"
+          aria-haspopup="menu"
+          aria-expanded={imageOpen}
+          onClick={!canHover ? () => setImageOpen((v) => !v) : undefined}
+          className={[
+            "px-3 py-1.5 rounded-md text-base font-semibold transition-colors duration-150",
+            "hover:bg-[#2B67F3] hover:text-white",
+            onImages ? "bg-[#2B67F3] text-white" : "text-[#2B67F3]",
+            "inline-flex items-center gap-1",
+          ].join(" ")}
+        >
+          Images
+          <svg aria-hidden viewBox="0 0 20 20" className="h-4 w-4 translate-y-px" fill="currentColor">
+            <path d="M5.23 7.21a.75.75 0 011.06.02L10 10.94l3.71-3.71a.75.75 0 111.06 1.06l-4.24 4.24a.75.75 0 01-1.06 0L5.21 8.29a.75.75 0 01.02-1.08z" />
+          </svg>
+        </button>
+
+        <div
+          role="menu"
+          aria-hidden={!imageOpen}
+          className={[
+            "absolute left-1/2 -translate-x-1/2 top-full mt-2 z-[3000]",
+            "rounded-xl p-2 glass",
+            "min-w-[18rem] max-h-[70vh] overflow-auto",
+            "grid grid-cols-1 sm:grid-cols-2 gap-1",
+            imageOpen ? "opacity-100 visible translate-y-0" : "opacity-0 invisible translate-y-1",
+            "transition ease-out duration-150",
+          ].join(" ")}
+        >
+          <Link
+            href="/image-converter"
+            role="menuitem"
+            className="block w-full whitespace-nowrap px-3 py-2 rounded-lg text-base font-semibold hover:bg-[#2B67F3] hover:text-white"
+            onClick={() => setImageOpen(false)}
+          >
+            Image Home
+          </Link>
+          {IMAGE_TOOLS.map((t) => (
+            <Link
+              key={t.key}
+              href={`/image-converter?tool=${encodeURIComponent(t.key)}`}
+              role="menuitem"
+              className="block w-full whitespace-nowrap px-3 py-2 rounded-lg text-base font-semibold hover:bg-[#2B67F3] hover:text-white"
+              onClick={() => setImageOpen(false)}
+            >
+              {t.label}
+            </Link>
+          ))}
+        </div>
+      </div>
+
       {/* Main links */}
-      <NavLink href="/image-converter" label="Images" active={isActive("/image-converter")} />
       <NavLink href="/random" label="Passwords" active={isActive("/random")} />
       <NavLink href="/qr" label="QR" active={isActive("/qr")} />
       <NavLink href="/format" label="Format" active={isActive("/format")} />

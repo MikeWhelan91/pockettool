@@ -2,6 +2,7 @@
 "use client";
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 
 /* ───────────────────────── helpers ───────────────────────── */
 
@@ -300,7 +301,17 @@ const TOOLS: { id: ToolId; label: string }[] = [
 type Picked = { file: File; name: string; url: string };
 
 export default function Client() {
-  const [active, setActive] = useState<ToolId>("convert");
+  const router = useRouter();
+  const searchParams = useSearchParams();
+
+  function isToolId(t: any): t is ToolId {
+    return TOOLS.some((tool) => tool.id === t);
+  }
+
+  const [active, setActive] = useState<ToolId>(() => {
+    const t = searchParams.get("tool");
+    return isToolId(t) ? t : "convert";
+  });
 
   // files
   const [picked, setPicked] = useState<Picked[]>([]);
@@ -357,6 +368,23 @@ export default function Client() {
   );
   const addLog = (m: string) => setLog((p) => [...p, m]);
   const clear = () => { setResults([]); setLog([]); };
+
+  // Sync state when ?tool= changes (e.g., via navbar)
+  useEffect(() => {
+    const t = searchParams.get("tool");
+    if (isToolId(t) && t !== active) {
+      setActive(t);
+      setActiveIdx(0);
+    }
+  }, [searchParams, active]);
+
+  const changeTool = (next: ToolId) => {
+    setActive(next);
+    setActiveIdx(0);
+    const sp = new URLSearchParams(searchParams.toString());
+    sp.set("tool", next);
+    router.replace(`/image-converter?${sp.toString()}`, { scroll: false });
+  };
 
   // uploader
   function onPick(files: File[]) {
@@ -590,7 +618,7 @@ export default function Client() {
                 key={t.id}
                 className={`group text-left px-3 py-3 rounded-xl border border-[color:var(--line)] bg-[color:var(--bg)]/70 hover:bg-[color:var(--bg-lift)] transition-colors
                   ${active === t.id ? "ring-2 ring-[color:var(--accent)] ring-offset-1 ring-offset-[color:var(--bg)] bg-[color:var(--bg-lift)] border-[color:var(--accent)]/40" : ""}`}
-                onClick={() => setActive(t.id)}
+                onClick={() => changeTool(t.id)}
                 aria-current={active === t.id ? "page" : undefined}
               >
                 <div className="text-sm">{t.label}</div>
@@ -605,7 +633,7 @@ export default function Client() {
           <select
             className="input w-full"
             value={active}
-            onChange={(e) => setActive(e.target.value as ToolId)}
+            onChange={(e) => changeTool(e.target.value as ToolId)}
           >
             {TOOLS.map((t) => (
               <option key={t.id} value={t.id}>{t.label}</option>

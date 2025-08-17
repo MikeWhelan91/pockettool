@@ -837,13 +837,15 @@ main:has(#seo-content) .tool-panels{
 /* Panel colors (don’t borrow the page bg; use stable tones per theme)  */
 :root {
   /* Light theme */
-  --panel-rgb: 48 56 66;         /* slatey, readable */
-  --panel-border-rgb: 90 98 112;
+  --panel-rgb: 255 255 255;      /* neutral, just blur */
+  --panel-border-rgb: 196 199 204;
+  --panel-alpha: 0.4;
 }
 /* If you toggle via .theme-dark (your ThemeToggle does), map here */
 .theme-dark {
   --panel-rgb: 20 24 32;         /* deep, neutral */
   --panel-border-rgb: 80 86 100;
+  --panel-alpha: 0.82;
 }
 
 /* Also support OS-pref for anyone not using the toggle class */
@@ -851,13 +853,14 @@ main:has(#seo-content) .tool-panels{
   :root:not(.theme-dark) {
     --panel-rgb: 20 24 32;
     --panel-border-rgb: 80 86 100;
+    --panel-alpha: 0.82;
   }
 }
 
 /* Single source of truth for the dropdown surface */
 .glass {
   /* Force translucency so backdrop-filter actually shows */
-  background-color: rgb(var(--panel-rgb) / 0.82) !important;
+  background-color: rgb(var(--panel-rgb) / var(--panel-alpha)) !important;
 
   /* Heavy blur = background text unreadable */
   -webkit-backdrop-filter: blur(36px) saturate(160%);
@@ -871,5 +874,5 @@ main:has(#seo-content) .tool-panels{
 
 /* Fallback (Firefox with backdrop disabled, etc.) */
 @supports not (backdrop-filter: blur(1px)) {
-  .glass { background-color: rgb(var(--panel-rgb) / 0.94) !important; }
+  .glass { background-color: rgb(var(--panel-rgb) / calc(var(--panel-alpha) + 0.12)) !important; }
 }

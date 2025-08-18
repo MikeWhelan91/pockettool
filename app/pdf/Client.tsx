@@ -969,7 +969,7 @@ function ToolWatermark() {
       p.drawText(content, {
         x: originX,
         y: originY,
-        fontSize: size,
+        size,
         font,
         color: rgb(rgb01.r, rgb01.g, rgb01.b),
         opacity: Math.max(0, Math.min(1, opacity/100)),
@@ -3963,7 +3963,7 @@ pages.forEach((p, idx) => {
   p.drawText(content, {
     x: originX,
     y: originY,
-    fontSize: size,
+    size,
     font,
     color: rgb(r,g,b),
     opacity: Math.max(0, Math.min(1, opacity/100)),

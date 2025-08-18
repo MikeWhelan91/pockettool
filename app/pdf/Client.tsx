@@ -3819,11 +3819,15 @@ function ToolWatermarkUX() {
   const [color, setColor] = useState<string>("#000000");
   const [size, setSize] = React.useState(12);
   const [opacity, setOpacity] = React.useState(60);
-  const [thumbs, setThumbs] = React.useState<{page:number; url:string; w:number; h:number}[]>([]);
+  const [thumbs, setThumbs] = React.useState<{page:number; url:string; w:number; h:number; pageWidthPt:number}[]>([]);
+  const tileRefs = React.useRef<Record<number, HTMLDivElement | null>>({});
+  const [tileW, setTileW] = React.useState<Record<number, number>>({});
+
   const [busy, setBusy] = React.useState(false);
 
   React.useEffect(()=>{
     setThumbs([]);
+    setTileW({});
   }, [file]);
 
   React.useEffect(()=>{
@@ -3845,18 +3849,41 @@ function ToolWatermarkUX() {
       for (let p=1; p<=doc.numPages; p++) {
         const page = await doc.getPage(p);
         const vp = page.getViewport({ scale: 0.70 * dpr });
+        const vp1 = page.getViewport({ scale: 1 });
         const c = document.createElement("canvas");
         c.width = vp.width; c.height = vp.height;
         const ctx = c.getContext("2d")!;
         await page.render({ canvasContext: ctx, canvas: c, viewport: vp }).promise;
-        out.push({ page: p-1, url: c.toDataURL("image/png"), w: c.width, h: c.height });
+        out.push({ page: p-1, url: c.toDataURL("image/png"), w: c.width, h: c.height, pageWidthPt: vp1.width });
       }
       setThumbs(out);
     })();
   }, [file]);
 
+  React.useEffect(() => {
+    const ro = new ResizeObserver(entries => {
+      for (const e of entries) {
+        const el = e.target as HTMLElement;
+        const page = parseInt(el.dataset.page || "", 10);
+        if (!isNaN(page)) {
+          setTileW(w => ({ ...w, [page]: e.contentRect.width }));
+        }
+      }
+    });
+    thumbs.forEach(t => {
+      const el = tileRefs.current[t.page];
+      if (el) ro.observe(el);
+    });
+    return () => ro.disconnect();
+  }, [thumbs]);
+
   function labelFor(pageIndex:number) {
     return mode === "numbers" ? `${pageIndex+1} / ${thumbs.length}` : text;
+  }
+
+  function previewFontPx(t:{page:number; w:number; pageWidthPt:number}) {
+    const displayW = tileW[t.page] ?? t.w;
+    return Math.max(8, size * (displayW / t.pageWidthPt));
   }
 
   function overlayStyle(t:{w:number; h:number}) {
@@ -4014,14 +4041,22 @@ const bytes = await pdf.save({ useObjectStreams: true });
         <div className="space-y-2">
           <div className="text-sm text-muted">Live preview (not exported)</div>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
-            {thumbs.map(t => (
-              <div key={t.page} className="relative border rounded overflow-hidden">
-                <img src={t.url} alt={`Page ${t.page+1}`} className="w-full" />
-                <div style={overlayStyle(t)}>
-                  <span style={{ fontSize: `${size}px`, fontWeight: 600 }}>{labelFor(t.page)}</span>
+            {thumbs.map(t => {
+              const fontPx = previewFontPx(t);
+              return (
+                <div
+                  key={t.page}
+                  className="relative border rounded overflow-hidden"
+                  ref={el => { tileRefs.current[t.page] = el; }}
+                  data-page={t.page}
+                >
+                  <img src={t.url} alt={`Page ${t.page+1}`} className="w-full select-none pointer-events-none" />
+                  <div style={overlayStyle(t)}>
+                    <span style={{ fontSize: `${fontPx}px`, fontWeight: 600 }}>{labelFor(t.page)}</span>
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       )}

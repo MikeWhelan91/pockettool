@@ -533,6 +533,10 @@ export default function PDFStudio() {
       a: "Yes. Use DOCX → PDF to turn .docx files into PDFs directly in your browser.",
     },
     {
+      q: "Can I convert PDFs to Word documents?",
+      a: "Yes. Use PDF → DOCX to turn PDFs into editable Word files directly in your browser.",
+    },
+    {
       q: "How do I add page numbers or a simple header/footer?",
       a: "Open Page numbers / Header / Footer, choose a mode, position, and font size, then Apply & Download.",
     },

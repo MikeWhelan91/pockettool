@@ -3940,19 +3940,17 @@ pages.forEach((p, idx) => {
   let rotateOpt = undefined;
 
   if (effPos === "center" && mode === "watermark") {
-    const theta = 35 * Math.PI / 180;
-    // vector from unrotated origin (baseline-left) to text center
-    const cx = w / 2, cy = h / 2;
-    // rotate vector by theta
-    const rx =  cx * Math.cos(theta) - cy * Math.sin(theta);
-    const ry =  cx * Math.sin(theta) + cy * Math.cos(theta);
-    // choose origin so rotated center equals (x,y)
-    originX = x - rx;
-    originY = y - ry;
-    rotateOpt = { type: 'degrees', angle: 35 };
+    const theta = (35 * Math.PI) / 180;
+    const cos = Math.cos(theta);
+    const sin = Math.sin(theta);
+    const rotW = Math.abs(w * cos) + Math.abs(h * sin);
+    const rotH = Math.abs(w * sin) + Math.abs(h * cos);
+    originX = (width - rotW) / 2;
+    originY = (height - rotH) / 2;
+    rotateOpt = degrees(35);
   } else {
     // Align by width for left/center/right when not rotated
-    if (effPos.endsWith("c") || effPos === "center") originX = x - w/2;
+    if (effPos.endsWith("c") || effPos === "center") originX = x - w / 2;
     if (effPos.endsWith("r")) originX = x - w;
     // For top-aligned positions (tl/tc/tr) move baseline down by text height
     if (effPos === "tl" || effPos === "tc" || effPos === "tr") originY = y - h;

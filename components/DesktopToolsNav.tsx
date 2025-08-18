@@ -19,6 +19,8 @@ const PDF_TOOLS: { key: string; label: string }[] = [
   { key: "stampQR", label: "Stamp QR" },
   { key: "meta", label: "Edit Metadata" },
   { key: "compress", label: "Compress" },
+  { key: "docToPdf", label: "Word → PDF" },
+  { key: "pdfToDoc", label: "PDF → Word" },
 ];
 
 const IMAGE_TOOLS: { key: string; label: string }[] = [

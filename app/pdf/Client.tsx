@@ -814,8 +814,8 @@ function ToolWatermark() {
   const [mode, setMode] = useState<"numbers" | "header" | "footer" | "watermark">("numbers");
   const [text, setText] = useState<string>("CONFIDENTIAL");
   const [pos, setPos] = useState<"tl" | "tc" | "tr" | "bl" | "bc" | "br" | "center">("bc");
-  const [opacity, setOpacity] = useState<number>(30);
-  const [color, setColor] = useState<string>("#ff0000");
+  const [opacity, setOpacity] = useState<number>(60);
+  const [color, setColor] = useState<string>("#000000");
   const [size, setSize] = useState<number>(12);
 
   // live preview thumbs
@@ -827,6 +827,8 @@ function ToolWatermark() {
     else if (mode === "header") setPos("tc");
     else if (mode === "footer") setPos("bc");
     else if (mode === "watermark") setPos("center");
+    if (mode === "watermark") setColor("#ff0000");
+    else setColor("#000000");
   }, [mode]);
 
   useEffect(() => { setThumbs([]); }, [file]);
@@ -1001,7 +1003,7 @@ function ToolWatermark() {
         </div>
         <div>
           <label className="text-sm mb-1 block">Font size (pt)</label>
-          <input type="number" min={6} max={96} className="input w-full" value={size} onChange={(e)=> setSize(parseInt(e.target.value || "12",10))} />
+          <input type="number" min={6} max={256} className="input w-full" value={size} onChange={(e)=> setSize(parseInt(e.target.value || "12",10))} />
         </div>
       </div>
 
@@ -1026,7 +1028,7 @@ function ToolWatermark() {
         </label>
         <label className="block">
           <span className="text-sm">Opacity (%)</span>
-          <input type="number" min={0} max={100} className="input w-full mt-1" value={opacity} onChange={(e)=> setOpacity(parseInt(e.target.value || "30",10))} />
+          <input type="number" min={0} max={100} className="input w-full mt-1" value={opacity} onChange={(e)=> setOpacity(parseInt(e.target.value || "60",10))} />
         </label>
         <label className="block">
           <span className="text-sm">Color</span>
@@ -3814,14 +3816,17 @@ function ToolWatermarkUX() {
   const [mode, setMode] = React.useState<"numbers"|"header"|"footer"|"watermark">("numbers");
   const [text, setText] = React.useState("CONFIDENTIAL");
   const [pos, setPos] = React.useState<"tl"|"tc"|"tr"|"bl"|"bc"|"br"|"center">("bc");
-  const [color, setColor] = useState<string>("#ff0000");
+  const [color, setColor] = useState<string>("#000000");
   const [size, setSize] = React.useState(12);
-  const [opacity, setOpacity] = React.useState(30);
-  const [thumbs, setThumbs] = React.useState<{page:number; url:string; w:number; h:number}[]>([]);
+  const [opacity, setOpacity] = React.useState(60);
+  const [thumbs, setThumbs] = React.useState<{page:number; url:string; w:number; h:number; pageWidthPt:number}[]>([]);
+  const tileRefs = React.useRef<Record<number, HTMLDivElement | null>>({});
+  const [tileW, setTileW] = React.useState<Record<number, number>>({});
   const [busy, setBusy] = React.useState(false);
 
   React.useEffect(()=>{
     setThumbs([]);
+    setTileW({});
   }, [file]);
 
   React.useEffect(()=>{
@@ -3829,6 +3834,8 @@ function ToolWatermarkUX() {
     else if (mode === "header") setPos("tc");
     else if (mode === "footer") setPos("bc");
     else setPos("center");
+    if (mode === "watermark") setColor("#ff0000");
+    else setColor("#000000");
   }, [mode]);
 
   React.useEffect(()=>{
@@ -3841,18 +3848,41 @@ function ToolWatermarkUX() {
       for (let p=1; p<=doc.numPages; p++) {
         const page = await doc.getPage(p);
         const vp = page.getViewport({ scale: 0.70 * dpr });
+        const vp1 = page.getViewport({ scale: 1 });
         const c = document.createElement("canvas");
         c.width = vp.width; c.height = vp.height;
         const ctx = c.getContext("2d")!;
         await page.render({ canvasContext: ctx, canvas: c, viewport: vp }).promise;
-        out.push({ page: p-1, url: c.toDataURL("image/png"), w: c.width, h: c.height });
+        out.push({ page: p-1, url: c.toDataURL("image/png"), w: c.width, h: c.height, pageWidthPt: vp1.width });
       }
       setThumbs(out);
     })();
   }, [file]);
 
+  React.useEffect(() => {
+    const ro = new ResizeObserver(entries => {
+      for (const e of entries) {
+        const el = e.target as HTMLElement;
+        const page = parseInt(el.dataset.page || "", 10);
+        if (!isNaN(page)) {
+          setTileW(w => ({ ...w, [page]: e.contentRect.width }));
+        }
+      }
+    });
+    thumbs.forEach(t => {
+      const el = tileRefs.current[t.page];
+      if (el) ro.observe(el);
+    });
+    return () => ro.disconnect();
+  }, [thumbs]);
+
   function labelFor(pageIndex:number) {
     return mode === "numbers" ? `${pageIndex+1} / ${thumbs.length}` : text;
+  }
+
+  function previewFontPx(t:{page:number; w:number; pageWidthPt:number}) {
+    const displayW = tileW[t.page] ?? t.w;
+    return Math.max(8, size * (displayW / t.pageWidthPt));
   }
 
   function overlayStyle(t:{w:number; h:number}) {
@@ -3969,8 +3999,8 @@ const bytes = await pdf.save({ useObjectStreams: true });
           </select>
         </label>
         <label className="block">
-          <span className="text-sm">Font size</span>
-          <input type="number" min={6} max={96} className="input mt-1" value={size} onChange={e=> setSize(parseInt(e.target.value||"12",10))} />
+          <span className="text-sm">Font size (pt)</span>
+          <input type="number" min={6} max={256} className="input mt-1" value={size} onChange={e=> setSize(parseInt(e.target.value||"12",10))} />
         </label>
       </div>
 
@@ -3993,7 +4023,7 @@ const bytes = await pdf.save({ useObjectStreams: true });
         </label>
         <label className="block">
           <span className="text-sm">Opacity (%)</span>
-          <input type="number" min={0} max={100} className="input mt-1" value={opacity} onChange={e=> setOpacity(parseInt(e.target.value||"30",10))} />
+          <input type="number" min={0} max={100} className="input mt-1" value={opacity} onChange={e=> setOpacity(parseInt(e.target.value||"60",10))} />
         </label>
         <label className="block">
           <span className="text-sm">Color</span>
@@ -4010,14 +4040,22 @@ const bytes = await pdf.save({ useObjectStreams: true });
         <div className="space-y-2">
           <div className="text-sm text-muted">Live preview (not exported)</div>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
-            {thumbs.map(t => (
-              <div key={t.page} className="relative border rounded overflow-hidden">
-                <img src={t.url} alt={`Page ${t.page+1}`} className="w-full" />
-                <div style={overlayStyle(t)}>
-                  <span style={{ fontSize: `${size}px`, fontWeight: 600 }}>{labelFor(t.page)}</span>
+            {thumbs.map(t => {
+              const fontPx = previewFontPx(t);
+              return (
+                <div
+                  key={t.page}
+                  className="relative border rounded overflow-hidden"
+                  ref={el => { tileRefs.current[t.page] = el; }}
+                  data-page={t.page}
+                >
+                  <img src={t.url} alt={`Page ${t.page+1}`} className="w-full select-none pointer-events-none" />
+                  <div style={overlayStyle(t)}>
+                    <span style={{ fontSize: `${fontPx}px`, fontWeight: 600 }}>{labelFor(t.page)}</span>
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       )}

@@ -4309,6 +4309,7 @@ function ToolFillFlattenUX() {
       {/* Live preview */}
       {thumbs.length > 0 && (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+
           {thumbs.map((t) => (
             <div key={t.page} className="relative border rounded overflow-hidden">
               <img src={t.url} alt={`p${t.page+1}`} className="w-full block pointer-events-none select-none" />

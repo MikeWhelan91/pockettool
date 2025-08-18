@@ -8,6 +8,7 @@ export const metadata = {
   title: "PDF Studio — Free Online PDF Tools (Private & Local-first)",
   description:
     "Merge, split, reorder, rotate, add accurately angled colored watermarks, fill forms with large previews, convert images free ↔ PDF, extract text, redact, and compress — all in your browser. Free with no sign-up, pop-ups, redirects, or uploads.",
+
   alternates: { canonical: "https://utilixy.com/pdf" },
   openGraph: {
     title: "PDF Studio — Free Online PDF Tools",

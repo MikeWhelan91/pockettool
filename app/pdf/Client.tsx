@@ -1003,7 +1003,7 @@ function ToolWatermark() {
         </div>
         <div>
           <label className="text-sm mb-1 block">Font size (pt)</label>
-          <input type="number" min={6} max={96} className="input w-full" value={size} onChange={(e)=> setSize(parseInt(e.target.value || "12",10))} />
+          <input type="number" min={6} max={256} className="input w-full" value={size} onChange={(e)=> setSize(parseInt(e.target.value || "12",10))} />
         </div>
       </div>
 
@@ -3973,8 +3973,8 @@ const bytes = await pdf.save({ useObjectStreams: true });
           </select>
         </label>
         <label className="block">
-          <span className="text-sm">Font size</span>
-          <input type="number" min={6} max={96} className="input mt-1" value={size} onChange={e=> setSize(parseInt(e.target.value||"12",10))} />
+          <span className="text-sm">Font size (pt)</span>
+          <input type="number" min={6} max={256} className="input mt-1" value={size} onChange={e=> setSize(parseInt(e.target.value||"12",10))} />
         </label>
       </div>
 

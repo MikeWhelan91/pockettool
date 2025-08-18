@@ -6,6 +6,7 @@ import { PDFDocument, StandardFonts, rgb, degrees } from "pdf-lib";
 import React from "react";
 import PdfPreview from "@/components/PdfPreview";
 import ToolDocToPdfUX from "./tools/ToolDocToPdf";
+import ToolPdfToDocUX from "./tools/ToolPdfToDoc";
 /* ---------------- Ads / Conversion helpers (Google Ads) ---------------- */
 // Per-action conversion tracking. Replace LABEL_* with your real conversion labels from Google Ads.
 // Example final send_to looks like: "AW-778841432/AbCdEfGhIjkLmNoP"
@@ -23,7 +24,8 @@ export type PdfAction =
   | "stamp_qr"
   | "edit_metadata"
   | "compress"
-  | "doc_to_pdf";
+  | "doc_to_pdf"
+  | "pdf_to_doc";
 
 const ADS_CONVERSION_ID = "AW-778841432";
 // TODO: swap placeholder labels for real ones from Google Ads
@@ -42,6 +44,7 @@ const ACTION_LABELS: Partial<Record<PdfAction, string>> = {
   edit_metadata: "LABEL_EDITMETA",
   compress: "LABEL_COMPRESS",
   doc_to_pdf: "LABEL_DOC2PDF",
+  pdf_to_doc: "LABEL_PDF2DOC",
 };
 
 function safeGtagEvent(sendTo: string) {
@@ -478,6 +481,7 @@ type ToolKey =
   | "imagesToPdf"
   | "pdfToImages"
   | "docToPdf"
+  | "pdfToDoc"
   | "extractText"
   | "fillFlatten"
   | "redact"
@@ -497,6 +501,7 @@ const TOOL_LIST: { key: ToolKey; label: string }[] = [
   { key: "imagesToPdf", label: "Images → PDF" },
   { key: "pdfToImages", label: "PDF → Images" },
   { key: "docToPdf", label: "DOCX → PDF" },
+  { key: "pdfToDoc", label: "PDF → DOCX" },
   { key: "extractText", label: "Extract text" },
   { key: "fillFlatten", label: "Fill forms & flatten" },
   { key: "redact", label: "Redact" },
@@ -597,6 +602,7 @@ export default function PDFStudio() {
           {tool === "imagesToPdf" && <ToolImagesToPdfUX />}
           {tool === "pdfToImages" && <ToolPdfToImagesUX />}
           {tool === "docToPdf" && <ToolDocToPdfUX />}
+          {tool === "pdfToDoc" && <ToolPdfToDocUX />}
           {tool === "extractText" && <ToolExtractTextUX />}
           {tool === "fillFlatten" && <ToolFillFlattenUX />}
           {tool === "redact" && <ToolRedactUX />}

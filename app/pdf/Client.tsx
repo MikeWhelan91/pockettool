@@ -2,10 +2,9 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
 import { PDFDocument, StandardFonts, rgb, degrees } from "pdf-lib";
 import React from "react";
-
+import PdfPreview from "@/components/PdfPreview";
 /* ---------------- Ads / Conversion helpers (Google Ads) ---------------- */
 // Per-action conversion tracking. Replace LABEL_* with your real conversion labels from Google Ads.
 // Example final send_to looks like: "AW-778841432/AbCdEfGhIjkLmNoP"
@@ -144,12 +143,6 @@ function ToolHelp({
   children: React.ReactNode;
 }) {
   const [open, setOpen] = React.useState(false);
-
-  // 🔄 react to ?tool= changes
-  const searchParams = useSearchParams();
-  const toolKey = searchParams.get("tool") as keyof typeof HELP | null;
-  const toolName = toolKey ? getToolLabel(toolKey) : null;
-
   React.useEffect(() => {
     const mq = window.matchMedia("(min-width: 768px)");
     const apply = () => setOpen(mq.matches);
@@ -157,42 +150,15 @@ function ToolHelp({
     mq.addEventListener("change", apply);
     return () => mq.removeEventListener("change", apply);
   }, []);
-
   return (
-    <div>
-      {toolName && <h2 className="text-xl font-bold mb-2">{toolName}</h2>}
-      <details
-        open={open}
-        className="rounded-lg border border-neutral-800 bg-neutral-900/40 p-3"
-      >
-        <summary className="cursor-pointer text-sm font-medium">
-          {title}
-        </summary>
-        <div className="mt-2 text-sm text-muted space-y-2">{children}</div>
-      </details>
-    </div>
+    <details
+      open={open}
+      className="rounded-lg border border-neutral-800 bg-neutral-900/40 p-3"
+    >
+      <summary className="cursor-pointer text-sm font-medium">{title}</summary>
+      <div className="mt-2 text-sm text-muted space-y-2">{children}</div>
+    </details>
   );
-}
-
-// Friendly label mapping
-function getToolLabel(key: keyof typeof HELP) {
-  const labels: Record<keyof typeof HELP, string> = {
-    reorder: "Reorder/Delete",
-    watermark: "Stamp",
-    imagesToPdf: "Images → PDF",
-    pdfToImages: "PDF → Images",
-    extractText: "Extract Text",
-    fillFlatten: "Fill & Flatten",
-    redact: "Redact",
-    split: "Split",
-    stampQR: "Stamp QR",
-    batchMerge: "Merge",
-    compress: "Compress",
-    rotate: "Rotate Pages",
-    sign: "Sign",
-    meta: "Edit Metadata",
-  };
-  return labels[key] || key;
 }
 
 /* --- Explanations (what/why/how) for each tool --- */
@@ -323,15 +289,14 @@ const HELP = {
         <b>How</b>:
       </p>
       <ol className="list-decimal pl-5 space-y-1">
-        <li>Open a PDF form that contains fields</li>
-        <li>You&apos;ll see all editable fields appear</li>
-        <li>Choose Copy Name next to the field you want to edit</li>
-        <li>Paste it into the Field Name</li>
-        <li>Enter your value into Value field</li>
-        <li>Click Apply Change</li>
-        <li>When you&apos;re finished click Export PDF </li>
+        <li>
+          Open a PDF form, enter a field name and value, then click{" "}
+          <b>Fill & Flatten</b>.
+        </li>
       </ol>
-      
+      <p>
+        <b>Notes</b>: You need the exact field name.
+      </p>
     </>
   ),
   redact: (
@@ -519,65 +484,26 @@ type ToolKey =
   | "sign"
   | "meta";
 
-// Valid tool keys for query param sync
-const ALL_TOOL_KEYS = [
-  "batchMerge",
-  "reorder",
-  "watermark",
-  "imagesToPdf",
-  "pdfToImages",
-  "extractText",
-  "fillFlatten",
-  "redact",
-  "split",
-  "stampQR",
-  "compress",
-  "rotate",
-] as const;
-type ToolKeyAll = (typeof ALL_TOOL_KEYS)[number];
-function isToolKey(x: string | null | undefined): x is ToolKeyAll {
-  return !!x && (ALL_TOOL_KEYS as readonly string[]).includes(x as any);
-}
-
 // replace your TOOL_LIST with this
 const TOOL_LIST: { key: ToolKey; label: string }[] = [
   { key: "batchMerge", label: "Merge" },
-  { key: "reorder", label: "Reorder / Delete" },
+    { key: "split", label: "Split" },
+  { key: "reorder", label: "Reorder" },
   { key: "rotate", label: "Rotate Pages" },
   { key: "imagesToPdf", label: "Images → PDF" },
   { key: "pdfToImages", label: "PDF → Images" },
   { key: "extractText", label: "Extract text" },
-  { key: "fillFlatten", label: "Fill forms" },
+  { key: "fillFlatten", label: "Fill forms & flatten" },
   { key: "redact", label: "Redact" },
-  { key: "watermark", label: "Stamp" },
-  { key: "split", label: "Split" },
+  { key: "watermark", label: "Page numbers / Header / Footer / Watermark" },
   { key: "stampQR", label: "Stamp QR" },
   { key: "meta", label: "Edit Metadata" },
   { key: "compress", label: "Compress" },
 ];
 
 export default function PDFStudio() {
-  const router = useRouter();
-  const searchParams = useSearchParams();
-  const initialTool = (() => {
-    const t = searchParams.get("tool");
-    return isToolKey(t) ? (t as ToolKey) : "batchMerge";
-  })();
-  const [tool, setTool] = useState<ToolKey>(initialTool);
-  // Sync state when ?tool= changes (e.g., via navbar)
-  useEffect(() => {
-    const t = searchParams.get("tool");
-    if (isToolKey(t) && t !== tool) {
-      selectTool(t as ToolKey);
-    }
-  }, [searchParams]);
+  const [tool, setTool] = useState<ToolKey>("batchMerge");
 
-  function selectTool(next: ToolKey) {
-    setTool(next);
-    const sp = new URLSearchParams(Array.from(searchParams.entries()));
-    sp.set("tool", next);
-    router.replace(`/pdf?${sp.toString()}`, { scroll: false });
-  }
   // --- Visible FAQ + JSON-LD (local to Client) ---
   const faq = [
     {
@@ -621,7 +547,7 @@ export default function PDFStudio() {
         <select
           className="input w-full"
           value={tool}
-          onChange={(e) => selectTool(e.target.value as ToolKey)}
+          onChange={(e) => setTool(e.target.value as ToolKey)}
         >
           {TOOL_LIST.map((t) => (
             <option key={t.key} value={t.key}>
@@ -643,7 +569,7 @@ export default function PDFStudio() {
                     ? "ring-2 ring-[color:var(--accent)] ring-offset-1 ring-offset-[color:var(--bg)] bg-[color:var(--bg-lift)] border-[color:var(--accent)]/40"
                     : ""
                 }`}
-              onClick={() => selectTool(t.key)}
+              onClick={() => setTool(t.key)}
               aria-current={tool === t.key ? "page" : undefined}
             >
               <div className="text-sm">{t.label}</div>
@@ -656,19 +582,19 @@ export default function PDFStudio() {
       <div className="md:[grid-column:2/3] grid gap-3">
         {/* Main stage (the tools) */}
         <main className="grid gap-6">
-          {tool === "reorder" && <ToolReorder />}
-          {tool === "rotate" && <ToolRotate />}
-          {tool === "watermark" && <ToolWatermark />}
-          {tool === "imagesToPdf" && <ToolImagesToPdf />}
-          {tool === "pdfToImages" && <ToolPdfToImages />}
-          {tool === "extractText" && <ToolExtractText />}
-          {tool === "fillFlatten" && <ToolFillFlatten />}
-          {tool === "redact" && <ToolRedact />}
-          {tool === "split" && <ToolSplit />}
+          {tool === "reorder" && <ToolReorderUX />}
+          {tool === "rotate" && <ToolRotateUX />}
+          {tool === "watermark" && <ToolWatermarkUX />}
+          {tool === "imagesToPdf" && <ToolImagesToPdfUX />}
+          {tool === "pdfToImages" && <ToolPdfToImagesUX />}
+          {tool === "extractText" && <ToolExtractTextUX />}
+          {tool === "fillFlatten" && <ToolFillFlattenUX />}
+          {tool === "redact" && <ToolRedactUX />}
+          {tool === "split" && <ToolSplitUX />}
           {tool === "stampQR" && <ToolStampQR />}
-          {tool === "batchMerge" && <ToolBatchMerge />}
+          {tool === "batchMerge" && <ToolBatchMergeUX />}
           {tool === "meta" && <ToolMetadata />}
-          {tool === "compress" && <ToolCompress />}
+          {tool === "compress" && <ToolCompressUX />}
         </main>
 
         {/* FAQ: sits directly under the tool, half width on md+ */}
@@ -881,19 +807,20 @@ function ToolRotate() {
 
 /* -------------------- Tool: Page numbers / Header / Footer / Watermark -------------------- */
 
+
 function ToolWatermark() {
   const [file, setFile] = useState<File | null>(null);
 
-  const [mode, setMode] = useState<
-    "numbers" | "header" | "footer" | "watermark"
-  >("numbers");
-
+  const [mode, setMode] = useState<"numbers" | "header" | "footer" | "watermark">("numbers");
   const [text, setText] = useState<string>("CONFIDENTIAL");
-  const [pos, setPos] = useState<
-    "tl" | "tc" | "tr" | "bl" | "bc" | "br" | "center"
-  >("bc");
+  const [pos, setPos] = useState<"tl" | "tc" | "tr" | "bl" | "bc" | "br" | "center">("bc");
   const [opacity, setOpacity] = useState<number>(30);
+  const [color, setColor] = useState<string>("#ff0000");
   const [size, setSize] = useState<number>(12);
+
+  // live preview thumbs
+  type Thumb = { page: number; url: string; w: number; h: number; pageWidthPt: number };
+  const [thumbs, setThumbs] = useState<Thumb[]>([]);
 
   useEffect(() => {
     if (mode === "numbers") setPos("bc");
@@ -902,72 +829,149 @@ function ToolWatermark() {
     else if (mode === "watermark") setPos("center");
   }, [mode]);
 
-  const run = async () => {
+  useEffect(() => { setThumbs([]); }, [file]);
+
+  // build thumbs + keep PDF width in points for font-size parity
+  useEffect(() => {
+    (async () => {
+      if (!file) return;
+      const pdfjs = await loadPdfJs();
+      const data = await file.arrayBuffer();
+      const doc = await pdfjs.getDocument({ data }).promise;
+      const dpr = window.devicePixelRatio || 1;
+      const out: Thumb[] = [];
+      for (let p = 1; p <= doc.numPages && p <= 64; p++) {
+        const page = await doc.getPage(p);
+        const vp1 = page.getViewport({ scale: 1 });           // PDF points
+        const vp  = page.getViewport({ scale: 0.70 * dpr });  // bitmap for preview
+        const c = document.createElement("canvas");
+        c.width = vp.width; c.height = vp.height;
+        const ctx = c.getContext("2d")!;
+        await page.render({ canvasContext: ctx, canvas: c, viewport: vp }).promise;
+        out.push({ page: p-1, url: c.toDataURL("image/png"), w: c.width, h: c.height, pageWidthPt: vp1.width });
+      }
+      setThumbs(out);
+    })();
+  }, [file]);
+
+  // tile width observer -> match preview size to export points
+  const tileRefs = useRef<Record<number, HTMLDivElement | null>>({});
+  const [tileW, setTileW] = useState<Record<number, number>>({});
+  useEffect(() => {
+    const ro = new ResizeObserver(entries => {
+      setTileW(prev => {
+        const next = { ...prev };
+        for (const e of entries) {
+          const key = Number((e.target as HTMLElement).dataset.page);
+          next[key] = e.contentRect.width;
+        }
+        return next;
+      });
+    });
+    thumbs.forEach(t => { const el = tileRefs.current[t.page]; if (el) ro.observe(el); });
+    return () => ro.disconnect();
+  }, [thumbs]);
+
+  function hexToRgb01(hex: string) {
+    const m = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+    if (!m) return { r: 0, g: 0, b: 0 };
+    return { r: parseInt(m[1], 16)/255, g: parseInt(m[2], 16)/255, b: parseInt(m[3], 16)/255 };
+  }
+
+  function previewFontPx(t: Thumb) {
+    const displayW = tileW[t.page] ?? t.w;
+    return Math.max(8, size * (displayW / t.pageWidthPt)); // pt -> px at current display scale
+  }
+
+  function labelFor(i: number) {
+    return mode === "numbers" ? `${i+1} / ${thumbs.length}` : text;
+  }
+
+  function overlayStyle(t: Thumb): React.CSSProperties {
+    const s: any = {
+      position: "absolute",
+      color,
+      textShadow: "0 0 6px rgba(0,0,0,.65)",
+      opacity: Math.max(0, Math.min(1, opacity/100)),
+      left: 8, top: 8
+    };
+    let effPos = pos;
+    if (mode === "watermark") effPos = "center";
+    if (mode === "numbers" && pos === "center") effPos = "bc";
+    switch (effPos) {
+      case "tl": s.left=8; s.top=8; s.right="auto"; s.bottom="auto"; s.transform="none"; break;
+      case "tc": s.left="50%"; s.top=8; s.right="auto"; s.bottom="auto"; s.transform="translateX(-50%)"; break;
+      case "tr": s.right=8; s.top=8; s.left="auto"; s.bottom="auto"; s.transform="none"; break;
+      case "bl": s.left=8; s.bottom=8; s.right="auto"; s.top="auto"; s.transform="none"; break;
+      case "bc": s.left="50%"; s.bottom=8; s.right="auto"; s.top="auto"; s.transform="translateX(-50%)"; break;
+      case "br": s.right=8; s.bottom=8; s.left="auto"; s.top="auto"; s.transform="none"; break;
+      case "center":
+        s.left="50%"; s.top="50%"; s.right="auto"; s.bottom="auto";
+        s.transform = mode === "watermark" ? "translate(-50%, -50%) rotate(35deg)" : "translate(-50%, -50%)";
+        break;
+    }
+    return s;
+  }
+
+  async function run() {
     if (!file) return;
     const src = await PDFDocument.load(await file.arrayBuffer());
     const font = await src.embedFont(StandardFonts.Helvetica);
-
     const pages = src.getPages();
+
     pages.forEach((p, idx) => {
       const { width, height } = p.getSize();
       const pad = 24;
 
-      let x = width / 2;
-      let y = height / 2;
+      // target anchor (x,y)
+      let x = width/2, y = pad;
+      let content = mode === "numbers" ? `${idx+1} / ${pages.length}` : text;
+      let effPos = pos;
+      if (mode === "watermark") effPos = "center";
+      if (mode === "numbers" && pos === "center") effPos = "bc";
 
-      let content = text;
-      if (mode === "numbers") content = `${idx + 1} / ${pages.length}`;
-
-      const effectivePos = mode === "numbers" && pos === "center" ? "bc" : pos;
-
-      switch (effectivePos) {
-        case "tl":
-          x = pad;
-          y = height - pad;
-          break;
-        case "tc":
-          x = width / 2;
-          y = height - pad;
-          break;
-        case "tr":
-          x = width - pad;
-          y = height - pad;
-          break;
-        case "bl":
-          x = pad;
-          y = pad;
-          break;
-        case "bc":
-          x = width / 2;
-          y = pad;
-          break;
-        case "br":
-          x = width - pad;
-          y = pad;
-          break;
-        case "center":
-          x = width / 2;
-          y = height / 2;
-          break;
+      switch (effPos) {
+        case "tl": x=pad; y=height-pad; break;
+        case "tc": x=width/2; y=height-pad; break;
+        case "tr": x=width-pad; y=height-pad; break;
+        case "bl": x=pad; y=pad; break;
+        case "bc": x=width/2; y=pad; break;
+        case "br": x=width-pad; y=pad; break;
+        case "center": x=width/2; y=height/2; break;
       }
 
-      const w = font.widthOfTextAtSize(content, size);
-      let drawX = x;
-      if (effectivePos.endsWith("c") || effectivePos === "center")
-        drawX = x - w / 2;
-      if (effectivePos.endsWith("r")) drawX = x - w;
+      const tw = font.widthOfTextAtSize(content, size);
+      const th = font.heightAtSize(size);
+      const rgb01 = hexToRgb01(color);
+
+      let originX = x;
+      let originY = y;
+      let rotateOpt: any = undefined;
+
+      if (effPos === "center" && mode === "watermark") {
+        // rotate around text center to match CSS preview
+        const theta = 35 * Math.PI / 180;
+        const cx = tw / 2, cy = th / 2;
+        const rx =  cx * Math.cos(theta) - cy * Math.sin(theta);
+        const ry =  cx * Math.sin(theta) + cy * Math.cos(theta);
+        originX = x - rx;
+        originY = y - ry;
+        rotateOpt = { type: "degrees", angle: 35 };
+      } else {
+        if (effPos.endsWith("c") || effPos === "center") originX = x - tw/2;
+        if (effPos.endsWith("r")) originX = x - tw;
+        // For top edge, y we computed is to the top; move baseline down by text height
+        if (effPos === "tl" || effPos === "tc" || effPos === "tr") originY = y - th;
+      }
 
       p.drawText(content, {
-        x: drawX,
-        y,
+        x: originX,
+        y: originY,
         size,
         font,
-        color: rgb(0, 0, 0),
-        opacity: Math.max(0, Math.min(1, opacity / 100)),
-        rotate:
-          effectivePos === "center" && mode === "watermark"
-            ? { type: "degrees", angle: 35 }
-            : undefined,
+        color: color,
+        opacity: Math.max(0, Math.min(1, opacity/100)),
+        rotate: rotateOpt,
       } as any);
     });
 
@@ -981,98 +985,93 @@ function ToolWatermark() {
     <div className="card p-6 min-h-0 space-y-4">
       <ToolHelp>{HELP.watermark}</ToolHelp>
 
-      <div className="grid md:grid-cols-2 gap-3">
+      <div className="grid md:grid-cols-3 gap-3">
         <div>
           <label className="text-sm mb-1 block">PDF file</label>
-          <input
-            type="file"
-            accept="application/pdf"
-            className="input w-full"
-            onChange={(e) => setFile(e.target.files?.[0] ?? null)}
-          />
+          <input type="file" accept="application/pdf" className="input w-full" onChange={(e) => setFile(e.target.files?.[0] ?? null)} />
         </div>
         <div>
           <label className="text-sm mb-1 block">Mode</label>
-          <select
-            className="input w-full"
-            value={mode}
-            onChange={(e) => setMode(e.target.value as any)}
-          >
+          <select className="input w-full" value={mode} onChange={(e) => setMode(e.target.value as any)}>
             <option value="numbers">Page numbers</option>
             <option value="header">Header text</option>
             <option value="footer">Footer text</option>
             <option value="watermark">Watermark (center angled)</option>
           </select>
         </div>
+        <div>
+          <label className="text-sm mb-1 block">Font size (pt)</label>
+          <input type="number" min={6} max={96} className="input w-full" value={size} onChange={(e)=> setSize(parseInt(e.target.value || "12",10))} />
+        </div>
       </div>
 
-      {mode !== "numbers" && (
-        <div className="grid md:grid-cols-2 gap-3">
+      <div className={`grid gap-3 ${mode === "numbers" ? "md:grid-cols-3" : "md:grid-cols-4"}`}>
+        {mode !== "numbers" && (
           <label className="block">
             <span className="text-sm">Text</span>
-            <input
-              className="input w-full mt-1"
-              value={text}
-              onChange={(e) => setText(e.target.value)}
-            />
+            <input className="input w-full mt-1" value={text} onChange={(e)=> setText(e.target.value)} />
           </label>
-          <label className="block">
-            <span className="text-sm">Position</span>
-            <select
-              className="input w-full mt-1"
-              value={pos}
-              onChange={(e) => setPos(e.target.value as any)}
-            >
-              <option value="tl">Top-Left</option>
-              <option value="tc">Top-Center</option>
-              <option value="tr">Top-Right</option>
-              <option value="bl">Bottom-Left</option>
-              <option value="bc">Bottom-Center</option>
-              <option value="br">Bottom-Right</option>
-              <option value="center">Center (angled)</option>
-            </select>
-          </label>
-        </div>
-      )}
-
-      {mode === "numbers" && (
-        <div className="text-sm text-muted">
-          Page numbers default to <b>Bottom-Center</b>. Choose another position
-          above if you like.
-        </div>
-      )}
-
-      <div className="grid md:grid-cols-2 gap-3">
+        )}
         <label className="block">
-          <span className="text-sm">Font size</span>
-          <input
-            type="number"
-            className="input mt-1"
-            value={size}
-            min={6}
-            max={72}
-            onChange={(e) => setSize(parseInt(e.target.value || "12", 10))}
-          />
+          <span className="text-sm">Position</span>
+          <select className="input w-full mt-1" value={pos} onChange={(e)=> setPos(e.target.value as any)} disabled={mode==="watermark"}>
+            <option value="tl">Top-Left</option>
+            <option value="tc">Top-Center</option>
+            <option value="tr">Top-Right</option>
+            <option value="bl">Bottom-Left</option>
+            <option value="bc">Bottom-Center</option>
+            <option value="br">Bottom-Right</option>
+            <option value="center">Center (angled)</option>
+          </select>
         </label>
         <label className="block">
           <span className="text-sm">Opacity (%)</span>
-          <input
-            type="number"
-            className="input mt-1"
-            value={opacity}
-            min={0}
-            max={100}
-            onChange={(e) => setOpacity(parseInt(e.target.value || "30", 10))}
-          />
+          <input type="number" min={0} max={100} className="input w-full mt-1" value={opacity} onChange={(e)=> setOpacity(parseInt(e.target.value || "30",10))} />
+        </label>
+        <label className="block">
+          <span className="text-sm">Color</span>
+          <input type="color" className="input w-full mt-1" value={color} onChange={(e)=> setColor((e.target as HTMLInputElement).value)} />
         </label>
       </div>
 
-      <button className="btn" onClick={run} disabled={!file}>
-        Apply & Download
-      </button>
-    </div>
-  );
+   <button className="btn" onClick={run} disabled={!file}>Apply & Download</button>
+
+{/* Live preview */}
+{thumbs.length > 0 && (
+  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+    {thumbs.map(t => {
+      const label = labelFor(t.page);
+      const s = overlayStyle(t);
+      const fontPx = previewFontPx(t);
+      return (
+        <div
+          key={t.page}
+          className="relative border rounded overflow-hidden"
+          ref={(el: HTMLDivElement | null) => {
+            tileRefs.current[t.page] = el; // set and return void
+          }}
+          data-page={t.page}
+        >
+          <img
+            src={t.url}
+            alt={`p${t.page + 1}`}
+            className="w-full select-none pointer-events-none"
+          />
+          <div style={s as any}>
+            <span style={{ fontSize: `${fontPx}px`, fontWeight: 600 }}>
+              {label}
+            </span>
+          </div>
+        </div>
+      );
+    })}
+  </div>
+)}
+</div>
+);
 }
+
+
 
 /* -------------------- Tool: Images → PDF -------------------- */
 
@@ -1304,30 +1303,30 @@ function ToolExtractText() {
 /* -------------------- Tool: Fill forms & flatten -------------------- */
 
 function ToolFillFlatten() {
-  const [file, setFile] = useState<File | null>(null);
-  const [origBytes, setOrigBytes] = useState<Uint8Array | null>(null);
+  const [file, setFile] = React.useState<File | null>(null);
+  const [origBytes, setOrigBytes] = React.useState<Uint8Array | null>(null);
 
   // Working doc & form kept in memory
-  const [doc, setDoc] = useState<PDFDocument | null>(null);
-  const formRef = useRef<any>(null);
+  const [doc, setDoc] = React.useState<PDFDocument | null>(null);
+  const formRef = React.useRef<any>(null);
 
-  const [fields, setFields] = useState<
-    { name: string; type: string; value?: string }[]
-  >([]);
-  const [busy, setBusy] = useState(false);
+  const [fields, setFields] = React.useState<{ name: string; type: string; value?: string }[]>([]);
+  const [busy, setBusy] = React.useState(false);
 
-  // Single fill
-  const [k, setK] = useState("");
-  const [v, setV] = useState("");
-
-  // Bulk fill
-  const [bulk, setBulk] = useState<string>("");
+  // Single / bulk inputs
+  const [k, setK] = React.useState("");
+  const [v, setV] = React.useState("");
+  const [bulk, setBulk] = React.useState<string>("");
 
   // Export options
-  const [flatten, setFlatten] = useState<boolean>(true);
+  const [flatten, setFlatten] = React.useState<boolean>(true);
 
-  // Filter for table
-  const [q, setQ] = useState("");
+  // Search
+  const [q, setQ] = React.useState("");
+
+  // --- Live preview thumbnails + widget overlays ---
+  type Thumb = { page: number; url: string; w: number; h: number; widgets: { id: string; name: string; type: string; rect: [number,number,number,number]; value?: string }[] };
+  const [thumbs, setThumbs] = React.useState<Thumb[]>([]);
 
   function detectType(field: any): string {
     const n = field?.constructor?.name || "";
@@ -1341,43 +1340,42 @@ function ToolFillFlatten() {
   async function buildDoc(bytes: Uint8Array) {
     const d = await PDFDocument.load(bytes);
     setDoc(d);
-    // pdf-lib form object
-    const f = d.getForm();
-    formRef.current = f;
+    formRef.current = d.getForm();
   }
 
   async function listFieldsFromCurrentDoc() {
     if (!doc) return;
     const f = formRef.current;
     const all = (f as any).getFields?.() as any[] | undefined;
-    const mapped =
-      all?.map((fld: any) => {
-        const name = fld.getName?.() ?? "(unnamed)";
-        const type = detectType(fld);
-        let value: string | undefined;
-        try {
-          if (typeof fld.getText === "function") value = fld.getText();
-          else if (typeof fld.isChecked === "function")
-            value = fld.isChecked() ? "checked" : "unchecked";
-          else if (typeof (fld as any).getSelected === "function") {
-            const sel = (fld as any).getSelected();
-            value = Array.isArray(sel) ? sel.join(", ") : String(sel ?? "");
-          }
-        } catch {}
-        return { name, type, value };
-      }) ?? [];
+    const mapped = all?.map((fld: any) => {
+      const name = fld.getName?.() ?? "(unnamed)";
+      const type = detectType(fld);
+      let value: string | undefined;
+      try {
+        if (typeof fld.getText === "function") value = fld.getText();
+        else if (typeof fld.isChecked === "function") value = fld.isChecked() ? "checked" : "unchecked";
+        else if (typeof (fld as any).getSelected === "function") {
+          const sel = (fld as any).getSelected();
+          value = Array.isArray(sel) ? sel.join(", ") : String(sel ?? "");
+        }
+      } catch {}
+      return { name, type, value };
+    }) ?? [];
     setFields(mapped);
+  }
+
+  function valueFor(name: string): string | undefined {
+    const f = fields.find(x => x.name === name);
+    return f?.value;
   }
 
   async function onPick(e: React.ChangeEvent<HTMLInputElement>) {
     const f = e.target.files?.[0] ?? null;
     setFile(f);
     setFields([]);
-    setK("");
-    setV("");
-    setBulk("");
-    setDoc(null);
-    formRef.current = null;
+    setK(""); setV(""); setBulk("");
+    setDoc(null); formRef.current = null;
+    setThumbs([]);
     if (!f) return;
     setBusy(true);
     try {
@@ -1386,69 +1384,83 @@ function ToolFillFlatten() {
       setOrigBytes(bytes);
       await buildDoc(bytes);
       await listFieldsFromCurrentDoc();
+
+      // Build preview thumbs + widget rects with pdf.js
+      const pdfjs = await loadPdfJs();
+      const docjs = await pdfjs.getDocument({ data: bytes }).promise;
+      const out: Thumb[] = [];
+      const maxPages = Math.min(64, docjs.numPages);
+      const dpr = window.devicePixelRatio || 1;
+
+      for (let p = 1; p <= maxPages; p++) {
+        const page = await docjs.getPage(p);
+        const viewport = page.getViewport({ scale: 0.70 * dpr });
+        const canvas = document.createElement("canvas");
+        canvas.width = viewport.width;
+        canvas.height = viewport.height;
+        const ctx = canvas.getContext("2d")!;
+        await page.render({ canvasContext: ctx, canvas, viewport }).promise;
+
+        // Map widget rectangles to viewport space
+        const annots = await page.getAnnotations({ intent: "display" });
+        const t = viewport.transform;
+        const m = { a:t[0], b:t[1], c:t[2], d:t[3], e:t[4], f:t[5] };
+        function mapRect(rect: number[]) {
+          const [x1,y1,x2,y2] = rect;
+          const X1 = m.a*x1 + m.c*y1 + m.e;
+          const Y1 = m.b*x1 + m.d*y1 + m.f;
+          const X2 = m.a*x2 + m.c*y2 + m.e;
+          const Y2 = m.b*x2 + m.d*y2 + m.f;
+          return [Math.min(X1,X2), Math.min(Y1,Y2), Math.max(X1,X2), Math.max(Y1,Y2)] as [number,number,number,number];
+        }
+        const widgets: Thumb['widgets'] = [];
+        for (const a of annots) {
+          if ((a as any).subtype !== "Widget") continue;
+          const name = (a as any).fieldName || (a as any).title || (a as any).id || "";
+          const rect = mapRect((a as any).rect || (a as any).rects || [0,0,0,0]);
+          const type = (a as any).fieldType || "Widget";
+          widgets.push({ id: `${p}:${name}:${widgets.length}`, name, type, rect, value: valueFor(name) });
+        }
+
+        out.push({ page: p-1, url: canvas.toDataURL("image/png"), w: canvas.width, h: canvas.height, widgets });
+      }
+      setThumbs(out);
     } finally {
       setBusy(false);
     }
   }
 
-  function parseBulk(
-    text: string
-  ): Record<string, string | boolean | string[]> {
-    // Try JSON first
+  function parseBulk(text: string): Record<string, string | boolean | string[]> {
     try {
       const obj = JSON.parse(text);
       if (obj && typeof obj === "object") return obj as Record<string, any>;
     } catch {}
-    // Fallback: KEY=VALUE per line
     const out: Record<string, any> = {};
-    text
-      .split(/\r?\n/)
-      .map((s) => s.trim())
-      .filter(Boolean)
-      .forEach((line) => {
-        const m = line.match(/^([^=]+)=(.*)$/);
-        if (!m) return;
-        const key = m[1].trim();
-        const raw = m[2].trim();
-        if (/^(true|false)$/i.test(raw)) {
-          out[key] = /^true$/i.test(raw);
-        } else if (raw.includes(",")) {
-          out[key] = raw
-            .split(",")
-            .map((x) => x.trim())
-            .filter(Boolean);
-        } else {
-          out[key] = raw;
-        }
-      });
+    text.split(/\\r?\\n/).map(s=>s.trim()).filter(Boolean).forEach(line => {
+      const m = line.match(/^([^=]+)=(.*)$/);
+      if (!m) return;
+      const key = m[1].trim();
+      const raw = m[2].trim();
+      if (/^(true|false)$/i.test(raw)) out[key] = /^true$/i.test(raw);
+      else if (raw.includes(",")) out[key] = raw.split(",").map(x=>x.trim()).filter(Boolean);
+      else out[key] = raw;
+    });
     return out;
   }
 
   function applyValueToField(field: any, val: any): boolean {
     try {
-      if (typeof field.setText === "function") {
-        field.setText(String(val ?? ""));
-        return true;
-      }
-      if (
-        typeof field.check === "function" ||
-        typeof field.uncheck === "function"
-      ) {
-        const truthy =
-          typeof val === "boolean"
-            ? val
-            : /^(1|true|yes|on|checked)$/i.test(String(val ?? "").trim());
+      if (typeof field.setText === "function") { field.setText(String(val ?? "")); return true; }
+      if (typeof field.check === "function" || typeof field.uncheck === "function") {
+        const truthy = typeof val === "boolean" ? val : /^(1|true|yes|on|checked)$/i.test(String(val ?? "").trim());
         truthy ? field.check?.() : field.uncheck?.();
         return true;
       }
       if (typeof field.select === "function") {
-        if (Array.isArray(val)) field.select(val);
-        else field.select(String(val ?? ""));
+        if (Array.isArray(val)) field.select(val); else field.select(String(val ?? ""));
         return true;
       }
-    } catch (e) {
-      console.warn("Failed field set:", e);
-    }
+    } catch {}
     return false;
   }
 
@@ -1458,22 +1470,12 @@ function ToolFillFlatten() {
     try {
       const f = formRef.current;
       let field: any;
-      try {
-        field = f.getField(k);
-      } catch {
-        alert(
-          `Field "${k}" not found. Click "List fields" first to see names.`
-        );
-        return;
-      }
-      if (!applyValueToField(field, v)) {
-        alert("This field type isn’t supported yet.");
-        return;
-      }
-      await listFieldsFromCurrentDoc(); // refresh table values
-    } finally {
-      setBusy(false);
-    }
+      try { field = f.getField(k); } catch { alert(`Field "${k}" not found.`); return; }
+      if (!applyValueToField(field, v)) { alert("This field type isn’t supported yet."); return; }
+      await listFieldsFromCurrentDoc();
+      // update widget values in preview
+      setThumbs(t => t.map(pg => ({ ...pg, widgets: pg.widgets.map(w => w.name === k ? { ...w, value: v } : w) })));
+    } finally { setBusy(false); }
   }
 
   async function fillBulk() {
@@ -1482,24 +1484,17 @@ function ToolFillFlatten() {
     try {
       const data = parseBulk(bulk);
       const f = formRef.current;
-      const keys = Object.keys(data);
       let applied = 0;
-      for (const name of keys) {
+      for (const name of Object.keys(data)) {
         try {
           const fld = f.getField(name);
           if (applyValueToField(fld, data[name])) applied++;
-        } catch {
-          console.warn(`Missing field: ${name}`);
-        }
+        } catch {}
       }
-      if (!applied) {
-        alert("No fields were updated. Check names/values.");
-        return;
-      }
+      if (!applied) { alert("No fields were updated. Check names/values."); return; }
       await listFieldsFromCurrentDoc();
-    } finally {
-      setBusy(false);
-    }
+      setThumbs(t => t.map(pg => ({ ...pg, widgets: pg.widgets.map(w => (w.name in data) ? { ...w, value: String((data as any)[w.name]) } : w) })));
+    } finally { setBusy(false); }
   }
 
   async function toggleCheckbox(name: string) {
@@ -1511,71 +1506,62 @@ function ToolFillFlatten() {
         const cur = fld.isChecked();
         cur ? fld.uncheck?.() : fld.check?.();
         await listFieldsFromCurrentDoc();
+        setThumbs(t => t.map(pg => ({ ...pg, widgets: pg.widgets.map(w => w.name === name ? { ...w, value: cur ? "unchecked" : "checked" } : w) })));
       }
-    } catch (e) {
-      console.warn("Toggle failed:", e);
-    }
+    } catch {}
   }
 
-  async function reloadValues() {
-    if (!doc) return;
-    await listFieldsFromCurrentDoc();
-  }
+  async function reloadValues() { if (!doc) return; await listFieldsFromCurrentDoc(); }
 
   async function revertAll() {
     if (!origBytes) return;
     setBusy(true);
-    try {
-      await buildDoc(origBytes);
-      await listFieldsFromCurrentDoc();
-    } finally {
-      setBusy(false);
-    }
+    try { await buildDoc(origBytes); await listFieldsFromCurrentDoc(); } finally { setBusy(false); }
   }
 
   async function exportPdf() {
     if (!doc) return;
-    const working = doc; // current in-memory doc
+    const working = doc;
     if (flatten) {
-      try {
-        const f = formRef.current;
-        f.flatten();
-      } catch (e) {
-        console.warn("Flatten failed (continuing):", e);
-      }
+      try { formRef.current.flatten(); } catch {}
     }
     const bytes = await working.save({ useObjectStreams: true });
-    const { url } = await blobFromUint8(
-      bytes,
-      flatten ? "filled.pdf" : "filled-editable.pdf"
-    );
+    const { url } = await blobFromUint8(bytes, flatten ? "filled.pdf" : "filled-editable.pdf");
     dl(url, flatten ? "filled.pdf" : "filled-editable.pdf");
     trackPdfAction("fill_flatten_export");
   }
 
   function downloadCSV() {
-    const rows = [["name", "type", "value"]];
-    fields.forEach((f) => rows.push([f.name, f.type, f.value ?? ""]));
-    const csv = rows
-      .map((r) => r.map((c) => `"${String(c).replace(/"/g, '""')}"`).join(","))
-      .join("\n");
+    const rows = [["name","type","value"], ...fields.map(f => [f.name, f.type, f.value ?? ""])];
+    const csv = rows.map(r => r.map(c => `"${String(c).replace(/"/g,'""')}"`).join(",")).join("\\n");
     const url = URL.createObjectURL(new Blob([csv], { type: "text/csv" }));
     dl(url, "pdf-form-fields.csv");
   }
 
   function preloadBulkFromTable() {
     const s = q.trim().toLowerCase();
-    const list = (
-      s ? fields.filter((f) => f.name.toLowerCase().includes(s)) : fields
-    ).map((f) => `${f.name}=${f.value ?? ""}`);
-    setBulk(list.join("\n"));
+    const list = (s ? fields.filter(f => f.name.toLowerCase().includes(s)) : fields).map(f => `${f.name}=${f.value ?? ""}`);
+    setBulk(list.join("\\n"));
   }
 
-  const filtered = useMemo(() => {
+  const filtered = React.useMemo(() => {
     const s = q.trim().toLowerCase();
     if (!s) return fields;
-    return fields.filter((f) => f.name.toLowerCase().includes(s));
+    return fields.filter(f => f.name.toLowerCase().includes(s));
   }, [fields, q]);
+
+  // helper for overlay style in %
+  function boxStyle(t: Thumb, r: [number,number,number,number]) {
+    const [x1,y1,x2,y2] = r;
+    return {
+      position: "absolute",
+      left: `${(x1 / t.w) * 100}%`,
+      top: `${(y1 / t.h) * 100}%`,
+      width: `${((x2 - x1) / t.w) * 100}%`,
+      height: `${((y2 - y1) / t.h) * 100}%`,
+      pointerEvents: "auto"
+    } as React.CSSProperties;
+  }
 
   return (
     <div className="card p-6 min-h-0 space-y-4">
@@ -1583,67 +1569,69 @@ function ToolFillFlatten() {
 
       {/* Pick file + actions */}
       <div className="grid md:grid-cols-[1fr_auto_auto_auto_auto] gap-3 items-end">
-        <input
-          type="file"
-          accept="application/pdf"
-          className="input"
-          onChange={onPick}
-        />
-        <button
-          className="btn-ghost"
-          onClick={reloadValues}
-          disabled={!doc || busy}
-          title="Reload values from current PDF"
-        >
-          Reload values
-        </button>
-        <button
-          className="btn-ghost"
-          onClick={() => doc && downloadCSV()}
-          disabled={!fields.length}
-          title="Download field names/types/values as CSV"
-        >
-          Download CSV
-        </button>
+        <input type="file" accept="application/pdf" className="input" onChange={onPick} />
+        <button className="btn-ghost" onClick={reloadValues} disabled={!doc || busy} title="Reload values from current PDF">Reload values</button>
+        <button className="btn-ghost" onClick={() => doc && downloadCSV()} disabled={!fields.length} title="Download field names/types/values as CSV">Download CSV</button>
         <label className="inline-flex items-center gap-2 text-sm">
-          <input
-            type="checkbox"
-            checked={flatten}
-            onChange={(e) => setFlatten(e.target.checked)}
-          />
+          <input type="checkbox" checked={flatten} onChange={(e)=> setFlatten(e.target.checked)} />
           Flatten on export
         </label>
         <div className="flex gap-2">
-          <button
-            className="btn-ghost"
-            onClick={revertAll}
-            disabled={!origBytes || busy}
-          >
-            Revert
-          </button>
-          <button className="btn" onClick={exportPdf} disabled={!doc || busy}>
-            Export PDF
-          </button>
+          <button className="btn-ghost" onClick={revertAll} disabled={!origBytes || busy}>Revert</button>
+          <button className="btn" onClick={exportPdf} disabled={!doc || busy}>Export PDF</button>
         </div>
       </div>
+
+      {/* Live preview */}
+      {thumbs.length > 0 && (
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+          {thumbs.map((t) => (
+            <div key={t.page} className="relative border rounded overflow-hidden">
+              <img src={t.url} alt={`p${t.page+1}`} className="w-full block pointer-events-none select-none" />
+              {t.widgets.map((w) => (
+                <div
+                  key={w.id}
+                  className={`absolute rounded ring-1 ring-white/80 bg-sky-400/20 hover:ring-2 hover:ring-sky-500`}
+                  style={boxStyle(t, w.rect)}
+                  title={`${w.name || "(unnamed)"}${w.value ? ` — ${w.value}` : ""}`}
+                  onClick={() => {
+                    if (!doc) return;
+                    const f = formRef.current;
+                    try {
+                      const fld = f.getField(w.name);
+                      if (typeof fld.isChecked === "function") {
+                        const cur = fld.isChecked();
+                        cur ? fld.uncheck?.() : fld.check?.();
+                        listFieldsFromCurrentDoc().then(()=> {
+                          setThumbs(prev => prev.map(pg => (pg.page===t.page ? {...pg, widgets: pg.widgets.map(ww => ww.id===w.id ? {...ww, value: cur ? "unchecked" : "checked"} : ww)} : pg)));
+                        });
+                        return;
+                      }
+                      if (typeof fld.setText === "function") {
+                        const val = prompt(`Set value for "${w.name}"`, w.value ?? "");
+                        if (val !== null) {
+                          fld.setText(val);
+                          listFieldsFromCurrentDoc().then(()=> {
+                            setThumbs(prev => prev.map(pg => (pg.page===t.page ? {...pg, widgets: pg.widgets.map(ww => ww.id===w.id ? {...ww, value: val} : ww)} : pg)));
+                          });
+                        }
+                        return;
+                      }
+                    } catch {}
+                  }}
+                />
+              ))}
+            </div>
+          ))}
+        </div>
+      )}
 
       {/* Field table + filter */}
       {fields.length > 0 && (
         <div className="space-y-2">
           <div className="flex gap-2 items-center">
-            <input
-              className="input"
-              placeholder="Search field names"
-              value={q}
-              onChange={(e) => setQ(e.target.value)}
-            />
-            <button
-              className="btn-ghost"
-              onClick={preloadBulkFromTable}
-              title="Load the visible fields into Bulk fill editor"
-            >
-              Load into Bulk
-            </button>
+            <input className="input" placeholder="Search field names" value={q} onChange={(e)=> setQ(e.target.value)} />
+            <button className="btn-ghost" onClick={preloadBulkFromTable} title="Load the visible fields into Bulk fill editor">Load into Bulk</button>
           </div>
           <div className="overflow-auto border rounded-lg">
             <table className="w-full text-sm">
@@ -1663,43 +1651,21 @@ function ToolFillFlatten() {
                     <td className="px-3 py-2">
                       {f.type === "CheckBox" ? (
                         <label className="inline-flex items-center gap-2">
-                          <input
-                            type="checkbox"
-                            checked={f.value === "checked"}
-                            onChange={() => toggleCheckbox(f.name)}
-                          />
+                          <input type="checkbox" checked={f.value === "checked"} onChange={() => toggleCheckbox(f.name)} />
                           {f.value || "unchecked"}
                         </label>
-                      ) : (
-                        f.value ?? ""
-                      )}
+                      ) : (f.value ?? "")}
                     </td>
                     <td className="px-3 py-2">
                       <div className="flex gap-2">
-                        <button
-                          className="btn-ghost"
-                          onClick={() => navigator.clipboard.writeText(f.name)}
-                        >
-                          Copy name
-                        </button>
-                        {f.type === "CheckBox" && (
-                          <button
-                            className="btn-ghost"
-                            onClick={() => toggleCheckbox(f.name)}
-                          >
-                            Toggle
-                          </button>
-                        )}
+                        <button className="btn-ghost" onClick={() => navigator.clipboard.writeText(f.name)}>Copy name</button>
+                        {f.type === "CheckBox" && (<button className="btn-ghost" onClick={() => toggleCheckbox(f.name)}>Toggle</button>)}
                       </div>
                     </td>
                   </tr>
                 ))}
                 {!filtered.length && (
-                  <tr>
-                    <td className="px-3 py-4 text-muted" colSpan={4}>
-                      No fields match your search.
-                    </td>
-                  </tr>
+                  <tr><td className="px-3 py-4 text-muted" colSpan={4}>No fields match your search.</td></tr>
                 )}
               </tbody>
             </table>
@@ -1709,67 +1675,30 @@ function ToolFillFlatten() {
 
       {/* Single fill */}
       <div className="grid md:grid-cols-3 gap-3">
-        <input
-          className="input"
-          placeholder="Field name"
-          value={k}
-          onChange={(e) => setK(e.target.value)}
-        />
-        <input
-          className="input"
-          placeholder="Value (text / true|false / option[,option])"
-          value={v}
-          onChange={(e) => setV(e.target.value)}
-        />
-        <button
-          className="btn"
-          onClick={fillSingle}
-          disabled={!doc || !k || busy}
-        >
-          {busy ? "Working…" : "Apply change"}
-        </button>
+        <input className="input" placeholder="Field name" value={k} onChange={(e)=> setK(e.target.value)} />
+        <input className="input" placeholder="Value (text / true|false / option[,option])" value={v} onChange={(e)=> setV(e.target.value)} />
+        <button className="btn" onClick={fillSingle} disabled={!doc || !k || busy}>{busy ? "Working…" : "Apply change"}</button>
       </div>
 
       {/* Bulk fill */}
       <div className="grid gap-2">
-        <label className="text-sm font-medium">
-          Bulk fill (applies to current PDF in memory)
-        </label>
-        <textarea
-          className="input h-40 font-mono"
-          placeholder={`JSON or KEY=VALUE per line
+        <label className="text-sm font-medium">Bulk fill (applies to current PDF in memory)</label>
+        <textarea className="input h-40 font-mono" placeholder={`JSON or KEY=VALUE per line
 Examples:
 {"FullName":"Jane Doe","Agree":true,"Country":"Ireland"}
 FullName=Jane Doe
 Agree=true
-Interests=Reading, Music`}
-          value={bulk}
-          onChange={(e) => setBulk(e.target.value)}
-        />
+Interests=Reading, Music`} value={bulk} onChange={(e)=> setBulk(e.target.value)} />
         <div className="flex gap-2">
-          <button className="btn" onClick={fillBulk} disabled={!doc || busy}>
-            {busy ? "Working…" : "Apply bulk changes"}
-          </button>
-          <button
-            className="btn-ghost"
-            onClick={() => setBulk("")}
-            disabled={busy}
-          >
-            Clear
-          </button>
-          <button
-            className="btn-ghost"
-            onClick={reloadValues}
-            disabled={!doc || busy}
-            title="Refresh table values after changes"
-          >
-            Reload values
-          </button>
+          <button className="btn" onClick={fillBulk} disabled={!doc || busy}>{busy ? "Working…" : "Apply bulk changes"}</button>
+          <button className="btn-ghost" onClick={()=> setBulk("")} disabled={busy}>Clear</button>
+          <button className="btn-ghost" onClick={reloadValues} disabled={!doc || busy} title="Refresh table values after changes">Reload values</button>
         </div>
       </div>
     </div>
   );
 }
+
 
 /* -------------------- Tool: Redact (multi-page memory) -------------------- */
 
@@ -2565,3 +2494,1928 @@ function ToolCompress() {
     </div>
   );
 }
+
+/* ======================= Enhanced MERGE (drag reorder + live previews) ======================= */
+
+function ToolBatchMergeUX() {
+  const [files, setFiles] = React.useState<File[]>([]);
+  const [thumbs, setThumbs] = React.useState<string[]>([]); // first page per file
+  const [pageThumbs, setPageThumbs] = React.useState<
+    { fileIndex: number; page: number; url: string }[]
+  >([]);
+  const dragIndex = React.useRef<number | null>(null);
+  const [busy, setBusy] = React.useState(false);
+
+  React.useEffect(() => {
+    (async () => {
+      setThumbs([]);
+      setPageThumbs([]);
+      if (!files.length) return;
+      const pdfjs = await loadPdfJs();
+      // First-page thumbnails per file
+      const firsts: string[] = [];
+      for (let fi = 0; fi < files.length; fi++) {
+        const data = await files[fi].arrayBuffer();
+        const doc = await pdfjs.getDocument({ data }).promise;
+        const p = await doc.getPage(1);
+        const vp = p.getViewport({
+          scale: 0.35 * (window.devicePixelRatio || 1),
+        });
+        const canvas = document.createElement("canvas");
+        canvas.width = vp.width;
+        canvas.height = vp.height;
+        const ctx = canvas.getContext("2d")!;
+        await p.render({ canvasContext: ctx, canvas, viewport: vp }).promise;
+        firsts.push(canvas.toDataURL("image/png"));
+
+        // All pages thumbnails for live preview grid
+        const total = Math.min(1000, doc.numPages);
+        for (let i = 1; i <= total; i++) {
+          const page = await doc.getPage(i);
+          const v = page.getViewport({
+            scale: 0.35 * (window.devicePixelRatio || 1),
+          });
+          const c = document.createElement("canvas");
+          c.width = v.width;
+          c.height = v.height;
+          const cx = c.getContext("2d")!;
+          await page.render({ canvasContext: cx, canvas: c, viewport: v })
+            .promise;
+          const url = c.toDataURL("image/png");
+          setPageThumbs((prev) => [
+            ...prev,
+            { fileIndex: fi, page: i - 1, url },
+          ]);
+        }
+      }
+      setThumbs(firsts);
+    })();
+  }, [files]);
+
+  function onDrop(from: number, to: number) {
+    if (to < 0 || to >= files.length || from === to) return;
+    setFiles((prev) => {
+      const arr = prev.slice();
+      const [m] = arr.splice(from, 1);
+      arr.splice(to, 0, m);
+      return arr;
+    });
+    setThumbs((prev) => {
+      const arr = prev.slice();
+      const [m] = arr.splice(from, 1);
+      arr.splice(to, 0, m);
+      return arr;
+    });
+    setPageThumbs((prev) => {
+      // remap fileIndex according to reorder
+      const map = Array.from({ length: files.length }, (_, i) => i);
+      // compute new index map after move
+      const newMap = map.slice();
+      const [m] = newMap.splice(from, 1);
+      newMap.splice(to, 0, m);
+      // produce inverse mapping oldIndex -> newIndex
+      const inv = newMap.reduce((acc, oldIdx, newIdx) => {
+        acc[oldIdx] = newIdx;
+        return acc;
+      }, {} as Record<number, number>);
+      return prev.map((p) => ({ ...p, fileIndex: inv[p.fileIndex] }));
+    });
+  }
+
+  async function mergeNow() {
+    if (files.length < 2) return;
+    setBusy(true);
+    try {
+      const out = await PDFDocument.create();
+      for (const f of files) {
+        const src = await PDFDocument.load(await f.arrayBuffer());
+        const pages = await out.copyPages(
+          src,
+          Array.from({ length: src.getPageCount() }, (_, i) => i)
+        );
+        pages.forEach((p) => out.addPage(p));
+      }
+      const bytes = await out.save({ useObjectStreams: true });
+      const { url } = await blobFromUint8(bytes, "merged.pdf");
+      dl(url, "merged.pdf");
+      trackPdfAction("merge");
+    } catch (e) {
+      console.error(e);
+      alert("Merge failed");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <div className="card p-6 min-h-0 space-y-4">
+      <ToolHelp>
+        <p>
+          <b>Why</b>: Combine multiple PDFs into one.
+        </p>
+        <ol className="list-decimal pl-5 space-y-1">
+          <li>Add PDFs</li>
+          <li>Drag to reorder</li>
+          <li>Preview pages below</li>
+          <li>Merge & download</li>
+        </ol>
+      </ToolHelp>
+
+      <div className="grid md:grid-cols-[1fr_auto] gap-3 items-end">
+        <label className="block">
+          <span className="text-sm">PDF files</span>
+          <input
+            type="file"
+            accept="application/pdf"
+            multiple
+            className="input mt-1"
+            onChange={(e) =>
+              e.target.files && setFiles(Array.from(e.target.files))
+            }
+          />
+        </label>
+        {files.length > 0 && (
+          <button
+            className="btn-ghost"
+            onClick={() => {
+              setFiles([]);
+              setThumbs([]);
+              setPageThumbs([]);
+            }}
+          >
+            Clear
+          </button>
+        )}
+      </div>
+
+      {/* Reorderable strip */}
+      {files.length > 0 && (
+        <div className="flex flex-col gap-2">
+          {files.map((f, i) => (
+            <div
+              key={f.name + f.lastModified}
+              draggable
+              onDragStart={() => (dragIndex.current = i)}
+              onDragOver={(e) => e.preventDefault()}
+              onDrop={() =>
+                dragIndex.current !== null && onDrop(dragIndex.current, i)
+              }
+              className="group rounded-lg border border-neutral-800 bg-neutral-900/70 hover:bg-neutral-900 transition flex items-center gap-3 p-2"
+            >
+              <img
+                src={thumbs[i] || ""}
+                alt=""
+                className="w-16 h-20 object-contain rounded bg-neutral-900 border border-neutral-800"
+                draggable={false}
+              />
+              <div className="min-w-0">
+                <div className="truncate font-medium">{f.name}</div>
+                <div className="text-xs text-muted">#{i + 1}</div>
+              </div>
+              <span className="ml-auto text-xs px-2 py-0.5 rounded bg-neutral-800 border border-neutral-700">
+                drag
+              </span>
+            </div>
+          ))}
+        </div>
+      )}
+
+      <div className="mt-2">
+        <button
+          className="btn"
+          onClick={mergeNow}
+          disabled={busy || files.length < 2}
+        >
+          {busy ? "Merging…" : "Merge PDFs"}
+        </button>
+      </div>
+
+      {/* Live page previews (all pages, ordered) */}
+      {pageThumbs.length > 0 && (
+        <div className="mt-4">
+          <h3 className="font-medium mb-2">Preview</h3>
+          <div className="grid grid-cols-3 sm:grid-cols-5 md:grid-cols-7 gap-2">
+            {pageThumbs
+              .sort((a, b) => a.fileIndex - b.fileIndex || a.page - b.page)
+              .map((p, idx) => (
+                <div key={idx} className="border rounded overflow-hidden">
+                  <img
+                    src={p.url}
+                    alt={`file ${p.fileIndex + 1} page ${p.page + 1}`}
+                    className="w-full"
+                  />
+                </div>
+              ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ======================= Enhanced SPLIT (ranges + visual picker) ======================= */
+
+function ToolSplitUX() {
+  const [file, setFile] = React.useState<File | null>(null);
+  const [mode, setMode] = React.useState<"ranges" | "pick">("pick");
+  const [combine, setCombine] = React.useState(false);
+
+  const [ranges, setRanges] = React.useState("");
+  const [thumbs, setThumbs] = React.useState<string[]>([]);
+  const [selected, setSelected] = React.useState<Set<number>>(new Set());
+  const [busy, setBusy] = React.useState(false);
+
+  React.useEffect(() => {
+    setThumbs([]);
+    setSelected(new Set());
+  }, [file]);
+
+  React.useEffect(() => {
+    (async () => {
+      if (!file) return;
+      const pdfjs = await loadPdfJs();
+      const doc = await pdfjs.getDocument({ data: await file.arrayBuffer() })
+        .promise;
+      const list: string[] = [];
+      for (let i = 1; i <= doc.numPages; i++) {
+        const page = await doc.getPage(i);
+        const vp = page.getViewport({
+          scale: 0.35 * (window.devicePixelRatio || 1),
+        });
+        const canvas = document.createElement("canvas");
+        canvas.width = vp.width;
+        canvas.height = vp.height;
+        const ctx = canvas.getContext("2d")!;
+        await page.render({ canvasContext: ctx, canvas, viewport: vp }).promise;
+        list.push(canvas.toDataURL("image/png"));
+      }
+      setThumbs(list);
+    })();
+  }, [file]);
+
+  function toggle(idx: number) {
+    setSelected((prev) => {
+      const next = new Set(prev);
+      if (next.has(idx)) next.delete(idx);
+      else next.add(idx);
+      return next;
+    });
+  }
+
+  async function extract(pageIdxs: number[]) {
+    if (!file || !pageIdxs.length) return;
+    const src = await PDFDocument.load(await file.arrayBuffer());
+    if (combine) {
+      const out = await PDFDocument.create();
+      for (const idx of pageIdxs) {
+        const [p] = await out.copyPages(src, [idx]);
+        out.addPage(p);
+      }
+      const bytes = await out.save({ useObjectStreams: true });
+      const { url } = await blobFromUint8(bytes, "extracted.pdf");
+      dl(url, "extracted.pdf");
+    } else {
+      let n = 1;
+      for (const idx of pageIdxs) {
+        const out = await PDFDocument.create();
+        const [p] = await out.copyPages(src, [idx]);
+        out.addPage(p);
+        const bytes = await out.save({ useObjectStreams: true });
+        const { url } = await blobFromUint8(bytes, `page-${idx + 1}.pdf`);
+        dl(url, `page-${idx + 1}-${n++}.pdf`);
+      }
+    }
+    trackPdfAction("split");
+  }
+
+  async function runRanges() {
+    if (!file) return;
+    setBusy(true);
+    try {
+      const total = thumbs.length || 9999;
+      const idxs = parsePageSelection(ranges, total);
+      await extract(idxs);
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function runPicked() {
+    if (!file) return;
+    setBusy(true);
+    try {
+      await extract(Array.from(selected).sort((a, b) => a - b));
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <div className="card p-6 min-h-0 space-y-4">
+      <ToolHelp>
+        <p>
+          <b>Why</b>: Split a PDF by picking pages visually, or by typing
+          ranges.
+        </p>
+        <p>
+          <b>How</b>: Upload a PDF → choose <i>Ranges</i> or <i>Select pages</i>{" "}
+          → Split.
+        </p>
+      </ToolHelp>
+
+      <div className="grid md:grid-cols-[1fr_auto] gap-3 items-end">
+        <label className="block">
+          <span className="text-sm">PDF file</span>
+          <input
+            type="file"
+            accept="application/pdf"
+            className="input mt-1"
+            onChange={(e) => setFile(e.target.files?.[0] ?? null)}
+          />
+        </label>
+        {file && (
+          <button
+            className="btn-ghost"
+            onClick={() => {
+              setFile(null);
+              setSelected(new Set());
+              setRanges("");
+            }}
+          >
+            Clear
+          </button>
+        )}
+      </div>
+
+      {!file ? (
+        <p className="text-sm text-muted">Choose a PDF to split.</p>
+      ) : (
+        <>
+          <div className="flex items-center gap-2 mb-2">
+            <button
+              className={`chip ${mode === "ranges" ? "chip--active" : ""}`}
+              onClick={() => setMode("ranges")}
+            >
+              Ranges
+            </button>
+            <button
+              className={`chip ${mode === "pick" ? "chip--active" : ""}`}
+              onClick={() => setMode("pick")}
+            >
+              Select pages
+            </button>
+            <label className="ml-auto inline-flex items-center gap-2 text-sm">
+              <input
+                type="checkbox"
+                checked={combine}
+                onChange={(e) => setCombine(e.target.checked)}
+              />
+              Merge extracted into one PDF
+            </label>
+          </div>
+
+          {mode === "ranges" ? (
+            <div className="grid md:grid-cols-[1fr_auto] gap-3 items-end">
+              <input
+                className="input"
+                placeholder="e.g. 5-6,8-10"
+                value={ranges}
+                onChange={(e) => setRanges(e.target.value)}
+              />
+              <button
+                className="btn"
+                onClick={runRanges}
+                disabled={busy || !ranges.trim()}
+              >
+                {busy ? "Splitting…" : "Split"}
+              </button>
+            </div>
+          ) : (
+            <>
+              <div className="flex items-center gap-2 mb-2">
+                <button
+                  className="btn"
+                  onClick={runPicked}
+                  disabled={busy || selected.size === 0}
+                >
+                  {busy ? "Splitting…" : `Extract ${selected.size} page(s)`}
+                </button>
+                <button
+                  className="btn-ghost"
+                  onClick={() => setSelected(new Set())}
+                >
+                  Clear selection
+                </button>
+              </div>
+              <p className="text-sm text-muted">
+                Click thumbnails to select/deselect pages.
+              </p>
+              <div className="grid grid-cols-3 sm:grid-cols-5 md:grid-cols-7 gap-2">
+                {thumbs.map((u, i) => {
+                  const on = selected.has(i);
+                  return (
+                    <button
+                      key={i}
+                      type="button"
+                      onClick={() => toggle(i)}
+                      className={`relative border rounded overflow-hidden ${
+                        on ? "ring-2 ring-green-500" : ""
+                      }`}
+                      title={`Page ${i + 1}`}
+                    >
+                      <img src={u} alt={`Page ${i + 1}`} className="w-full" />
+                      {on && (
+                        <span className="absolute top-1 left-1 text-xs bg-green-600 text-white rounded px-1">
+                          ✓
+                        </span>
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+            </>
+          )}
+
+          {/* Always-on preview grid */}
+          {thumbs.length > 0 && mode === "ranges" && (
+            <div className="mt-6">
+              <div className="grid grid-cols-3 sm:grid-cols-5 md:grid-cols-7 gap-2">
+                {thumbs.map((u, i) => (
+                  <div key={i} className="border rounded overflow-hidden">
+                    <img src={u} alt={`Page ${i + 1}`} className="w-full" />
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </>
+      )}
+    </div>
+  );
+}
+
+/* ======================= Enhanced FILL & FLATTEN (field picker overlay) =======================
+   Notes: pdf-lib supports .form.flatten() for ALL fields. Partial flatten is not available.
+   This UI lets the user:
+     - Inspect fields visually on top of the live preview
+     - Select fields to CLEAR values or mark READ-ONLY
+     - Optionally FLATTEN ALL fields at export time
+   Implementation detail:
+     - Uses pdfjs-dist to render pages & fetch form annotations (widget positions) for overlay.
+     - Uses pdf-lib to clear values, set read-only flags, and flatten all when requested.
+*/
+
+
+/* ======================= ROTATE (action above, live preview) ======================= */
+function ToolRotateUX() {
+  const [file, setFile] = React.useState<File | null>(null);
+  const [thumbs, setThumbs] = React.useState<string[]>([]);
+  const [busy, setBusy] = React.useState(false);
+  const [degrees, setDegrees] = React.useState(90); // CW
+
+  React.useEffect(() => {
+    setThumbs([]);
+  }, [file]);
+
+  React.useEffect(() => {
+    (async () => {
+      if (!file) return;
+      const pdfjs = await loadPdfJs();
+      const doc = await pdfjs.getDocument({ data: await file.arrayBuffer() })
+        .promise;
+      const dpr = window.devicePixelRatio || 1;
+      const list: string[] = [];
+      for (let i = 1; i <= doc.numPages; i++) {
+        const page = await doc.getPage(i);
+        const vp = page.getViewport({ scale: 0.70 * dpr });
+        const c = document.createElement("canvas");
+        c.width = vp.width;
+        c.height = vp.height;
+        await page.render({
+          canvasContext: c.getContext("2d")!,
+          canvas: c,
+          viewport: vp,
+        }).promise;
+        list.push(c.toDataURL("image/png"));
+      }
+      setThumbs(list);
+    })();
+  }, [file]);
+
+  async function rotateAll(delta: number) {
+    if (!file) return;
+    setBusy(true);
+    try {
+      const pdf = await PDFDocument.load(await file.arrayBuffer());
+      const count = pdf.getPageCount();
+      for (let i = 0; i < count; i++) {
+        const p = pdf.getPage(i);
+        const cur = p.getRotation().angle || 0;
+        p.setRotation(degreesToRotation((((cur + delta) % 360) + 360) % 360));
+      }
+      const bytes = await pdf.save({ useObjectStreams: true });
+      const { url } = await blobFromUint8(bytes, "rotated.pdf");
+      dl(url, "rotated.pdf");
+      trackPdfAction("rotate");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <div className="card p-6 space-y-4">
+      <div className="grid md:grid-cols-[1fr_auto] gap-3 items-end">
+        <label className="block">
+          <span className="text-sm">PDF file</span>
+          <input
+            type="file"
+            accept="application/pdf"
+            className="input mt-1"
+            onChange={(e) => setFile(e.target.files?.[0] ?? null)}
+          />
+        </label>
+        {file && (
+          <button className="btn-ghost" onClick={() => setFile(null)}>
+            Clear
+          </button>
+        )}
+      </div>
+      <div className="flex items-center gap-2">
+        <button
+          className="btn"
+          onClick={() => rotateAll(90)}
+          disabled={busy || !file}
+        >
+          {busy ? "Working…" : "Rotate 90° CW"}
+        </button>
+        <button
+          className="btn-ghost"
+          onClick={() => rotateAll(270)}
+          disabled={busy || !file}
+        >
+          Rotate 90° CCW
+        </button>
+      </div>
+      {thumbs.length > 0 && (
+        <div className="grid grid-cols-3 sm:grid-cols-5 md:grid-cols-7 gap-2">
+          {thumbs.map((u, i) => (
+            <div key={i} className="border rounded overflow-hidden">
+              <img src={u} alt={`p${i + 1}`} className="w-full" />
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+function degreesToRotation(d: number) {
+  return { angle: d, type: "degrees" } as any;
+}
+
+/* ======================= REORDER PAGES (drag grid) ======================= */
+function ToolReorderUX() {
+  const [file, setFile] = React.useState<File | null>(null);
+  const [thumbs, setThumbs] = React.useState<string[]>([]);
+  const [order, setOrder] = React.useState<number[]>([]);
+  const [busy, setBusy] = React.useState(false);
+  const dragIndex = React.useRef<number | null>(null);
+
+  React.useEffect(() => {
+    setThumbs([]);
+    setOrder([]);
+  }, [file]);
+
+  React.useEffect(() => {
+    (async () => {
+      if (!file) return;
+      const pdfjs = await loadPdfJs();
+      const doc = await pdfjs.getDocument({ data: await file.arrayBuffer() })
+        .promise;
+      const dpr = window.devicePixelRatio || 1;
+      const list: string[] = [];
+      for (let i = 1; i <= doc.numPages; i++) {
+        const page = await doc.getPage(i);
+        const vp = page.getViewport({ scale: 0.32 * dpr });
+        const c = document.createElement("canvas");
+        c.width = vp.width;
+        c.height = vp.height;
+        await page.render({
+          canvasContext: c.getContext("2d")!,
+          canvas: c,
+          viewport: vp,
+        }).promise;
+        list.push(c.toDataURL("image/png"));
+      }
+      setThumbs(list);
+      setOrder(Array.from({ length: list.length }, (_, i) => i));
+    })();
+  }, [file]);
+
+  function onDrop(from: number, to: number) {
+    if (from === to || from < 0 || to < 0) return;
+    setOrder((prev) => {
+      const arr = prev.slice();
+      const [m] = arr.splice(from, 1);
+      arr.splice(to, 0, m);
+      return arr;
+    });
+  }
+
+  async function exportReordered() {
+    if (!file || !order.length) return;
+    setBusy(true);
+    try {
+      const src = await PDFDocument.load(await file.arrayBuffer());
+      const out = await PDFDocument.create();
+      const pages = await out.copyPages(src, order);
+      pages.forEach((p) => out.addPage(p));
+      const bytes = await out.save({ useObjectStreams: true });
+      const { url } = await blobFromUint8(bytes, "reordered.pdf");
+      dl(url, "reordered.pdf");
+      trackPdfAction("reorder");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <div className="card p-6 space-y-4">
+      <div className="grid md:grid-cols-[1fr_auto] gap-3 items-end">
+        <label className="block">
+          <span className="text-sm">PDF file</span>
+          <input
+            type="file"
+            accept="application/pdf"
+            className="input mt-1"
+            onChange={(e) => setFile(e.target.files?.[0] ?? null)}
+          />
+        </label>
+        {file && (
+          <button className="btn-ghost" onClick={() => setFile(null)}>
+            Clear
+          </button>
+        )}
+      </div>
+      <div className="flex items-center gap-2">
+        <button
+          className="btn"
+          onClick={exportReordered}
+          disabled={busy || order.length === 0}
+        >
+          {busy ? "Exporting…" : "Export reordered PDF"}
+        </button>
+      </div>
+      <div className="grid grid-cols-3 sm:grid-cols-6 gap-2">
+        {order.map((idx, gridIndex) => (
+          <div
+            key={gridIndex}
+            draggable
+            onDragStart={() => (dragIndex.current = gridIndex)}
+            onDragOver={(e) => e.preventDefault()}
+            onDrop={() =>
+              dragIndex.current !== null && onDrop(dragIndex.current, gridIndex)
+            }
+            className="relative border rounded overflow-hidden"
+          >
+            <img src={thumbs[idx]} alt={`p${idx + 1}`} className="w-full" />
+            <span className="absolute top-1 left-1 text-xs bg-neutral-800/80 border border-neutral-700 text-white rounded px-1">
+              #{gridIndex + 1}
+            </span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/* ======================= IMAGES → PDF (drag order, action above) ======================= */
+function ToolImagesToPdfUX() {
+  const [images, setImages] = React.useState<File[]>([]);
+  const [urls, setUrls] = React.useState<string[]>([]);
+  const dragIndex = React.useRef<number | null>(null);
+  const [busy, setBusy] = React.useState(false);
+
+ React.useEffect(() => {
+   const next = images.map(f => URL.createObjectURL(f));
+   setUrls(next);
+   return () => { next.forEach(u => URL.revokeObjectURL(u)); };
+ }, [images]);
+
+  function onDrop(from: number, to: number) {
+    if (from === to) return;
+    setImages((prev) => {
+      const arr = prev.slice();
+      const [m] = arr.splice(from, 1);
+      arr.splice(to, 0, m);
+      return arr;
+    });
+  }
+
+  async function exportPdf() {
+    if (images.length === 0) return;
+    setBusy(true);
+    try {
+      const pdf = await PDFDocument.create();
+      for (const imgFile of images) {
+        const bytes = new Uint8Array(await imgFile.arrayBuffer());
+        let img, dims: { width: number; height: number };
+        const name = imgFile.name.toLowerCase();
+        if (name.endsWith(".png")) {
+          img = await pdf.embedPng(bytes);
+          dims = { width: img.width, height: img.height };
+        } else {
+          img = await pdf.embedJpg(bytes);
+          dims = { width: img.width, height: img.height };
+        }
+        const page = pdf.addPage([dims.width, dims.height]);
+        page.drawImage(img, {
+          x: 0,
+          y: 0,
+          width: dims.width,
+          height: dims.height,
+        });
+      }
+      const out = await pdf.save({ useObjectStreams: true });
+      const { url } = await blobFromUint8(out, "images.pdf");
+      dl(url, "images.pdf");
+      trackPdfAction("images_to_pdf");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <div className="card p-6 space-y-4">
+      <div className="grid md:grid-cols-[1fr_auto] gap-3 items-end">
+        <label className="block">
+          <span className="text-sm">Images</span>
+          <input
+            type="file"
+            multiple
+            accept="image/*"
+            className="input mt-1"
+            onChange={(e) =>
+              e.target.files && setImages(Array.from(e.target.files))
+            }
+          />
+        </label>
+        {images.length > 0 && (
+          <button className="btn-ghost" onClick={() => setImages([])}>
+            Clear
+          </button>
+        )}
+      </div>
+      <div className="flex items-center gap-2">
+        <button
+          className="btn"
+          onClick={exportPdf}
+          disabled={busy || images.length === 0}
+        >
+          {busy ? "Building…" : "Create PDF"}
+        </button>
+      </div>
+      <div className="grid grid-cols-3 sm:grid-cols-6 gap-2">
+        {urls.map((u, i) => (
+          <div
+            key={i}
+            draggable
+            onDragStart={() => (dragIndex.current = i)}
+            onDragOver={(e) => e.preventDefault()}
+            onDrop={() =>
+              dragIndex.current !== null && onDrop(dragIndex.current, i)
+            }
+            className="relative border rounded overflow-hidden"
+          >
+            <img
+              src={u}
+              alt={`img${i + 1}`}
+              className="w-full object-contain h-40 bg-neutral-900"
+            />
+            <span className="absolute top-1 left-1 text-xs bg-neutral-800/80 border border-neutral-700 text-white rounded px-1">
+              #{i + 1}
+            </span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/* ======================= PDF → IMAGES (preview + zip) ======================= */
+function ToolPdfToImagesUX() {
+  const [file, setFile] = React.useState<File | null>(null);
+  const [thumbs, setThumbs] = React.useState<{ url: string; blob?: Blob }[]>(
+    []
+  );
+  const [busy, setBusy] = React.useState(false);
+
+  React.useEffect(() => {
+    setThumbs([]);
+  }, [file]);
+
+  React.useEffect(() => {
+    (async () => {
+      if (!file) return;
+      const pdfjs = await loadPdfJs();
+      const doc = await pdfjs.getDocument({ data: await file.arrayBuffer() })
+        .promise;
+      const dpr = window.devicePixelRatio || 1;
+      const list: { url: string; blob?: Blob }[] = [];
+      for (let i = 1; i <= doc.numPages; i++) {
+        const page = await doc.getPage(i);
+        const vp = page.getViewport({ scale: 2 * dpr });
+        const c = document.createElement("canvas");
+        c.width = vp.width;
+        c.height = vp.height;
+        const ctx = c.getContext("2d")!;
+        await page.render({ canvasContext: ctx, canvas: c, viewport: vp })
+          .promise;
+        const blob: Blob = await new Promise((res) =>
+          c.toBlob((b) => res(b!), "image/png")
+        );
+        list.push({ url: URL.createObjectURL(blob), blob });
+      }
+      setThumbs(list);
+    })();
+  }, [file]);
+
+  async function downloadZip() {
+    if (!thumbs.length) return;
+    setBusy(true);
+    try {
+      const JSZip = await loadJSZip();
+      if (!JSZip) {
+        alert("Zip unavailable in this environment.");
+        return;
+      }
+      const zip = new JSZip();
+      thumbs.forEach((t, i) => {
+        if (t.blob) zip.file(`page-${i + 1}.png`, t.blob);
+      });
+      const out = await zip.generateAsync({ type: "blob" });
+      const url = URL.createObjectURL(out);
+      dl(url, "images.zip");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <div className="card p-6 space-y-4">
+      <div className="grid md:grid-cols-[1fr_auto] gap-3 items-end">
+        <label className="block">
+          <span className="text-sm">PDF file</span>
+          <input
+            type="file"
+            accept="application/pdf"
+            className="input mt-1"
+            onChange={(e) => setFile(e.target.files?.[0] ?? null)}
+          />
+        </label>
+        {file && (
+          <button className="btn-ghost" onClick={() => setFile(null)}>
+            Clear
+          </button>
+        )}
+      </div>
+      <div className="flex items-center gap-2">
+        <button
+          className="btn"
+          onClick={downloadZip}
+          disabled={busy || !thumbs.length}
+        >
+          {busy ? "Preparing…" : "Download images (.zip)"}
+        </button>
+      </div>
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
+        {thumbs.map((t, i) => (
+          <div key={i} className="border rounded overflow-hidden">
+            <img src={t.url} alt={`p${i + 1}`} className="w-full" />
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/* ======================= EXTRACT TEXT (preview + action above) ======================= */
+function ToolExtractTextUX() {
+  const [file, setFile] = React.useState<File | null>(null);
+  const [text, setText] = React.useState<string>("");
+  const [busy, setBusy] = React.useState(false);
+  const [thumbs, setThumbs] = React.useState<string[]>([]);
+
+  React.useEffect(() => {
+    setThumbs([]);
+    setText("");
+  }, [file]);
+
+  React.useEffect(() => {
+    (async () => {
+      if (!file) return;
+      const pdfjs = await loadPdfJs();
+      const doc = await pdfjs.getDocument({ data: await file.arrayBuffer() })
+        .promise;
+      const dpr = window.devicePixelRatio || 1;
+      const list: string[] = [];
+      for (let i = 1; i <= doc.numPages; i++) {
+        const page = await doc.getPage(i);
+        const vp = page.getViewport({ scale: 0.26 * dpr });
+        const c = document.createElement("canvas");
+        c.width = vp.width;
+        c.height = vp.height;
+        await page.render({
+          canvasContext: c.getContext("2d")!,
+          canvas: c,
+          viewport: vp,
+        }).promise;
+        list.push(c.toDataURL("image/png"));
+      }
+      setThumbs(list);
+    })();
+  }, [file]);
+
+  async function extract() {
+    if (!file) return;
+    setBusy(true);
+    try {
+      const pdfjs = await loadPdfJs();
+      const doc = await pdfjs.getDocument({ data: await file.arrayBuffer() })
+        .promise;
+      let out = "";
+      for (let i = 1; i <= doc.numPages; i++) {
+        const page = await doc.getPage(i);
+        const c = await page.getTextContent();
+        out += c.items.map((it: any) => it.str ?? "").join(" ") + "\\n";
+      }
+      setText(out.trim());
+      trackPdfAction("extract_text");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <div className="card p-6 space-y-4">
+      <div className="grid md:grid-cols-[1fr_auto] gap-3 items-end">
+        <label className="block">
+          <span className="text-sm">PDF file</span>
+          <input
+            type="file"
+            accept="application/pdf"
+            className="input mt-1"
+            onChange={(e) => setFile(e.target.files?.[0] ?? null)}
+          />
+        </label>
+        {file && (
+          <button
+            className="btn-ghost"
+            onClick={() => {
+              setFile(null);
+              setText("");
+            }}
+          >
+            Clear
+          </button>
+        )}
+      </div>
+      <div className="flex items-center gap-2">
+        <button className="btn" onClick={extract} disabled={busy || !file}>
+          {busy ? "Extracting…" : "Extract text"}
+        </button>
+      </div>
+      {thumbs.length > 0 && (
+        <div className="grid grid-cols-3 sm:grid-cols-6 gap-2">
+          {thumbs.map((u, i) => (
+            <div key={i} className="border rounded overflow-hidden">
+              <img src={u} alt={`p${i + 1}`} className="w-full" />
+            </div>
+          ))}
+        </div>
+      )}
+      {text && <textarea className="input w-full h-56" value={text} readOnly />}
+    </div>
+  );
+}
+
+/* ======================= COMPRESS (preview + action above) ======================= */
+function ToolCompressUX() {
+  const [file, setFile] = React.useState<File | null>(null);
+  const [thumbs, setThumbs] = React.useState<string[]>([]);
+  const [busy, setBusy] = React.useState(false);
+  const [quality, setQuality] = React.useState<"high" | "medium" | "low">(
+    "medium"
+  );
+
+  React.useEffect(() => {
+    setThumbs([]);
+  }, [file]);
+
+  React.useEffect(() => {
+    (async () => {
+      if (!file) return;
+      const pdfjs = await loadPdfJs();
+      const doc = await pdfjs.getDocument({ data: await file.arrayBuffer() })
+        .promise;
+      const dpr = window.devicePixelRatio || 1;
+      const list: string[] = [];
+      for (let i = 1; i <= doc.numPages; i++) {
+        const page = await doc.getPage(i);
+        const vp = page.getViewport({ scale: 0.26 * dpr });
+        const c = document.createElement("canvas");
+        c.width = vp.width;
+        c.height = vp.height;
+        await page.render({
+          canvasContext: c.getContext("2d")!,
+          canvas: c,
+          viewport: vp,
+        }).promise;
+        list.push(c.toDataURL("image/png"));
+      }
+      setThumbs(list);
+    })();
+  }, [file, quality]);
+
+  async function compress() {
+    if (!file) return;
+    setBusy(true);
+    try {
+      // Simple passthrough: we rely on pdf-lib re-saving which may reduce size; real image downsampling requires image re-encode.
+      const src = await PDFDocument.load(await file.arrayBuffer());
+      const bytes = await src.save({ useObjectStreams: true });
+      const { url } = await blobFromUint8(bytes, "compressed.pdf");
+      dl(url, "compressed.pdf");
+      trackPdfAction("compress");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <div className="card p-6 space-y-4">
+      <div className="grid md:grid-cols-[1fr_auto] gap-3 items-end">
+        <label className="block">
+          <span className="text-sm">PDF file</span>
+          <input
+            type="file"
+            accept="application/pdf"
+            className="input mt-1"
+            onChange={(e) => setFile(e.target.files?.[0] ?? null)}
+          />
+        </label>
+        {file && (
+          <button className="btn-ghost" onClick={() => setFile(null)}>
+            Clear
+          </button>
+        )}
+      </div>
+      <div className="flex items-center gap-3">
+        <label className="inline-flex items-center gap-2 text-sm">
+          <span>Quality</span>
+          <select
+            className="input"
+            value={quality}
+            onChange={(e) => setQuality(e.target.value as any)}
+          >
+            <option value="high">High</option>
+            <option value="medium">Medium</option>
+            <option value="low">Low</option>
+          </select>
+        </label>
+        <button className="btn" onClick={compress} disabled={busy || !file}>
+          {busy ? "Compressing…" : "Compress PDF"}
+        </button>
+      </div>
+      <div className="grid grid-cols-3 sm:grid-cols-6 gap-2">
+        {thumbs.map((u, i) => (
+          <div key={i} className="border rounded overflow-hidden">
+            <img src={u} alt={`p${i + 1}`} className="w-full" />
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/* ======================= REDACT (visual boxes + rasterize) =======================
+   UX: upload → draw black boxes over thumbnails → Export (rasterizes each page and burns boxes)
+   Note: This performs *safe* redaction by rasterizing; underlying text is removed.
+*/
+function ToolRedactUX() {
+  const [file, setFile] = React.useState<File | null>(null);
+  const [thumbs, setThumbs] = React.useState<
+    { url: string; w: number; h: number }[]
+  >([]);
+  const [boxes, setBoxes] = React.useState<
+    Record<number, { x: number; y: number; w: number; h: number }[]>
+  >({}); // per page
+  const [busy, setBusy] = React.useState(false);
+  const [scale, setScale] = React.useState(0.35);
+
+  React.useEffect(() => {
+    setThumbs([]);
+    setBoxes({});
+  }, [file]);
+
+  React.useEffect(() => {
+    (async () => {
+      if (!file) return;
+      const pdfjs = await loadPdfJs();
+      const doc = await pdfjs.getDocument({ data: await file.arrayBuffer() })
+        .promise;
+      const out: any[] = [];
+      for (let i = 1; i <= doc.numPages; i++) {
+        const page = await doc.getPage(i);
+        const vp = page.getViewport({ scale });
+        const c = document.createElement("canvas");
+        c.width = vp.width;
+        c.height = vp.height;
+        await page.render({
+          canvasContext: c.getContext("2d")!,
+          canvas: c,
+          viewport: vp,
+        }).promise;
+        out.push({ url: c.toDataURL("image/png"), w: c.width, h: c.height });
+      }
+      setThumbs(out);
+    })();
+  }, [file, scale]);
+
+  function startDraw(p: number, e: React.MouseEvent<HTMLDivElement>) {
+    const rect = (e.currentTarget as HTMLDivElement).getBoundingClientRect();
+    const sx = e.clientX - rect.left;
+    const sy = e.clientY - rect.top;
+    function onMove(ev: MouseEvent) {
+      const mx = ev.clientX - rect.left;
+      const my = ev.clientY - rect.top;
+      const x = Math.min(sx, mx),
+        y = Math.min(sy, my);
+      const w = Math.abs(mx - sx),
+        h = Math.abs(my - sy);
+      setBoxes((prev) => {
+        const copy = { ...prev };
+        const arr = (copy[p] || []).slice(0, -1);
+        arr.push({ x, y, w, h });
+        copy[p] = arr;
+        return copy;
+      });
+    }
+    function onUp(ev: MouseEvent) {
+      document.removeEventListener("mousemove", onMove);
+      document.removeEventListener("mouseup", onUp);
+    }
+    setBoxes((prev) => ({
+      ...prev,
+      [p]: [...(prev[p] || []), { x: sx, y: sy, w: 0, h: 0 }],
+    }));
+    document.addEventListener("mousemove", onMove);
+    document.addEventListener("mouseup", onUp);
+  }
+
+  function clearPage(p: number) {
+    setBoxes((prev) => ({ ...prev, [p]: [] }));
+  }
+
+  async function exportRedacted() {
+    if (!file) return;
+    setBusy(true);
+    try {
+      const pdfjs = await loadPdfJs();
+      const src = await pdfjs.getDocument({ data: await file.arrayBuffer() })
+        .promise;
+      const out = await PDFDocument.create();
+      for (let i = 1; i <= src.numPages; i++) {
+        const page = await src.getPage(i);
+        const vp = page.getViewport({ scale: 2 }); // high res
+        const c = document.createElement("canvas");
+        c.width = vp.width;
+        c.height = vp.height;
+        const ctx = c.getContext("2d")!;
+        await page.render({ canvasContext: ctx, canvas: c, viewport: vp })
+          .promise;
+        // burn redaction boxes (scale from thumb to hi-res)
+        const t = thumbs[i - 1];
+        const scaleX = c.width / t.w,
+          scaleY = c.height / t.h;
+        (boxes[i - 1] || []).forEach((b) => {
+          ctx.fillStyle = "#000";
+          ctx.fillRect(b.x * scaleX, b.y * scaleY, b.w * scaleX, b.h * scaleY);
+        });
+        const blob: Blob = await new Promise((res) =>
+          c.toBlob((b) => res(b!), "image/jpeg", 0.92)
+        );
+        const imgBytes = new Uint8Array(await blob.arrayBuffer());
+        const pdf = out;
+        const img = await pdf.embedJpg(imgBytes);
+        const pageOut = pdf.addPage([img.width, img.height]);
+        pageOut.drawImage(img, {
+          x: 0,
+          y: 0,
+          width: img.width,
+          height: img.height,
+        });
+      }
+      const bytes = await out.save({ useObjectStreams: true });
+      const { url } = await blobFromUint8(bytes, "redacted.pdf");
+      dl(url, "redacted.pdf");
+      trackPdfAction("redact_apply");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <div className="card p-6 space-y-4">
+      <div className="grid md:grid-cols-[1fr_auto] gap-3 items-end">
+        <label className="block">
+          <span className="text-sm">PDF file</span>
+          <input
+            type="file"
+            accept="application/pdf"
+            className="input mt-1"
+            onChange={(e) => setFile(e.target.files?.[0] ?? null)}
+          />
+        </label>
+        {file && (
+          <button
+            className="btn-ghost"
+            onClick={() => {
+              setFile(null);
+              setThumbs([]);
+              setBoxes({});
+            }}
+          >
+            Clear
+          </button>
+        )}
+      </div>
+      <div className="flex items-center gap-2">
+        <button
+          className="btn"
+          onClick={exportRedacted}
+          disabled={busy || !file}
+        >
+          {busy ? "Exporting…" : "Export redacted PDF"}
+        </button>
+        <label className="inline-flex items-center gap-2 text-sm">
+          <span>Thumb scale</span>
+          <input
+            type="range"
+            min="0.25"
+            max="0.6"
+            step="0.05"
+            value={scale}
+            onChange={(e) => setScale(parseFloat(e.target.value))}
+          />
+        </label>
+      </div>
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+        {thumbs.map((t, i) => (
+          <div key={i} className="relative border rounded overflow-hidden">
+            <img
+              src={t.url}
+              alt={`p${i + 1}`}
+              className="w-full select-none pointer-events-none"
+            />
+            <div
+              className="absolute inset-0 cursor-crosshair"
+              onMouseDown={(e) => startDraw(i, e)}
+            />
+            {(boxes[i] || []).map((b, idx) => (
+              <div
+                key={idx}
+                className="absolute bg-black/80 border border-black"
+                style={{ left: b.x, top: b.y, width: b.w, height: b.h }}
+              />
+            ))}
+            <button
+              type="button"
+              className="absolute top-1 left-1 text-xs bg-neutral-800/80 border border-neutral-700 text-white rounded px-1"
+              onClick={() => clearPage(i)}
+            >
+              Clear
+            </button>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/* ======================= WATERMARK (text or image) ======================= */
+
+
+
+
+
+/* ======================= Page numbers / Header / Footer / Watermark (with LIVE PREVIEW) ======================= */
+function ToolWatermarkUX() {
+  const [file, setFile] = React.useState<File | null>(null);
+  const [mode, setMode] = React.useState<"numbers"|"header"|"footer"|"watermark">("numbers");
+  const [text, setText] = React.useState("CONFIDENTIAL");
+  const [pos, setPos] = React.useState<"tl"|"tc"|"tr"|"bl"|"bc"|"br"|"center">("bc");
+  const [color, setColor] = useState<string>("#ff0000");
+  const [size, setSize] = React.useState(12);
+  const [opacity, setOpacity] = React.useState(30);
+  const [thumbs, setThumbs] = React.useState<{page:number; url:string; w:number; h:number}[]>([]);
+  const [busy, setBusy] = React.useState(false);
+
+  React.useEffect(()=>{
+    setThumbs([]);
+  }, [file]);
+
+  React.useEffect(()=>{
+    if (mode === "numbers") setPos("bc");
+    else if (mode === "header") setPos("tc");
+    else if (mode === "footer") setPos("bc");
+    else setPos("center");
+  }, [mode]);
+
+  React.useEffect(()=>{
+    (async () => {
+      if (!file) return;
+      const pdfjs = await loadPdfJs();
+      const doc = await pdfjs.getDocument({ data: await file.arrayBuffer() }).promise;
+      const out:any[] = [];
+      const dpr = window.devicePixelRatio || 1;
+      for (let p=1; p<=doc.numPages; p++) {
+        const page = await doc.getPage(p);
+        const vp = page.getViewport({ scale: 0.70 * dpr });
+        const c = document.createElement("canvas");
+        c.width = vp.width; c.height = vp.height;
+        const ctx = c.getContext("2d")!;
+        await page.render({ canvasContext: ctx, canvas: c, viewport: vp }).promise;
+        out.push({ page: p-1, url: c.toDataURL("image/png"), w: c.width, h: c.height });
+      }
+      setThumbs(out);
+    })();
+  }, [file]);
+
+  function labelFor(pageIndex:number) {
+    return mode === "numbers" ? `${pageIndex+1} / ${thumbs.length}` : text;
+  }
+
+  function overlayStyle(t:{w:number; h:number}) {
+    // CSS placement relative to thumbnail box
+    const s: any = {
+      position: "absolute",
+      color: "white",
+      textShadow: "0 0 6px rgba(0,0,0,.65)",
+      opacity: Math.max(0, Math.min(1, opacity/100)),
+      transform: ""
+    };
+    if (pos === "tl") { s.left = 8; s.top = 8; }
+    if (pos === "tc") { s.left = "50%"; s.top = 8; s.transform = "translateX(-50%)"; }
+    if (pos === "tr") { s.right = 8; s.top = 8; }
+    if (pos === "bl") { s.left = 8; s.bottom = 8; }
+    if (pos === "bc") { s.left = "50%"; s.bottom = 8; s.transform = "translateX(-50%)"; }
+    if (pos === "br") { s.right = 8; s.bottom = 8; }
+    if (pos === "center") { s.left = "50%"; s.top = "50%"; s.transform = "translate(-50%,-50%) rotate(35deg)"; }
+    return s;
+  }
+
+  async function apply() {
+    if (!file) return;
+    setBusy(true);
+    try {
+      const pdf = await PDFDocument.load(await file.arrayBuffer());
+      const font = await pdf.embedFont(StandardFonts.Helvetica);
+      const pages = pdf.getPages();
+      
+pages.forEach((p, idx) => {
+  const { width, height } = p.getSize();
+  const pad = 24;
+  const content = mode === "numbers" ? `${idx+1} / ${pages.length}` : text;
+
+  let effPos = pos;
+  if (mode === "watermark") effPos = "center";
+  if (mode === "numbers" && pos === "center") effPos = "bc";
+
+  let x = width/2, y = pad;
+  switch (effPos) {
+    case "tl": x=pad; y=height-pad; break;
+    case "tc": x=width/2; y=height-pad; break;
+    case "tr": x=width-pad; y=height-pad; break;
+    case "bl": x=pad; y=pad; break;
+    case "bc": x=width/2; y=pad; break;
+    case "br": x=width-pad; y=pad; break;
+    case "center": x=width/2; y=height/2; break;
+  }
+
+  const w = font.widthOfTextAtSize(content, size);
+  const h = font.heightAtSize(size);
+  let originX = x;
+  let originY = y;
+  let rotateOpt = undefined;
+
+  if (effPos === "center" && mode === "watermark") {
+    const theta = 35 * Math.PI / 180;
+    // vector from unrotated origin (baseline-left) to text center
+    const cx = w / 2, cy = h / 2;
+    // rotate vector by theta
+    const rx =  cx * Math.cos(theta) - cy * Math.sin(theta);
+    const ry =  cx * Math.sin(theta) + cy * Math.cos(theta);
+    // choose origin so rotated center equals (x,y)
+    originX = x - rx;
+    originY = y - ry;
+    rotateOpt = { type: 'degrees', angle: 35 };
+  } else {
+    // Align by width for left/center/right when not rotated
+    if (effPos.endsWith("c") || effPos === "center") originX = x - w/2;
+    if (effPos.endsWith("r")) originX = x - w;
+    // For top-aligned positions (tl/tc/tr) move baseline down by text height
+    if (effPos === "tl" || effPos === "tc" || effPos === "tr") originY = y - h;
+  }
+
+  const r = parseInt(color.slice(1,3),16)/255;
+  const g = parseInt(color.slice(3,5),16)/255;
+  const b = parseInt(color.slice(5,7),16)/255;
+
+  p.drawText(content, {
+    x: originX,
+    y: originY,
+    size,
+    font,
+    color: color,
+    opacity: Math.max(0, Math.min(1, opacity/100)),
+    rotate: rotateOpt,
+  } as any);
+});
+const bytes = await pdf.save({ useObjectStreams: true });
+      const { url } = await blobFromUint8(bytes, "annotated.pdf");
+      dl(url, "annotated.pdf");
+      trackPdfAction("numbers_header_footer_watermark");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <div className="card p-6 space-y-4">
+      <ToolHelp>{HELP.watermark}</ToolHelp>
+
+      <div className="grid md:grid-cols-3 gap-3">
+        <label className="block">
+          <span className="text-sm">PDF file</span>
+          <input type="file" accept="application/pdf" className="input mt-1" onChange={e=> setFile(e.target.files?.[0] ?? null)} />
+        </label>
+        <label className="block">
+          <span className="text-sm">Mode</span>
+          <select className="input mt-1" value={mode} onChange={e=> setMode(e.target.value as any)}>
+            <option value="numbers">Page numbers</option>
+            <option value="header">Header text</option>
+            <option value="footer">Footer text</option>
+            <option value="watermark">Watermark</option>
+          </select>
+        </label>
+        <label className="block">
+          <span className="text-sm">Font size</span>
+          <input type="number" min={6} max={96} className="input mt-1" value={size} onChange={e=> setSize(parseInt(e.target.value||"12",10))} />
+        </label>
+      </div>
+
+      <div className="grid md:grid-cols-3 gap-3">
+        <label className="block">
+          <span className="text-sm">Text</span>
+          <input className="input mt-1" value={text} onChange={e=> setText(e.target.value)} disabled={mode==="numbers"} />
+        </label>
+        <label className="block">
+          <span className="text-sm">Position</span>
+          <select className="input mt-1" value={pos} onChange={e=> setPos(e.target.value as any)} disabled={mode==="watermark"}>
+            <option value="tl">Top-Left</option>
+            <option value="tc">Top-Center</option>
+            <option value="tr">Top-Right</option>
+            <option value="bl">Bottom-Left</option>
+            <option value="bc">Bottom-Center</option>
+            <option value="br">Bottom-Right</option>
+            <option value="center">Center (angled)</option>
+          </select>
+        </label>
+        <label className="block">
+          <span className="text-sm">Opacity (%)</span>
+          <input type="number" min={0} max={100} className="input mt-1" value={opacity} onChange={e=> setOpacity(parseInt(e.target.value||"30",10))} />
+        </label>
+      </div>
+
+      <button className="btn" onClick={apply} disabled={!file || busy}>
+        {busy ? "Applying…" : "Apply & Download"}
+      </button>
+
+      {/* LIVE PREVIEW */}
+      {thumbs.length>0 && (
+        <div className="space-y-2">
+          <div className="text-sm text-muted">Live preview (not exported)</div>
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
+            {thumbs.map(t => (
+              <div key={t.page} className="relative border rounded overflow-hidden">
+                <img src={t.url} alt={`Page ${t.page+1}`} className="w-full" />
+                <div style={overlayStyle(t)}>
+                  <span style={{ fontSize: `${size}px`, fontWeight: 600 }}>{labelFor(t.page)}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ======================= Fill & Flatten with POPUP editor on preview ======================= */
+function ToolFillFlattenUX() {
+  const [file, setFile] = React.useState<File | null>(null);
+  const [origBytes, setOrigBytes] = React.useState<Uint8Array | null>(null);
+
+  // Working doc & form kept in memory
+  const [doc, setDoc] = React.useState<PDFDocument | null>(null);
+  const formRef = React.useRef<any>(null);
+
+  const [fields, setFields] = React.useState<{ name: string; type: string; value?: string }[]>([]);
+  const [busy, setBusy] = React.useState(false);
+
+  // Single / bulk inputs
+  const [k, setK] = React.useState("");
+  const [v, setV] = React.useState("");
+  const [bulk, setBulk] = React.useState<string>("");
+
+  // Export options
+  const [flatten, setFlatten] = React.useState<boolean>(true);
+
+  // Search
+  const [q, setQ] = React.useState("");
+
+  // --- Live preview thumbnails + widget overlays ---
+  type Thumb = { page: number; url: string; w: number; h: number; widgets: { id: string; name: string; type: string; rect: [number,number,number,number]; value?: string }[] };
+  const [thumbs, setThumbs] = React.useState<Thumb[]>([]);
+
+  function detectType(field: any): string {
+    const n = field?.constructor?.name || "";
+    if (n) return n.replace(/^PDF/, "");
+    if ("check" in field || "uncheck" in field) return "CheckBox";
+    if ("select" in field) return "Dropdown/Radio/OptionList";
+    if ("setText" in field) return "TextField";
+    return "Unknown";
+  }
+
+  async function buildDoc(bytes: Uint8Array) {
+    const d = await PDFDocument.load(bytes);
+    setDoc(d);
+    formRef.current = d.getForm();
+  }
+
+  async function listFieldsFromCurrentDoc() {
+    if (!doc) return;
+    const f = formRef.current;
+    const all = (f as any).getFields?.() as any[] | undefined;
+    const mapped = all?.map((fld: any) => {
+      const name = fld.getName?.() ?? "(unnamed)";
+      const type = detectType(fld);
+      let value: string | undefined;
+      try {
+        if (typeof fld.getText === "function") value = fld.getText();
+        else if (typeof fld.isChecked === "function") value = fld.isChecked() ? "checked" : "unchecked";
+        else if (typeof (fld as any).getSelected === "function") {
+          const sel = (fld as any).getSelected();
+          value = Array.isArray(sel) ? sel.join(", ") : String(sel ?? "");
+        }
+      } catch {}
+      return { name, type, value };
+    }) ?? [];
+    setFields(mapped);
+  }
+
+  function valueFor(name: string): string | undefined {
+    const f = fields.find(x => x.name === name);
+    return f?.value;
+  }
+
+  async function onPick(e: React.ChangeEvent<HTMLInputElement>) {
+    const f = e.target.files?.[0] ?? null;
+    setFile(f);
+    setFields([]);
+    setK(""); setV(""); setBulk("");
+    setDoc(null); formRef.current = null;
+    setThumbs([]);
+    if (!f) return;
+    setBusy(true);
+    try {
+      const ab = await f.arrayBuffer();
+      const bytes = new Uint8Array(ab);
+      setOrigBytes(bytes);
+      await buildDoc(bytes);
+      await listFieldsFromCurrentDoc();
+
+      // Build preview thumbs + widget rects with pdf.js
+      const pdfjs = await loadPdfJs();
+      const docjs = await pdfjs.getDocument({ data: bytes }).promise;
+      const out: Thumb[] = [];
+      const maxPages = Math.min(64, docjs.numPages);
+      const dpr = window.devicePixelRatio || 1;
+
+      for (let p = 1; p <= maxPages; p++) {
+        const page = await docjs.getPage(p);
+        const viewport = page.getViewport({ scale: 0.70 * dpr });
+        const canvas = document.createElement("canvas");
+        canvas.width = viewport.width;
+        canvas.height = viewport.height;
+        const ctx = canvas.getContext("2d")!;
+        await page.render({ canvasContext: ctx, canvas, viewport }).promise;
+
+        // Map widget rectangles to viewport space
+        const annots = await page.getAnnotations({ intent: "display" });
+        const t = viewport.transform;
+        const m = { a:t[0], b:t[1], c:t[2], d:t[3], e:t[4], f:t[5] };
+        function mapRect(rect: number[]) {
+          const [x1,y1,x2,y2] = rect;
+          const X1 = m.a*x1 + m.c*y1 + m.e;
+          const Y1 = m.b*x1 + m.d*y1 + m.f;
+          const X2 = m.a*x2 + m.c*y2 + m.e;
+          const Y2 = m.b*x2 + m.d*y2 + m.f;
+          return [Math.min(X1,X2), Math.min(Y1,Y2), Math.max(X1,X2), Math.max(Y1,Y2)] as [number,number,number,number];
+        }
+        const widgets: Thumb['widgets'] = [];
+        for (const a of annots) {
+          if ((a as any).subtype !== "Widget") continue;
+          const name = (a as any).fieldName || (a as any).title || (a as any).id || "";
+          const rect = mapRect((a as any).rect || (a as any).rects || [0,0,0,0]);
+          const type = (a as any).fieldType || "Widget";
+          widgets.push({ id: `${p}:${name}:${widgets.length}`, name, type, rect, value: valueFor(name) });
+        }
+
+        out.push({ page: p-1, url: canvas.toDataURL("image/png"), w: canvas.width, h: canvas.height, widgets });
+      }
+      setThumbs(out);
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  function parseBulk(text: string): Record<string, string | boolean | string[]> {
+    try {
+      const obj = JSON.parse(text);
+      if (obj && typeof obj === "object") return obj as Record<string, any>;
+    } catch {}
+    const out: Record<string, any> = {};
+    text.split(/\\r?\\n/).map(s=>s.trim()).filter(Boolean).forEach(line => {
+      const m = line.match(/^([^=]+)=(.*)$/);
+      if (!m) return;
+      const key = m[1].trim();
+      const raw = m[2].trim();
+      if (/^(true|false)$/i.test(raw)) out[key] = /^true$/i.test(raw);
+      else if (raw.includes(",")) out[key] = raw.split(",").map(x=>x.trim()).filter(Boolean);
+      else out[key] = raw;
+    });
+    return out;
+  }
+
+  function applyValueToField(field: any, val: any): boolean {
+    try {
+      if (typeof field.setText === "function") { field.setText(String(val ?? "")); return true; }
+      if (typeof field.check === "function" || typeof field.uncheck === "function") {
+        const truthy = typeof val === "boolean" ? val : /^(1|true|yes|on|checked)$/i.test(String(val ?? "").trim());
+        truthy ? field.check?.() : field.uncheck?.();
+        return true;
+      }
+      if (typeof field.select === "function") {
+        if (Array.isArray(val)) field.select(val); else field.select(String(val ?? ""));
+        return true;
+      }
+    } catch {}
+    return false;
+  }
+
+  async function fillSingle() {
+    if (!doc || !k) return;
+    setBusy(true);
+    try {
+      const f = formRef.current;
+      let field: any;
+      try { field = f.getField(k); } catch { alert(`Field "${k}" not found.`); return; }
+      if (!applyValueToField(field, v)) { alert("This field type isn’t supported yet."); return; }
+      await listFieldsFromCurrentDoc();
+      // update widget values in preview
+      setThumbs(t => t.map(pg => ({ ...pg, widgets: pg.widgets.map(w => w.name === k ? { ...w, value: v } : w) })));
+    } finally { setBusy(false); }
+  }
+
+  async function fillBulk() {
+    if (!doc || !bulk.trim()) return;
+    setBusy(true);
+    try {
+      const data = parseBulk(bulk);
+      const f = formRef.current;
+      let applied = 0;
+      for (const name of Object.keys(data)) {
+        try {
+          const fld = f.getField(name);
+          if (applyValueToField(fld, data[name])) applied++;
+        } catch {}
+      }
+      if (!applied) { alert("No fields were updated. Check names/values."); return; }
+      await listFieldsFromCurrentDoc();
+      setThumbs(t => t.map(pg => ({ ...pg, widgets: pg.widgets.map(w => (w.name in data) ? { ...w, value: String((data as any)[w.name]) } : w) })));
+    } finally { setBusy(false); }
+  }
+
+  async function toggleCheckbox(name: string) {
+    if (!doc) return;
+    try {
+      const f = formRef.current;
+      const fld = f.getField(name);
+      if (typeof fld.isChecked === "function") {
+        const cur = fld.isChecked();
+        cur ? fld.uncheck?.() : fld.check?.();
+        await listFieldsFromCurrentDoc();
+        setThumbs(t => t.map(pg => ({ ...pg, widgets: pg.widgets.map(w => w.name === name ? { ...w, value: cur ? "unchecked" : "checked" } : w) })));
+      }
+    } catch {}
+  }
+
+  async function reloadValues() { if (!doc) return; await listFieldsFromCurrentDoc(); }
+
+  async function revertAll() {
+    if (!origBytes) return;
+    setBusy(true);
+    try { await buildDoc(origBytes); await listFieldsFromCurrentDoc(); } finally { setBusy(false); }
+  }
+
+  async function exportPdf() {
+    if (!doc) return;
+    const working = doc;
+    if (flatten) {
+      try { formRef.current.flatten(); } catch {}
+    }
+    const bytes = await working.save({ useObjectStreams: true });
+    const { url } = await blobFromUint8(bytes, flatten ? "filled.pdf" : "filled-editable.pdf");
+    dl(url, flatten ? "filled.pdf" : "filled-editable.pdf");
+    trackPdfAction("fill_flatten_export");
+  }
+
+  function downloadCSV() {
+    const rows = [["name","type","value"], ...fields.map(f => [f.name, f.type, f.value ?? ""])];
+    const csv = rows.map(r => r.map(c => `"${String(c).replace(/"/g,'""')}"`).join(",")).join("\\n");
+    const url = URL.createObjectURL(new Blob([csv], { type: "text/csv" }));
+    dl(url, "pdf-form-fields.csv");
+  }
+
+  function preloadBulkFromTable() {
+    const s = q.trim().toLowerCase();
+    const list = (s ? fields.filter(f => f.name.toLowerCase().includes(s)) : fields).map(f => `${f.name}=${f.value ?? ""}`);
+    setBulk(list.join("\\n"));
+  }
+
+  const filtered = React.useMemo(() => {
+    const s = q.trim().toLowerCase();
+    if (!s) return fields;
+    return fields.filter(f => f.name.toLowerCase().includes(s));
+  }, [fields, q]);
+
+  // helper for overlay style in %
+  function boxStyle(t: Thumb, r: [number,number,number,number]) {
+    const [x1,y1,x2,y2] = r;
+    return {
+      position: "absolute",
+      left: `${(x1 / t.w) * 100}%`,
+      top: `${(y1 / t.h) * 100}%`,
+      width: `${((x2 - x1) / t.w) * 100}%`,
+      height: `${((y2 - y1) / t.h) * 100}%`,
+      pointerEvents: "auto"
+    } as React.CSSProperties;
+  }
+
+  return (
+    <div className="card p-6 min-h-0 space-y-4">
+      <ToolHelp>{HELP.fillFlatten}</ToolHelp>
+
+      {/* Pick file + actions */}
+      <div className="grid md:grid-cols-[1fr_auto_auto_auto_auto] gap-3 items-end">
+        <input type="file" accept="application/pdf" className="input" onChange={onPick} />
+        <button className="btn-ghost" onClick={reloadValues} disabled={!doc || busy} title="Reload values from current PDF">Reload values</button>
+        <button className="btn-ghost" onClick={() => doc && downloadCSV()} disabled={!fields.length} title="Download field names/types/values as CSV">Download CSV</button>
+        <label className="inline-flex items-center gap-2 text-sm">
+          <input type="checkbox" checked={flatten} onChange={(e)=> setFlatten(e.target.checked)} />
+          Flatten on export
+        </label>
+        <div className="flex gap-2">
+          <button className="btn-ghost" onClick={revertAll} disabled={!origBytes || busy}>Revert</button>
+          <button className="btn" onClick={exportPdf} disabled={!doc || busy}>Export PDF</button>
+        </div>
+      </div>
+
+      {/* Live preview */}
+      {thumbs.length > 0 && (
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+          {thumbs.map((t) => (
+            <div key={t.page} className="relative border rounded overflow-hidden">
+              <img src={t.url} alt={`p${t.page+1}`} className="w-full block pointer-events-none select-none" />
+              {t.widgets.map((w) => (
+                <div
+                  key={w.id}
+                  className={`absolute rounded ring-1 ring-white/80 bg-sky-400/20 hover:ring-2 hover:ring-sky-500`}
+                  style={boxStyle(t, w.rect)}
+                  title={`${w.name || "(unnamed)"}${w.value ? ` — ${w.value}` : ""}`}
+                  onClick={() => {
+                    if (!doc) return;
+                    const f = formRef.current;
+                    try {
+                      const fld = f.getField(w.name);
+                      if (typeof fld.isChecked === "function") {
+                        const cur = fld.isChecked();
+                        cur ? fld.uncheck?.() : fld.check?.();
+                        listFieldsFromCurrentDoc().then(()=> {
+                          setThumbs(prev => prev.map(pg => (pg.page===t.page ? {...pg, widgets: pg.widgets.map(ww => ww.id===w.id ? {...ww, value: cur ? "unchecked" : "checked"} : ww)} : pg)));
+                        });
+                        return;
+                      }
+                      if (typeof fld.setText === "function") {
+                        const val = prompt(`Set value for "${w.name}"`, w.value ?? "");
+                        if (val !== null) {
+                          fld.setText(val);
+                          listFieldsFromCurrentDoc().then(()=> {
+                            setThumbs(prev => prev.map(pg => (pg.page===t.page ? {...pg, widgets: pg.widgets.map(ww => ww.id===w.id ? {...ww, value: val} : ww)} : pg)));
+                          });
+                        }
+                        return;
+                      }
+                    } catch {}
+                  }}
+                />
+              ))}
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Field table + filter */}
+      {fields.length > 0 && (
+        <div className="space-y-2">
+          <div className="flex gap-2 items-center">
+            <input className="input" placeholder="Search field names" value={q} onChange={(e)=> setQ(e.target.value)} />
+            <button className="btn-ghost" onClick={preloadBulkFromTable} title="Load the visible fields into Bulk fill editor">Load into Bulk</button>
+          </div>
+          <div className="overflow-auto border rounded-lg">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="text-left">
+                  <th className="px-3 py-2">Name</th>
+                  <th className="px-3 py-2">Type</th>
+                  <th className="px-3 py-2">Current</th>
+                  <th className="px-3 py-2">Copy / Toggle</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filtered.map((f, i) => (
+                  <tr key={i} className="border-t border-neutral-800">
+                    <td className="px-3 py-2 font-mono">{f.name}</td>
+                    <td className="px-3 py-2">{f.type}</td>
+                    <td className="px-3 py-2">
+                      {f.type === "CheckBox" ? (
+                        <label className="inline-flex items-center gap-2">
+                          <input type="checkbox" checked={f.value === "checked"} onChange={() => toggleCheckbox(f.name)} />
+                          {f.value || "unchecked"}
+                        </label>
+                      ) : (f.value ?? "")}
+                    </td>
+                    <td className="px-3 py-2">
+                      <div className="flex gap-2">
+                        <button className="btn-ghost" onClick={() => navigator.clipboard.writeText(f.name)}>Copy name</button>
+                        {f.type === "CheckBox" && (<button className="btn-ghost" onClick={() => toggleCheckbox(f.name)}>Toggle</button>)}
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+                {!filtered.length && (
+                  <tr><td className="px-3 py-4 text-muted" colSpan={4}>No fields match your search.</td></tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
+      {/* Single fill */}
+      <div className="grid md:grid-cols-3 gap-3">
+        <input className="input" placeholder="Field name" value={k} onChange={(e)=> setK(e.target.value)} />
+        <input className="input" placeholder="Value (text / true|false / option[,option])" value={v} onChange={(e)=> setV(e.target.value)} />
+        <button className="btn" onClick={fillSingle} disabled={!doc || !k || busy}>{busy ? "Working…" : "Apply change"}</button>
+      </div>
+
+      {/* Bulk fill */}
+      <div className="grid gap-2">
+        <label className="text-sm font-medium">Bulk fill (applies to current PDF in memory)</label>
+        <textarea className="input h-40 font-mono" placeholder={`JSON or KEY=VALUE per line
+Examples:
+{"FullName":"Jane Doe","Agree":true,"Country":"Ireland"}
+FullName=Jane Doe
+Agree=true
+Interests=Reading, Music`} value={bulk} onChange={(e)=> setBulk(e.target.value)} />
+        <div className="flex gap-2">
+          <button className="btn" onClick={fillBulk} disabled={!doc || busy}>{busy ? "Working…" : "Apply bulk changes"}</button>
+          <button className="btn-ghost" onClick={()=> setBulk("")} disabled={busy}>Clear</button>
+          <button className="btn-ghost" onClick={reloadValues} disabled={!doc || busy} title="Refresh table values after changes">Reload values</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+

@@ -34,7 +34,7 @@ export default function ToolPdfToDocUX() {
         if (ctx) {
           canvas.width = viewport.width;
           canvas.height = viewport.height;
-          await page.render({ canvasContext: ctx, viewport }).promise;
+          await page.render({ canvasContext: ctx, canvas, viewport }).promise;
           const dataUrl = canvas.toDataURL("image/png");
           const base64 = dataUrl.replace(/^data:image\/png;base64,/, "");
           const imgBytes = Uint8Array.from(atob(base64), (c) => c.charCodeAt(0));
@@ -43,6 +43,7 @@ export default function ToolPdfToDocUX() {
               children: [
                 new ImageRun({
                   data: imgBytes,
+                  type: "png",
                   transformation: { width: viewport.width, height: viewport.height },
                 }),
               ],

@@ -5,10 +5,11 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { PDFDocument, StandardFonts, rgb, degrees } from "pdf-lib";
 import React from "react";
 import PdfPreview from "@/components/PdfPreview";
+import ToolDocToPdfUX from "./tools/ToolDocToPdf";
 /* ---------------- Ads / Conversion helpers (Google Ads) ---------------- */
 // Per-action conversion tracking. Replace LABEL_* with your real conversion labels from Google Ads.
 // Example final send_to looks like: "AW-778841432/AbCdEfGhIjkLmNoP"
-type PdfAction =
+export type PdfAction =
   | "merge"
   | "reorder"
   | "rotate"
@@ -21,7 +22,8 @@ type PdfAction =
   | "split"
   | "stamp_qr"
   | "edit_metadata"
-  | "compress";
+  | "compress"
+  | "doc_to_pdf";
 
 const ADS_CONVERSION_ID = "AW-778841432";
 // TODO: swap placeholder labels for real ones from Google Ads
@@ -39,6 +41,7 @@ const ACTION_LABELS: Partial<Record<PdfAction, string>> = {
   stamp_qr: "LABEL_STAMPQR",
   edit_metadata: "LABEL_EDITMETA",
   compress: "LABEL_COMPRESS",
+  doc_to_pdf: "LABEL_DOC2PDF",
 };
 
 function safeGtagEvent(sendTo: string) {
@@ -63,7 +66,7 @@ function markFired(action: PdfAction) {
   } catch {}
 }
 
-function trackPdfAction(action: PdfAction) {
+export function trackPdfAction(action: PdfAction) {
   const label = ACTION_LABELS[action];
   if (!label) return; // no label set yet; skip to avoid bad data
   if (hasFired(action)) return;
@@ -108,7 +111,7 @@ function dl(url: string, name: string) {
   setTimeout(() => URL.revokeObjectURL(url), 5000);
 }
 
-async function blobFromUint8(bytes: Uint8Array, name = "output.pdf") {
+export async function blobFromUint8(bytes: Uint8Array, name = "output.pdf") {
   const blob = new Blob([bytes.buffer as ArrayBuffer], {
     type: "application/pdf",
   });
@@ -135,7 +138,7 @@ function parsePageSelection(input: string, totalPages: number): number[] {
 }
 
 /* --- Simple collapsible help block used by all tools --- */
-function ToolHelp({
+export function ToolHelp({
   title = "What this does & how to use it",
   children,
 }: {
@@ -474,6 +477,7 @@ type ToolKey =
   | "watermark"
   | "imagesToPdf"
   | "pdfToImages"
+  | "docToPdf"
   | "extractText"
   | "fillFlatten"
   | "redact"
@@ -492,6 +496,7 @@ const TOOL_LIST: { key: ToolKey; label: string }[] = [
   { key: "rotate", label: "Rotate Pages" },
   { key: "imagesToPdf", label: "Images → PDF" },
   { key: "pdfToImages", label: "PDF → Images" },
+  { key: "docToPdf", label: "DOCX → PDF" },
   { key: "extractText", label: "Extract text" },
   { key: "fillFlatten", label: "Fill forms & flatten" },
   { key: "redact", label: "Redact" },
@@ -517,6 +522,10 @@ export default function PDFStudio() {
     {
       q: "Can I convert images to a single PDF?",
       a: "Yes. Use Images → PDF to combine PNG/JPG/WebP into a single PDF document.",
+    },
+    {
+      q: "Can I convert Word documents to PDF?",
+      a: "Yes. Use DOCX → PDF to turn .docx files into PDFs directly in your browser.",
     },
     {
       q: "How do I add page numbers or a simple header/footer?",
@@ -587,6 +596,7 @@ export default function PDFStudio() {
           {tool === "watermark" && <ToolWatermarkUX />}
           {tool === "imagesToPdf" && <ToolImagesToPdfUX />}
           {tool === "pdfToImages" && <ToolPdfToImagesUX />}
+          {tool === "docToPdf" && <ToolDocToPdfUX />}
           {tool === "extractText" && <ToolExtractTextUX />}
           {tool === "fillFlatten" && <ToolFillFlattenUX />}
           {tool === "redact" && <ToolRedactUX />}

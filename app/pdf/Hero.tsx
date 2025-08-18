@@ -48,7 +48,7 @@ export default function Hero() {
             {[
               { title: "Merge", desc: "Combine PDFs." },
               { title: "Reorder", desc: "Drag pages." },
-              { title: "Convert", desc: "Images ↔ PDF." },
+              { title: "Convert", desc: "Images & DOCX ↔ PDF." },
             ].map((c) => (
               <div
                 key={c.title}

@@ -7,12 +7,12 @@ import Client from "./Client"; // (use your actual path)
 export const metadata = {
   title: "PDF Studio — Free Online PDF Tools (Private & Local-first)",
   description:
-    "Merge, split, reorder, rotate, add colored watermarks, convert images free ↔ PDF, extract text, redact, fill forms, and compress — all in your browser. Free with no sign-up, pop-ups, redirects, or uploads.",
+    "Merge, split, reorder, rotate, add colored watermarks, convert images and Word documents ↔ PDF, extract text, redact, fill forms, and compress — all in your browser. Free with no sign-up, pop-ups, redirects, or uploads.",
   alternates: { canonical: "https://utilixy.com/pdf" },
   openGraph: {
     title: "PDF Studio — Free Online PDF Tools",
     description:
-      "Free, fast, private PDF tools that run locally in your browser. Add colored watermarks with no sign-up, pop-ups, redirects, or uploads.",
+      "Free, fast, private PDF tools that run locally in your browser. Convert Word to PDF and add colored watermarks with no sign-up, pop-ups, redirects, or uploads.",
     url: "https://utilixy.com/pdf",
     siteName: "Utilixy",
     type: "website",
@@ -21,7 +21,7 @@ export const metadata = {
     card: "summary_large_image",
     title: "PDF Studio — Free Online PDF Tools",
     description:
-      "Free, fast, private PDF tools that run locally in your browser. Add colored watermarks with no sign-up, pop-ups, redirects, or uploads.",
+      "Free, fast, private PDF tools that run locally in your browser. Convert Word to PDF and add colored watermarks with no sign-up, pop-ups, redirects, or uploads.",
   },
 };
 

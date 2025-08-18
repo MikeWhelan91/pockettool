@@ -969,7 +969,7 @@ function ToolWatermark() {
       p.drawText(content, {
         x: originX,
         y: originY,
-        size,
+        fontSize: size,
         font,
         color: rgb(rgb01.r, rgb01.g, rgb01.b),
         opacity: Math.max(0, Math.min(1, opacity/100)),
@@ -3822,6 +3822,7 @@ function ToolWatermarkUX() {
   const [thumbs, setThumbs] = React.useState<{page:number; url:string; w:number; h:number; pageWidthPt:number}[]>([]);
   const tileRefs = React.useRef<Record<number, HTMLDivElement | null>>({});
   const [tileW, setTileW] = React.useState<Record<number, number>>({});
+
   const [busy, setBusy] = React.useState(false);
 
   React.useEffect(()=>{
@@ -3964,7 +3965,7 @@ pages.forEach((p, idx) => {
   p.drawText(content, {
     x: originX,
     y: originY,
-    size,
+    fontSize: size,
     font,
     color: rgb(r,g,b),
     opacity: Math.max(0, Math.min(1, opacity/100)),

@@ -44,6 +44,8 @@ export const metadata: Metadata = {
   robots: { index: true, follow: true },
   keywords: [
     "PDF tools",
+    "Word to PDF",
+    "PDF to Word",
     "QR code generator",
     "image converter",
     "JSON formatter",

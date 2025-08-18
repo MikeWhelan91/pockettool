@@ -57,6 +57,7 @@ npm run dev
 - **Assemble:** reorder, rotate, delete; merge and split.
 - **Label:** page numbers, headers/footers, watermarks (center/angled, corners).
 - **Convert:** images → PDF; PDF → images (PNG/ZIP).
+- **Word ↔ PDF:** convert .docx files to PDF and PDFs back to Word.
 - **Extract:** text extraction (where text layer exists).
 - **Redact (quick):** draw boxes; bake to raster on page 1 (fast).  
   > For true vector redaction (remove content streams/text), plan a v2.

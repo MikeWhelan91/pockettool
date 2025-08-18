@@ -943,7 +943,7 @@ function ToolWatermark() {
       }
 
       const tw = font.widthOfTextAtSize(content, size);
-      const th = font.heightAtSize(size);
+      const th = font.heightAtSize(size, { descender: false });
       const rgb01 = hexToRgb01(color);
 
       let originX = x;
@@ -951,14 +951,14 @@ function ToolWatermark() {
       let rotateOpt: any = undefined;
 
       if (effPos === "center" && mode === "watermark") {
-        // rotate around text center to match CSS preview
         const theta = 35 * Math.PI / 180;
-        const cx = tw / 2, cy = th / 2;
-        const rx =  cx * Math.cos(theta) - cy * Math.sin(theta);
-        const ry =  cx * Math.sin(theta) + cy * Math.cos(theta);
-        originX = x - rx;
-        originY = y - ry;
-        rotateOpt = { type: "degrees", angle: 35 };
+        const sin = Math.sin(theta);
+        const cos = Math.cos(theta);
+        const rotW = tw * cos + th * sin;
+        const rotH = tw * sin + th * cos;
+        originX = (width - rotW) / 2 + th * sin;
+        originY = (height - rotH) / 2;
+        rotateOpt = degrees(35);
       } else {
         if (effPos.endsWith("c") || effPos === "center") originX = x - tw/2;
         if (effPos.endsWith("r")) originX = x - tw;
@@ -969,7 +969,7 @@ function ToolWatermark() {
       p.drawText(content, {
         x: originX,
         y: originY,
-        fontSize: size,
+        size,
         font,
         color: rgb(rgb01.r, rgb01.g, rgb01.b),
         opacity: Math.max(0, Math.min(1, opacity/100)),
@@ -3934,18 +3934,18 @@ pages.forEach((p, idx) => {
   }
 
   const w = font.widthOfTextAtSize(content, size);
-  const h = font.heightAtSize(size);
+  const h = font.heightAtSize(size, { descender: false });
   let originX = x;
   let originY = y;
   let rotateOpt = undefined;
 
   if (effPos === "center" && mode === "watermark") {
     const theta = (35 * Math.PI) / 180;
-    const cos = Math.cos(theta);
     const sin = Math.sin(theta);
-    const rotW = Math.abs(w * cos) + Math.abs(h * sin);
-    const rotH = Math.abs(w * sin) + Math.abs(h * cos);
-    originX = (width - rotW) / 2;
+    const cos = Math.cos(theta);
+    const rotW = w * cos + h * sin;
+    const rotH = w * sin + h * cos;
+    originX = (width - rotW) / 2 + h * sin;
     originY = (height - rotH) / 2;
     rotateOpt = degrees(35);
   } else {
@@ -3963,7 +3963,7 @@ pages.forEach((p, idx) => {
   p.drawText(content, {
     x: originX,
     y: originY,
-    fontSize: size,
+    size,
     font,
     color: rgb(r,g,b),
     opacity: Math.max(0, Math.min(1, opacity/100)),

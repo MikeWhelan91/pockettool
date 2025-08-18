@@ -950,13 +950,13 @@ function ToolWatermark() {
 
       if (effPos === "center" && mode === "watermark") {
         // rotate around text center to match CSS preview
-        const theta = 35 * Math.PI / 180;
+        const theta = -35 * Math.PI / 180;
         const cx = tw / 2, cy = th / 2;
         const rx =  cx * Math.cos(theta) - cy * Math.sin(theta);
         const ry =  cx * Math.sin(theta) + cy * Math.cos(theta);
         originX = x - rx;
         originY = y - ry;
-        rotateOpt = { type: "degrees", angle: 35 };
+        rotateOpt = { type: "degrees", angle: -35 };
       } else {
         if (effPos.endsWith("c") || effPos === "center") originX = x - tw/2;
         if (effPos.endsWith("r")) originX = x - tw;
@@ -969,7 +969,7 @@ function ToolWatermark() {
         y: originY,
         size,
         font,
-        color: color,
+        color: rgb(rgb01.r, rgb01.g, rgb01.b),
         opacity: Math.max(0, Math.min(1, opacity/100)),
         rotate: rotateOpt,
       } as any);
@@ -3859,7 +3859,7 @@ function ToolWatermarkUX() {
     // CSS placement relative to thumbnail box
     const s: any = {
       position: "absolute",
-      color: "white",
+      color,
       textShadow: "0 0 6px rgba(0,0,0,.65)",
       opacity: Math.max(0, Math.min(1, opacity/100)),
       transform: ""
@@ -3909,7 +3909,7 @@ pages.forEach((p, idx) => {
   let rotateOpt = undefined;
 
   if (effPos === "center" && mode === "watermark") {
-    const theta = 35 * Math.PI / 180;
+    const theta = -35 * Math.PI / 180;
     // vector from unrotated origin (baseline-left) to text center
     const cx = w / 2, cy = h / 2;
     // rotate vector by theta
@@ -3918,7 +3918,7 @@ pages.forEach((p, idx) => {
     // choose origin so rotated center equals (x,y)
     originX = x - rx;
     originY = y - ry;
-    rotateOpt = { type: 'degrees', angle: 35 };
+    rotateOpt = { type: 'degrees', angle: -35 };
   } else {
     // Align by width for left/center/right when not rotated
     if (effPos.endsWith("c") || effPos === "center") originX = x - w/2;
@@ -3936,7 +3936,7 @@ pages.forEach((p, idx) => {
     y: originY,
     size,
     font,
-    color: color,
+    color: rgb(r,g,b),
     opacity: Math.max(0, Math.min(1, opacity/100)),
     rotate: rotateOpt,
   } as any);
@@ -3974,7 +3974,7 @@ const bytes = await pdf.save({ useObjectStreams: true });
         </label>
       </div>
 
-      <div className="grid md:grid-cols-3 gap-3">
+      <div className="grid md:grid-cols-4 gap-3">
         <label className="block">
           <span className="text-sm">Text</span>
           <input className="input mt-1" value={text} onChange={e=> setText(e.target.value)} disabled={mode==="numbers"} />
@@ -3994,6 +3994,10 @@ const bytes = await pdf.save({ useObjectStreams: true });
         <label className="block">
           <span className="text-sm">Opacity (%)</span>
           <input type="number" min={0} max={100} className="input mt-1" value={opacity} onChange={e=> setOpacity(parseInt(e.target.value||"30",10))} />
+        </label>
+        <label className="block">
+          <span className="text-sm">Color</span>
+          <input type="color" className="input mt-1" value={color} onChange={e=> setColor((e.target as HTMLInputElement).value)} />
         </label>
       </div>
 
@@ -4114,7 +4118,7 @@ function ToolFillFlattenUX() {
 
       for (let p = 1; p <= maxPages; p++) {
         const page = await docjs.getPage(p);
-        const viewport = page.getViewport({ scale: 0.70 * dpr });
+        const viewport = page.getViewport({ scale: 2 * dpr });
         const canvas = document.createElement("canvas");
         canvas.width = viewport.width;
         canvas.height = viewport.height;
@@ -4304,7 +4308,7 @@ function ToolFillFlattenUX() {
 
       {/* Live preview */}
       {thumbs.length > 0 && (
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {thumbs.map((t) => (
             <div key={t.page} className="relative border rounded overflow-hidden">
               <img src={t.url} alt={`p${t.page+1}`} className="w-full block pointer-events-none select-none" />

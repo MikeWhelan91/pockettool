@@ -943,7 +943,7 @@ function ToolWatermark() {
       }
 
       const tw = font.widthOfTextAtSize(content, size);
-      const th = font.heightAtSize(size);
+      const th = font.heightAtSize(size, { descender: false });
       const rgb01 = hexToRgb01(color);
 
       let originX = x;
@@ -3934,7 +3934,7 @@ pages.forEach((p, idx) => {
   }
 
   const w = font.widthOfTextAtSize(content, size);
-  const h = font.heightAtSize(size);
+  const h = font.heightAtSize(size, { descender: false });
   let originX = x;
   let originY = y;
   let rotateOpt = undefined;

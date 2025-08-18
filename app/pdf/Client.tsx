@@ -814,8 +814,8 @@ function ToolWatermark() {
   const [mode, setMode] = useState<"numbers" | "header" | "footer" | "watermark">("numbers");
   const [text, setText] = useState<string>("CONFIDENTIAL");
   const [pos, setPos] = useState<"tl" | "tc" | "tr" | "bl" | "bc" | "br" | "center">("bc");
-  const [opacity, setOpacity] = useState<number>(30);
-  const [color, setColor] = useState<string>("#ff0000");
+  const [opacity, setOpacity] = useState<number>(60);
+  const [color, setColor] = useState<string>("#000000");
   const [size, setSize] = useState<number>(12);
 
   // live preview thumbs
@@ -827,6 +827,8 @@ function ToolWatermark() {
     else if (mode === "header") setPos("tc");
     else if (mode === "footer") setPos("bc");
     else if (mode === "watermark") setPos("center");
+    if (mode === "watermark") setColor("#ff0000");
+    else setColor("#000000");
   }, [mode]);
 
   useEffect(() => { setThumbs([]); }, [file]);
@@ -967,7 +969,7 @@ function ToolWatermark() {
       p.drawText(content, {
         x: originX,
         y: originY,
-        size,
+        fontSize: size,
         font,
         color: rgb(rgb01.r, rgb01.g, rgb01.b),
         opacity: Math.max(0, Math.min(1, opacity/100)),
@@ -1026,7 +1028,7 @@ function ToolWatermark() {
         </label>
         <label className="block">
           <span className="text-sm">Opacity (%)</span>
-          <input type="number" min={0} max={100} className="input w-full mt-1" value={opacity} onChange={(e)=> setOpacity(parseInt(e.target.value || "30",10))} />
+          <input type="number" min={0} max={100} className="input w-full mt-1" value={opacity} onChange={(e)=> setOpacity(parseInt(e.target.value || "60",10))} />
         </label>
         <label className="block">
           <span className="text-sm">Color</span>
@@ -3814,9 +3816,9 @@ function ToolWatermarkUX() {
   const [mode, setMode] = React.useState<"numbers"|"header"|"footer"|"watermark">("numbers");
   const [text, setText] = React.useState("CONFIDENTIAL");
   const [pos, setPos] = React.useState<"tl"|"tc"|"tr"|"bl"|"bc"|"br"|"center">("bc");
-  const [color, setColor] = useState<string>("#ff0000");
+  const [color, setColor] = useState<string>("#000000");
   const [size, setSize] = React.useState(12);
-  const [opacity, setOpacity] = React.useState(30);
+  const [opacity, setOpacity] = React.useState(60);
   const [thumbs, setThumbs] = React.useState<{page:number; url:string; w:number; h:number}[]>([]);
   const [busy, setBusy] = React.useState(false);
 
@@ -3829,6 +3831,8 @@ function ToolWatermarkUX() {
     else if (mode === "header") setPos("tc");
     else if (mode === "footer") setPos("bc");
     else setPos("center");
+    if (mode === "watermark") setColor("#ff0000");
+    else setColor("#000000");
   }, [mode]);
 
   React.useEffect(()=>{
@@ -3934,7 +3938,7 @@ pages.forEach((p, idx) => {
   p.drawText(content, {
     x: originX,
     y: originY,
-    size,
+    fontSize: size,
     font,
     color: rgb(r,g,b),
     opacity: Math.max(0, Math.min(1, opacity/100)),
@@ -3993,7 +3997,7 @@ const bytes = await pdf.save({ useObjectStreams: true });
         </label>
         <label className="block">
           <span className="text-sm">Opacity (%)</span>
-          <input type="number" min={0} max={100} className="input mt-1" value={opacity} onChange={e=> setOpacity(parseInt(e.target.value||"30",10))} />
+          <input type="number" min={0} max={100} className="input mt-1" value={opacity} onChange={e=> setOpacity(parseInt(e.target.value||"60",10))} />
         </label>
         <label className="block">
           <span className="text-sm">Color</span>

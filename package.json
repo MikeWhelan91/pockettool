@@ -27,6 +27,7 @@
     "js-yaml": "^4.1.0",
     "jszip": "^3.10.1",
     "lucide-react": "^0.539.0",
+    "mammoth": "^1.7.1",
     "next": "^15.4.6",
     "pdf-lib": "^1.17.1",
     "pdfjs-dist": "^5.4.54",

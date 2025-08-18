@@ -19,6 +19,7 @@
     "@vercel/speed-insights": "^1.2.0",
     "clsx": "^2.1.0",
     "diff": "^8.0.2",
+    "docx": "^9.0.1",
     "fast-xml-parser": "^5.2.5",
     "formidable": "^3.5.4",
     "framer-motion": "^12.23.12",

@@ -165,6 +165,14 @@ a{ text-underline-offset:3px; }
 .theme-dark .input{ border-color:hsl(var(--line)); }
 .input:focus-visible{ border-color:hsl(var(--ring)); box-shadow:0 0 0 3px hsl(var(--ring) / .25); }
 
+/* Make file inputs stand out for uploads */
+.input[type="file"]{
+  border-width:2px;
+  border-color:hsl(var(--ring));
+  background-color:hsl(var(--ring) / .05);
+  cursor:pointer;
+}
+
 /* Small inline input */
 .input-sm{
   width: 80px;
@@ -851,7 +859,8 @@ main:has(#seo-content) .tool-panels{
   /* Light theme */
   --panel-rgb: 255 255 255;      /* neutral, just blur */
   --panel-border-rgb: 196 199 204;
-  --panel-alpha: 0.4;
+  /* Increase opacity for clearer text on light theme */
+  --panel-alpha: 0.9;
 }
 /* If you toggle via .theme-dark (your ThemeToggle does), map here */
 .theme-dark {
@@ -879,7 +888,7 @@ main:has(#seo-content) .tool-panels{
   backdrop-filter: blur(36px) saturate(160%);
 
   border: 1px solid rgb(var(--panel-border-rgb) / 0.60);
-  box-shadow: 0 12px 36px rgb(0 0 0 / 0.35);
+  box-shadow: 0 12px 36px rgb(0 0 0 / 0.12);
   background-clip: padding-box; /* sharper edge on Safari */
   will-change: opacity, transform, backdrop-filter;
 }

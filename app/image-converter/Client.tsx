@@ -94,8 +94,8 @@ function DropZoneInline({
         className={
           "flex items-center justify-center rounded-lg border-2 border-dashed px-4 py-10 transition " +
           (drag
-            ? "border-blue-500 bg-blue-500/10"
-            : "border-line hover:bg-card")
+            ? "border-[#2B67F3] bg-[#2B67F3]/10"
+            : "border-[#2B67F3] hover:bg-[#2B67F3]/5")
         }
         aria-label="Drop images here or click to browse"
       >
@@ -901,7 +901,7 @@ export default function Client() {
             {/* Left: preview + thumbs (unchanged) */}
             <div className="order-2 lg:order-1">
               {activeLabel && (
-                <h2 className="text-base font-semibold mb-1">{activeLabel}</h2>
+                <h2 className="text-2xl font-bold mb-4 text-center text-[#2B67F3]">{activeLabel}</h2>
               )}
               <h3 className="text-sm font-medium mb-2">Live Preview</h3>
 

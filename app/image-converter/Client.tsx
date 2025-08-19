@@ -857,30 +857,10 @@ export default function Client() {
   /* ───────────────────────── UI ───────────────────────── */
 
   return (
-    <section
-      data-image
-      className="mx-auto w-full max-w-7xl px-4 md:px-6 lg:px-8 mt-6"
-    >
-      <div className="grid grid-cols-1 md:grid-cols-[260px_1fr] gap-4 items-start">
-        {/* Sidebar (unchanged) */}
-        <aside className="card p-3 h-fit hidden md:block">
-          <div className="grid gap-1">
-            {TOOLS.map((t) => (
-              <button
-                key={t.id}
-                className={`group text-left px-3 py-3 rounded-xl border border-[color:var(--line)] bg-[color:var(--bg)]/70 hover:bg-[color:var(--bg-lift)] transition-colors
-                  ${active === t.id ? "ring-2 ring-[color:var(--accent)] ring-offset-1 ring-offset-[color:var(--bg)] bg-[color:var(--bg-lift)] border-[color:var(--accent)]/40" : ""}`}
-                onClick={() => changeTool(t.id)}
-                aria-current={active === t.id ? "page" : undefined}
-              >
-                <div className="text-sm">{t.label}</div>
-              </button>
-            ))}
-          </div>
-        </aside>
-
-        {/* Mobile tool picker (dropdown only; no chip toolbar) */}
-        <div className="md:hidden">
+    <section data-image className="mx-auto w-full max-w-7xl px-4 md:px-6 lg:px-8 mt-6">
+      <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-[260px,1fr] gap-x-6 gap-y-6 md:gap-y-0 items-start">
+        {/* Mobile tool picker */}
+        <div className="md:hidden card p-3">
           <label className="block text-sm mb-1">Tool</label>
           <select
             className="input w-full"
@@ -895,9 +875,31 @@ export default function Client() {
           </select>
         </div>
 
-        {/* Stage */}
-        <div className="card p-4">
-          <div className="grid lg:grid-cols-2 gap-4">
+        {/* Desktop sidebar */}
+        <aside className="card p-3 h-fit hidden md:block">
+          <div className="grid gap-1">
+            {TOOLS.map((t) => (
+              <button
+                key={t.id}
+                className={`group text-left px-3 py-3 rounded-xl border border-[color:var(--line)] bg-[color:var(--bg)]/70 hover:bg-[color:var(--bg-lift)] transition-colors
+                  ${
+                    active === t.id
+                      ? "ring-2 ring-[color:var(--accent)] ring-offset-1 ring-offset-[color:var(--bg)] bg-[color:var(--bg-lift)] border-[color:var(--accent)]/40"
+                      : ""
+                  }`}
+                onClick={() => changeTool(t.id)}
+                aria-current={active === t.id ? "page" : undefined}
+              >
+                <div className="text-sm">{t.label}</div>
+              </button>
+            ))}
+          </div>
+        </aside>
+
+        {/* === STAGE COLUMN (tool, results & FAQ) === */}
+        <div className="md:[grid-column:2/3] grid gap-3">
+          <main className="card p-4">
+            <div className="grid lg:grid-cols-2 gap-4">
             {/* Left: preview + thumbs (unchanged) */}
             <div className="order-2 lg:order-1">
               {activeLabel && (
@@ -1477,12 +1479,10 @@ export default function Client() {
                 </div>
               )}
             </div>
-          </div>
-        </div>
+          </main>
 
         {/* Results */}
-        <div className="card p-4 md:col-start-2">
-          {" "}
+        <div className="card p-4">
           <div className="flex items-center justify-between">
             <h2 className="text-lg font-semibold">Results</h2>
             <div className="flex gap-2">
@@ -1538,7 +1538,7 @@ export default function Client() {
           )}
         </div>
 
-        <section id="seo-content" className="md:col-start-2">
+        <section id="seo-content">
           <div className="card p-4 md:p-6">
             <h2 className="text-lg md:text-xl font-semibold mb-2">
               Image Studio — FAQ
@@ -1558,6 +1558,7 @@ export default function Client() {
           />
         </section>
       </div>
-    </section>
+    </div>
+  </section>
   );
 }

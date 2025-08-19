@@ -12,11 +12,12 @@ import { motion } from "framer-motion";
  * - Injects "tool-panel" on each direct child so heights normalize
  */
 type Props = {
-  title: string;
+  title?: string;
   description?: string;
   actions?: React.ReactNode;
   children: ReactNode;
   align?: "left" | "center"; // NEW
+  hideHeader?: boolean;
 };
 
 function withToolPanelClass(child: ReactNode): ReactNode {
@@ -32,6 +33,7 @@ export default function ToolLayout({
   actions,
   children,
   align = "left",
+  hideHeader = false,
 }: Props) {
   const items = React.Children.toArray(children).map(withToolPanelClass);
   const center = align === "center";
@@ -43,33 +45,34 @@ export default function ToolLayout({
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3 }}
     >
-      {/* Header: same width as content */}
-      <div className="container-wrap px-4 md:px-6 lg:px-8">
-        <div
-          className={
-            center
-              ? "flex flex-col items-center text-center gap-2"
-              : "flex flex-wrap items-end justify-between gap-3"
-          }
-        >
-          <div>
-            <h1 className="text-3xl font-bold tracking-tight text-brand">
-              <span className="brand-gradient bg-clip-text text-transparent">
-                {title}
-              </span>
-            </h1>
-            {description ? (
-              <p className="mt-2 text-base text-muted max-w-2xl">{description}</p>
-            ) : null}
-          </div>
-          {!center && (
-            <div className="flex items-center gap-2">
-              {actions}
-              <ShareButton />
+      {!hideHeader && title && (
+        <div className="container-wrap px-4 md:px-6 lg:px-8">
+          <div
+            className={
+              center
+                ? "flex flex-col items-center text-center gap-2"
+                : "flex flex-wrap items-end justify-between gap-3"
+            }
+          >
+            <div>
+              <h1 className="text-3xl font-bold tracking-tight text-brand">
+                <span className="brand-gradient bg-clip-text text-transparent">
+                  {title}
+                </span>
+              </h1>
+              {description ? (
+                <p className="mt-2 text-base text-muted max-w-2xl">{description}</p>
+              ) : null}
             </div>
-          )}
+            {!center && (
+              <div className="flex items-center gap-2">
+                {actions}
+                <ShareButton />
+              </div>
+            )}
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Panels wrapper */}
       <div className="container-wrap px-4 md:px-6 lg:px-8 mt-6">

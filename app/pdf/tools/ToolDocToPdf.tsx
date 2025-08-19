@@ -88,29 +88,27 @@ export default function ToolDocToPdfUX() {
           <p>
             <b>How</b>:
           </p>
-          <ol className="list-decimal pl-5 space-y-1">
-            <li>Select a .docx file.</li>
-            <li>The PDF downloads automatically after conversion.</li>
-          </ol>
-        </>
-      </ToolHelp>
-      <div className="grid md:grid-cols-[1fr_auto] gap-3 items-end">
-        <label className="block">
-          <span className="text-sm">Word document</span>
-          <input
-            type="file"
-            accept=".doc,.docx"
-            className="input mt-1"
-            onChange={(e) => {
-              const f = e.target.files?.[0];
-              if (f) {
-                setFile(f);
-                handle(f);
-              }
-            }}
-          />
-        </label>
-        {file && (
+      <ol className="list-decimal pl-5 space-y-1">
+        <li>Select a .docx file.</li>
+        <li>Click <b>Convert to PDF</b> to download.</li>
+      </ol>
+      </>
+    </ToolHelp>
+    <div className="grid md:grid-cols-[1fr_auto_auto] gap-3 items-end">
+      <label className="block">
+        <span className="text-sm">Word document</span>
+        <input
+          type="file"
+          accept=".doc,.docx"
+          className="input mt-1"
+          onChange={(e) => {
+            const f = e.target.files?.[0];
+            if (f) setFile(f);
+          }}
+        />
+      </label>
+      {file && (
+        <>
           <button
             className="btn-ghost"
             onClick={() => setFile(null)}
@@ -118,10 +116,18 @@ export default function ToolDocToPdfUX() {
           >
             Clear
           </button>
-        )}
-      </div>
-      {busy && <p className="text-sm text-muted">Converting…</p>}
+          <button
+            className="btn"
+            onClick={() => file && handle(file)}
+            disabled={busy}
+          >
+            Convert to PDF
+          </button>
+        </>
+      )}
     </div>
+    {busy && <p className="text-sm text-muted">Converting…</p>}
+  </div>
   );
 }
 

@@ -12,6 +12,7 @@ async function loadPdfJs() {
 
 export default function ToolPdfToDocUX() {
   const [busy, setBusy] = useState(false);
+  const [file, setFile] = useState<File | null>(null);
 
   const TOOL_LABEL = "PDF to Word";
 
@@ -96,22 +97,42 @@ export default function ToolPdfToDocUX() {
           </p>
           <ol className="list-decimal pl-5 space-y-1">
             <li>Select a PDF file.</li>
-            <li>The DOCX downloads automatically after conversion.</li>
+            <li>Click <b>Convert to DOCX</b> to download.</li>
           </ol>
         </>
       </ToolHelp>
-      <label className="block">
-        <span className="text-sm">PDF file</span>
-        <input
-          type="file"
-          accept="application/pdf"
-          className="input mt-1"
-          onChange={(e) => {
-            const f = e.target.files?.[0];
-            if (f) handle(f);
-          }}
-        />
-      </label>
+      <div className="grid md:grid-cols-[1fr_auto_auto] gap-3 items-end">
+        <label className="block">
+          <span className="text-sm">PDF file</span>
+          <input
+            type="file"
+            accept="application/pdf"
+            className="input mt-1"
+            onChange={(e) => {
+              const f = e.target.files?.[0];
+              if (f) setFile(f);
+            }}
+          />
+        </label>
+        {file && (
+          <>
+            <button
+              className="btn-ghost"
+              onClick={() => setFile(null)}
+              disabled={busy}
+            >
+              Clear
+            </button>
+            <button
+              className="btn"
+              onClick={() => file && handle(file)}
+              disabled={busy}
+            >
+              Convert to DOCX
+            </button>
+          </>
+        )}
+      </div>
       {busy && <p className="text-sm text-muted">Converting…</p>}
     </div>
   );

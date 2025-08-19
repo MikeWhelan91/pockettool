@@ -230,24 +230,23 @@ export default function QRTool() {
         </div>
       </div>
 
-      {/* Right: live preview (fixed) */}
-      <div className="relative min-h-[320px]">
-        <div className="card p-4 md:p-6 fixed top-24 right-4 w-fit">
-          <div className="grid place-items-center min-h-[320px]">
-            {pngUrl ? (
-              <img
-                ref={imgRef}
-                src={pngUrl}
-                alt="Generated QR code"
-                width={SIZE}
-                height={SIZE}
-                className="rounded-md border border-line"
-                style={{ background: BG }}
-              />
-            ) : (
-              <div className="text-sm text-muted">Enter Wi-Fi details to generate a QR code.</div>
-            )}
-          </div>
+      {/* Right: live preview */}
+      <div className="card p-4 md:p-6">
+        <div className="grid place-items-center min-h-[320px]">
+          {pngUrl ? (
+            <img
+              ref={imgRef}
+              src={pngUrl}
+              alt="Generated QR code"
+              width={SIZE}
+              height={SIZE}
+              className="rounded-md border border-line"
+              style={{ background: BG }}
+            />
+          ) : (
+            <div className="text-sm text-muted">Enter Wi-Fi details to generate a QR code.</div>
+          )}
+
         </div>
       </div>
     </>

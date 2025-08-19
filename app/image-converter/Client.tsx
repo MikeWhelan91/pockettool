@@ -427,10 +427,10 @@ export default function Client() {
     return TOOLS.some((tool) => tool.id === t);
   }
 
-  const [active, setActive] = useState<ToolId>(() => {
+  const active: ToolId = useMemo(() => {
     const t = searchParams.get("tool");
-    return isToolId(t) ? t : "convert";
-  });
+    return isToolId(t) ? (t as ToolId) : "convert";
+  }, [searchParams]);
 
   // files
   const [picked, setPicked] = useState<Picked[]>([]);
@@ -513,18 +513,11 @@ export default function Client() {
     setLog([]);
   };
 
-  // Sync state when ?tool= changes (e.g., via navbar)
   useEffect(() => {
-    const t = searchParams.get("tool");
-    if (isToolId(t) && t !== active) {
-      setActive(t);
-      setActiveIdx(0);
-    }
-  }, [searchParams, active]);
+    setActiveIdx(0);
+  }, [active]);
 
   const changeTool = (next: ToolId) => {
-    setActive(next);
-    setActiveIdx(0);
     const sp = new URLSearchParams(searchParams.toString());
     sp.set("tool", next);
     router.replace(`/image-converter?${sp.toString()}`, { scroll: false });

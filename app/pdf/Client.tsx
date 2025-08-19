@@ -520,20 +520,12 @@ export default function PDFStudio() {
     return TOOL_LIST.some((tool) => tool.key === t);
   }
 
-  const [tool, setTool] = useState<ToolKey>(() => {
+  const tool: ToolKey = useMemo(() => {
     const t = searchParams.get("tool");
     return isToolKey(t) ? t : "batchMerge";
-  });
-
-  useEffect(() => {
-    const t = searchParams.get("tool");
-    if (isToolKey(t) && t !== tool) {
-      setTool(t);
-    }
-  }, [searchParams, tool]);
+  }, [searchParams]);
 
   const changeTool = (next: ToolKey) => {
-    setTool(next);
     const sp = new URLSearchParams(searchParams.toString());
     sp.set("tool", next);
     router.replace(`/pdf?${sp.toString()}`, { scroll: false });

@@ -106,7 +106,10 @@ export default function Page() {
 
       <Client />
 
-      <section id="seo-content" className="seo-half grid gap-6">
+      <section
+        id="seo-content"
+        className="seo-half grid gap-6 md:!-mt-8 lg:!-mt-12"
+      >
         <div className="card p-4 md:p-6">
           <h2 className="text-lg md:text-xl font-semibold mb-2">Wi-Fi QR Code Generator — FAQ</h2>
           <div className="space-y-2">

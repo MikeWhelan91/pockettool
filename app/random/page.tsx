@@ -108,7 +108,7 @@ export default function Page() {
       <Client />
       <section
         id="seo-content"
-        className="seo-half grid gap-6 md:!mt-4"
+        className="seo-half grid gap-6 mt-8 md:!mt-12"
       >
         <div className="card w-full p-4 md:p-6">
           <h2 className="text-lg md:text-xl font-semibold mb-2">

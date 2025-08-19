@@ -66,16 +66,7 @@ export default function ToolDocToPdfUX() {
   }
 
   return (
-    <div className="space-y-3">
-      <input
-        type="file"
-        accept=".doc,.docx"
-        onChange={(e) => {
-          const f = e.target.files?.[0];
-          if (f) handle(f);
-        }}
-      />
-      {busy && <p className="text-sm text-muted">Converting…</p>}
+    <div className="card p-6 space-y-4">
       <ToolHelp>
         <>
           <p>
@@ -90,6 +81,19 @@ export default function ToolDocToPdfUX() {
           </ol>
         </>
       </ToolHelp>
+      <label className="block">
+        <span className="text-sm">Word document</span>
+        <input
+          type="file"
+          accept=".doc,.docx"
+          className="input mt-1"
+          onChange={(e) => {
+            const f = e.target.files?.[0];
+            if (f) handle(f);
+          }}
+        />
+      </label>
+      {busy && <p className="text-sm text-muted">Converting…</p>}
     </div>
   );
 }

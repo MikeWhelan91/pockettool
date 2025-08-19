@@ -11,6 +11,7 @@ import ToolMenuWrapper from "@/components/ToolMenuWrapper";
 import ThemeToggle from "@/components/ThemeToggle";
 import FooterMultiplex from "@/components/ads/FooterMultiplex";
 import { Suspense } from "react";
+import AnimatedMain from "@/components/AnimatedMain";
 
 import { IBM_Plex_Sans, JetBrains_Mono } from "next/font/google";
 
@@ -224,9 +225,9 @@ export default function RootLayout({
           <ToolMenuWrapper />
 
           {/* Main content */}
-          <main className="mx-auto container-wrap px-4 py-8 flex-1">
+          <AnimatedMain className="mx-auto container-wrap px-4 py-8 flex-1">
             {children}
-          </main>
+          </AnimatedMain>
 
           {/* Multiplex above footer on tool pages */}
           <FooterMultiplex />

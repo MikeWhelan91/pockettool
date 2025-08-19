@@ -819,18 +819,6 @@ main:has(#seo-content) .tool-panels{
   }
 }
 
-/* === Non-PDF tools (e.g. Image Converter): make SEO block full width === */
-@media (min-width: 768px){
-  :not([data-pdf]) .tool-panels > .seo-half{
-    grid-column: 1 / -1 !important;
-    margin-top: 0 !important;
-  }
-  :not([data-pdf]) #seo-content{
-    grid-column: 1 / -1 !important;
-    margin-top: 0 !important;
-  }
-}
-
 /* Image Studio: keep FAQ aligned with results column */
 @media (min-width: 768px){
   [data-image] #seo-content{
@@ -840,6 +828,17 @@ main:has(#seo-content) .tool-panels{
 
 /* Image Studio: don't center the FAQ card */
 [data-image] #seo-content > .card { margin: 0 !important; }
+
+/* Full-width SEO block (FAQ + related links) */
+.tool-panels > .seo-full#seo-content{
+  grid-column: 1 / -1 !important;
+  margin-top: -1.25rem !important;
+}
+@media (min-width: 1024px){
+  .tool-panels > .seo-full#seo-content{
+    margin-top: -1.75rem !important;
+  }
+}
 
 /* Hide the ToolLayout heading/intro on pages that render #seo-content
    (PDF Studio, Image Converter, and any future tool with an FAQ block) */

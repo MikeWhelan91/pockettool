@@ -115,7 +115,7 @@ export default function Page() {
       </div>
 
       <Client />
-      <section id="seo-content" className="seo-half">
+      <section id="seo-content" className="seo-full md:col-span-2 grid gap-6">
         <div className="card p-4 md:p-6">
           <h2 className="text-lg md:text-xl font-semibold mb-2">
             Case Converter — FAQ
@@ -128,6 +128,15 @@ export default function Page() {
               </details>
             ))}
           </div>
+        </div>
+        <div className="card p-4 md:p-6">
+          <h2 className="text-lg font-semibold mb-2">Related tools</h2>
+          <ul className="list-disc pl-5 text-sm space-y-1">
+            <li><a className="link" href="/format">JSON / YAML / XML Formatter</a></li>
+            <li><a className="link" href="/diff">Diff Checker</a></li>
+            <li><a className="link" href="/base64">Base64 Encoder / Decoder</a></li>
+            <li><a className="link" href="/regex">Regex Tester</a></li>
+          </ul>
         </div>
         <script
           type="application/ld+json"

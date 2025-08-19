@@ -2641,17 +2641,7 @@ function ToolBatchMergeUX() {
 
   return (
     <div className="card p-6 min-h-0 space-y-4">
-      <ToolHelp>
-        <p>
-          <b>Why</b>: Combine multiple PDFs into one.
-        </p>
-        <ol className="list-decimal pl-5 space-y-1">
-          <li>Add PDFs</li>
-          <li>Drag to reorder</li>
-          <li>Preview pages below</li>
-          <li>Merge & download</li>
-        </ol>
-      </ToolHelp>
+      <ToolHelp>{HELP.batchMerge}</ToolHelp>
 
       <div className="grid md:grid-cols-[1fr_auto] gap-3 items-end">
         <label className="block">
@@ -2844,16 +2834,7 @@ function ToolSplitUX() {
 
   return (
     <div className="card p-6 min-h-0 space-y-4">
-      <ToolHelp>
-        <p>
-          <b>Why</b>: Split a PDF by picking pages visually, or by typing
-          ranges.
-        </p>
-        <p>
-          <b>How</b>: Upload a PDF → choose <i>Ranges</i> or <i>Select pages</i>{" "}
-          → Split.
-        </p>
-      </ToolHelp>
+      <ToolHelp>{HELP.split}</ToolHelp>
 
       <div className="grid md:grid-cols-[1fr_auto] gap-3 items-end">
         <label className="block">
@@ -3056,6 +3037,7 @@ function ToolRotateUX() {
 
   return (
     <div className="card p-6 space-y-4">
+      <ToolHelp>{HELP.rotate}</ToolHelp>
       <div className="grid md:grid-cols-[1fr_auto] gap-3 items-end">
         <label className="block">
           <span className="text-sm">PDF file</span>
@@ -3172,6 +3154,7 @@ function ToolReorderUX() {
 
   return (
     <div className="card p-6 space-y-4">
+      <ToolHelp>{HELP.reorder}</ToolHelp>
       <div className="grid md:grid-cols-[1fr_auto] gap-3 items-end">
         <label className="block">
           <span className="text-sm">PDF file</span>
@@ -3278,6 +3261,7 @@ function ToolImagesToPdfUX() {
 
   return (
     <div className="card p-6 space-y-4">
+      <ToolHelp>{HELP.imagesToPdf}</ToolHelp>
       <div className="grid md:grid-cols-[1fr_auto] gap-3 items-end">
         <label className="block">
           <span className="text-sm">Images</span>
@@ -3394,6 +3378,7 @@ function ToolPdfToImagesUX() {
 
   return (
     <div className="card p-6 space-y-4">
+      <ToolHelp>{HELP.pdfToImages}</ToolHelp>
       <div className="grid md:grid-cols-[1fr_auto] gap-3 items-end">
         <label className="block">
           <span className="text-sm">PDF file</span>
@@ -3489,6 +3474,7 @@ function ToolExtractTextUX() {
 
   return (
     <div className="card p-6 space-y-4">
+      <ToolHelp>{HELP.extractText}</ToolHelp>
       <div className="grid md:grid-cols-[1fr_auto] gap-3 items-end">
         <label className="block">
           <span className="text-sm">PDF file</span>
@@ -3585,6 +3571,7 @@ function ToolCompressUX() {
 
   return (
     <div className="card p-6 space-y-4">
+      <ToolHelp>{HELP.compress}</ToolHelp>
       <div className="grid md:grid-cols-[1fr_auto] gap-3 items-end">
         <label className="block">
           <span className="text-sm">PDF file</span>
@@ -3758,6 +3745,7 @@ function ToolRedactUX() {
 
   return (
     <div className="card p-6 space-y-4">
+      <ToolHelp>{HELP.redact}</ToolHelp>
       <div className="grid md:grid-cols-[1fr_auto] gap-3 items-end">
         <label className="block">
           <span className="text-sm">PDF file</span>

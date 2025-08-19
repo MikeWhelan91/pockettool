@@ -53,8 +53,14 @@ export default function ToolLayout({
           }
         >
           <div>
-            <h1 className="text-2xl font-semibold tracking-tight">{title}</h1>
-            {description ? <p className="text-sm text-muted mt-1">{description}</p> : null}
+            <h1
+              className="text-3xl font-bold tracking-tight bg-gradient-to-r from-brand to-blue-600 bg-clip-text text-transparent"
+            >
+              {title}
+            </h1>
+            {description ? (
+              <p className="mt-2 text-base text-muted max-w-2xl">{description}</p>
+            ) : null}
           </div>
           {!center && (
             <div className="flex items-center gap-2">

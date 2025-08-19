@@ -8,7 +8,13 @@ export default function ToolDocToPdfUX() {
   const [busy, setBusy] = useState(false);
   const [file, setFile] = useState<File | null>(null);
 
+  const TOOL_LABEL = "Word to PDF";
+
   async function handle(file: File) {
+    (window as any).gtag?.("event", "conversion_started", {
+      event_category: "PDF Tools",
+      event_label: TOOL_LABEL,
+    });
     setBusy(true);
     try {
       const { extractRawText } = await import("mammoth/mammoth.browser");
@@ -57,6 +63,12 @@ export default function ToolDocToPdfUX() {
       a.click();
       a.remove();
       setTimeout(() => URL.revokeObjectURL(url), 5000);
+      (window as any).gtag?.("event", "conversion_completed", {
+        event_category: "PDF Tools",
+        event_label: TOOL_LABEL,
+        file_type: file.name.split(".").pop()?.toLowerCase(),
+        file_size_kb: Math.round(file.size / 1024),
+      });
       trackPdfAction("doc_to_pdf");
     } catch (err) {
       console.error(err);

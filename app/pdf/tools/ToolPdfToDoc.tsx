@@ -13,7 +13,13 @@ async function loadPdfJs() {
 export default function ToolPdfToDocUX() {
   const [busy, setBusy] = useState(false);
 
+  const TOOL_LABEL = "PDF to Word";
+
   async function handle(file: File) {
+    (window as any).gtag?.("event", "conversion_started", {
+      event_category: "PDF Tools",
+      event_label: TOOL_LABEL,
+    });
     setBusy(true);
     try {
       const pdfjs = await loadPdfJs();
@@ -63,6 +69,12 @@ export default function ToolPdfToDocUX() {
       a.click();
       a.remove();
       setTimeout(() => URL.revokeObjectURL(url), 5000);
+      (window as any).gtag?.("event", "conversion_completed", {
+        event_category: "PDF Tools",
+        event_label: TOOL_LABEL,
+        file_type: file.name.split(".").pop()?.toLowerCase(),
+        file_size_kb: Math.round(file.size / 1024),
+      });
       trackPdfAction("pdf_to_doc");
     } catch (err) {
       console.error(err);

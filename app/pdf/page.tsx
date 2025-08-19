@@ -27,12 +27,7 @@ export const metadata = {
 
 export default function Page() {
   return (
-    <ToolLayout
-      title="PDF Studio"
-      description="Free, private, and powerful PDF tools — right in your browser. No sign-ups, pop-ups, redirects, or uploads."
-      align="center"
-      data-pdf
-    >
+    <ToolLayout align="center" hideHeader data-pdf>
       {/* Left/Right grid item #1 — hero */}
       <Hero />
 

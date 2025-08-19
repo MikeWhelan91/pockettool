@@ -1479,7 +1479,8 @@ export default function Client() {
                 </div>
               )}
             </div>
-          </main>
+          </div>
+        </main>
 
         {/* Results */}
         <div className="card p-4">

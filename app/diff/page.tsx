@@ -7,7 +7,7 @@ export const metadata: Metadata = {
   title: "Text Difference Checker — Utilixy",
   description:
     "Compare two blocks of text and highlight additions, deletions, and unchanged parts. Everything runs in your browser.",
-  alternates: { canonical: "https://utilixy.com/diff" },
+  alternates: { canonical: "/diff" },
   robots: { index: true, follow: true },
   keywords: [
     "text diff",
@@ -21,7 +21,7 @@ export const metadata: Metadata = {
     title: "Text Difference Checker — Utilixy",
     description:
       "Compare two blocks of text and highlight additions, deletions, and unchanged parts. Everything runs in your browser.",
-    url: "https://utilixy.com/diff",
+    url: "/diff",
     siteName: "Utilixy",
     images: [{ url: "/icons/icon-512.png", width: 512, height: 512 }],
     type: "website",
@@ -72,8 +72,63 @@ export default function Page() {
   return (
     <ToolLayout
       title="Text Difference Checker"
-      description="Paste the original text on the left and the changed text on the right. See what’s been added and removed."
+      description="Compare two texts and highlight additions and deletions — everything runs locally."
     >
+      <div className="md:col-span-2">
+        <details className="hidden md:block card p-4 md:p-6" open>
+          <summary className="cursor-pointer select-none text-base font-medium">
+            What this does & how to use it
+          </summary>
+          <div className="mt-2 text-sm text-muted">
+            <p>
+              Paste your <strong>original</strong> text on the left and the
+              <strong> changed</strong> text on the right. Differences appear instantly and
+              stay on your device.
+            </p>
+            <ul className="list-disc pl-5 mt-3 space-y-1">
+              <li>
+                <strong>Inline</strong> view shows additions and deletions within lines.
+              </li>
+              <li>
+                <strong>Side-by-side</strong> view compares entire lines next to each other.
+              </li>
+              <li>
+                Switch modes or copy results without leaving the page.
+              </li>
+            </ul>
+            <p className="mt-3">
+              Tip: large texts may take longer to compute depending on your device.
+            </p>
+          </div>
+        </details>
+        <details className="block md:hidden card p-4 md:p-6">
+          <summary className="cursor-pointer select-none text-base font-medium">
+            What this does & how to use it
+          </summary>
+          <div className="mt-2 text-sm text-muted">
+            <p>
+              Paste your <strong>original</strong> text on the left and the
+              <strong> changed</strong> text on the right. Differences appear instantly and
+              stay on your device.
+            </p>
+            <ul className="list-disc pl-5 mt-3 space-y-1">
+              <li>
+                <strong>Inline</strong> view shows additions and deletions within lines.
+              </li>
+              <li>
+                <strong>Side-by-side</strong> view compares entire lines next to each other.
+              </li>
+              <li>
+                Switch modes or copy results without leaving the page.
+              </li>
+            </ul>
+            <p className="mt-3">
+              Tip: large texts may take longer to compute depending on your device.
+            </p>
+          </div>
+        </details>
+      </div>
+
       <Client />
       <section id="seo-content" className="seo-half">
         <div className="card p-4 md:p-6">

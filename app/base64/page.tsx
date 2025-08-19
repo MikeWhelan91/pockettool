@@ -5,11 +5,19 @@ import Client from "./Client";
 export const metadata: Metadata = {
   title: "Base64 Encoder / Decoder – Utilixy",
   description: "Convert text or files to and from Base64 instantly in your browser.",
-  alternates: { canonical: "https://utilixy.com/base64" },
+  alternates: { canonical: "/base64" },
+  keywords: [
+    "base64 encoder",
+    "base64 decoder",
+    "text to base64",
+    "file to base64",
+    "base64 converter",
+    "online base64",
+  ],
   openGraph: {
     title: "Base64 Encoder / Decoder – Utilixy",
     description: "Convert text or files to and from Base64 instantly in your browser.",
-    url: "https://utilixy.com/base64",
+    url: "/base64",
     siteName: "Utilixy",
     images: [{ url: "/icons/icon-512.png", width: 512, height: 512 }],
     type: "website",
@@ -59,8 +67,65 @@ export default function Page() {
   return (
     <ToolLayout
       title="Base64 Encoder / Decoder"
-      description="Encode or decode Base64 strings or files — all locally, nothing is uploaded."
+      description="Encode or decode Base64 strings or files — everything runs locally, nothing is uploaded."
     >
+      <div className="md:col-span-2">
+        <details className="hidden md:block card p-4 md:p-6" open>
+          <summary className="cursor-pointer select-none text-base font-medium">
+            What this does & how to use it
+          </summary>
+          <div className="mt-2 text-sm text-muted">
+            <p>
+              Paste text or drop a file, then choose <strong>Encode</strong> or
+              <strong> Decode</strong>. The converted output appears instantly with nothing
+              sent to a server.
+            </p>
+            <ul className="list-disc pl-5 mt-3 space-y-1">
+              <li>
+                <strong>Encode</strong> turns text or files into a Base64 string.
+              </li>
+              <li>
+                <strong>Decode</strong> converts a Base64 string back to text or a
+                downloadable file.
+              </li>
+              <li>
+                <strong>Copy</strong> buttons let you grab the result quickly.
+              </li>
+            </ul>
+            <p className="mt-3">
+              Tip: large files need more memory because everything runs locally.
+            </p>
+          </div>
+        </details>
+        <details className="block md:hidden card p-4 md:p-6">
+          <summary className="cursor-pointer select-none text-base font-medium">
+            What this does & how to use it
+          </summary>
+          <div className="mt-2 text-sm text-muted">
+            <p>
+              Paste text or drop a file, then choose <strong>Encode</strong> or
+              <strong> Decode</strong>. The converted output appears instantly with nothing
+              sent to a server.
+            </p>
+            <ul className="list-disc pl-5 mt-3 space-y-1">
+              <li>
+                <strong>Encode</strong> turns text or files into a Base64 string.
+              </li>
+              <li>
+                <strong>Decode</strong> converts a Base64 string back to text or a
+                downloadable file.
+              </li>
+              <li>
+                <strong>Copy</strong> buttons let you grab the result quickly.
+              </li>
+            </ul>
+            <p className="mt-3">
+              Tip: large files need more memory because everything runs locally.
+            </p>
+          </div>
+        </details>
+      </div>
+
       <Client />
       <section id="seo-content" className="seo-half">
         <div className="card p-4 md:p-6">

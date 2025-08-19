@@ -794,7 +794,7 @@ main:has(#seo-content) .tool-panels{
 }
 
 /* Safety: ensure nothing inside the card re-introduces top spacing */
-#seo-content > .card { margin: 0 auto !important; }
+#seo-content > .card { margin: 0; }
 #seo-content > *:first-child { margin-top: 0 !important; }
 /* === PDF: put the SEO block snug under the tool, right column === */
 /* Target the actual grid item that WRAPS #seo-content */

@@ -130,8 +130,11 @@ export default function Page() {
       </div>
 
       <Client />
-      <section id="seo-content" className="seo-full md:col-span-2 grid gap-6">
-        <div className="card p-4 md:p-6">
+      <section
+        id="seo-content"
+        className="seo-full md:col-span-2 grid gap-6 md:grid-cols-2"
+      >
+        <div className="card w-full p-4 md:p-6">
           <h2 className="text-lg md:text-xl font-semibold mb-2">
             Text Difference Checker — FAQ
           </h2>
@@ -144,7 +147,7 @@ export default function Page() {
             ))}
           </div>
         </div>
-        <div className="card p-4 md:p-6">
+        <div className="card w-full p-4 md:p-6">
           <h2 className="text-lg font-semibold mb-2">Related tools</h2>
           <ul className="list-disc pl-5 text-sm space-y-1">
             <li><a className="link" href="/format">JSON / YAML / XML Formatter</a></li>

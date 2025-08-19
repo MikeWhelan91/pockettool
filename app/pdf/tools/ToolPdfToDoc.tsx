@@ -73,16 +73,7 @@ export default function ToolPdfToDocUX() {
   }
 
   return (
-    <div className="space-y-3">
-      <input
-        type="file"
-        accept="application/pdf"
-        onChange={(e) => {
-          const f = e.target.files?.[0];
-          if (f) handle(f);
-        }}
-      />
-      {busy && <p className="text-sm text-muted">Converting…</p>}
+    <div className="card p-6 space-y-4">
       <ToolHelp>
         <>
           <p>
@@ -97,6 +88,19 @@ export default function ToolPdfToDocUX() {
           </ol>
         </>
       </ToolHelp>
+      <label className="block">
+        <span className="text-sm">PDF file</span>
+        <input
+          type="file"
+          accept="application/pdf"
+          className="input mt-1"
+          onChange={(e) => {
+            const f = e.target.files?.[0];
+            if (f) handle(f);
+          }}
+        />
+      </label>
+      {busy && <p className="text-sm text-muted">Converting…</p>}
     </div>
   );
 }

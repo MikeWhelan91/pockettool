@@ -514,6 +514,11 @@ const TOOL_LIST: { key: ToolKey; label: string }[] = [
 export default function PDFStudio() {
   const [tool, setTool] = useState<ToolKey>("batchMerge");
 
+  const activeLabel = useMemo(
+    () => TOOL_LIST.find((t) => t.key === tool)?.label ?? "",
+    [tool],
+  );
+
   // --- Visible FAQ + JSON-LD (local to Client) ---
   const faq = [
     {
@@ -600,21 +605,26 @@ export default function PDFStudio() {
       <div className="md:[grid-column:2/3] grid gap-3">
         {/* Main stage (the tools) */}
         <main className="grid gap-6">
-          {tool === "reorder" && <ToolReorderUX />}
-          {tool === "rotate" && <ToolRotateUX />}
-          {tool === "watermark" && <ToolWatermarkUX />}
-          {tool === "imagesToPdf" && <ToolImagesToPdfUX />}
-          {tool === "pdfToImages" && <ToolPdfToImagesUX />}
-          {tool === "docToPdf" && <ToolDocToPdfUX />}
-          {tool === "pdfToDoc" && <ToolPdfToDocUX />}
-          {tool === "extractText" && <ToolExtractTextUX />}
-          {tool === "fillFlatten" && <ToolFillFlattenUX />}
-          {tool === "redact" && <ToolRedactUX />}
-          {tool === "split" && <ToolSplitUX />}
-          {tool === "stampQR" && <ToolStampQR />}
-          {tool === "batchMerge" && <ToolBatchMergeUX />}
-          {tool === "meta" && <ToolMetadata />}
-          {tool === "compress" && <ToolCompressUX />}
+          <div>
+            {activeLabel && (
+              <h2 className="text-base font-semibold mb-1">{activeLabel}</h2>
+            )}
+            {tool === "reorder" && <ToolReorderUX />}
+            {tool === "rotate" && <ToolRotateUX />}
+            {tool === "watermark" && <ToolWatermarkUX />}
+            {tool === "imagesToPdf" && <ToolImagesToPdfUX />}
+            {tool === "pdfToImages" && <ToolPdfToImagesUX />}
+            {tool === "docToPdf" && <ToolDocToPdfUX />}
+            {tool === "pdfToDoc" && <ToolPdfToDocUX />}
+            {tool === "extractText" && <ToolExtractTextUX />}
+            {tool === "fillFlatten" && <ToolFillFlattenUX />}
+            {tool === "redact" && <ToolRedactUX />}
+            {tool === "split" && <ToolSplitUX />}
+            {tool === "stampQR" && <ToolStampQR />}
+            {tool === "batchMerge" && <ToolBatchMergeUX />}
+            {tool === "meta" && <ToolMetadata />}
+            {tool === "compress" && <ToolCompressUX />}
+          </div>
         </main>
 
         {/* FAQ: sits directly under the tool, half width on md+ */}

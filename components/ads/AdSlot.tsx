@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, CSSProperties } from "react";
 
 type AdSlotProps = {
   slotId: string;
@@ -41,33 +41,34 @@ useEffect(() => {
 }, []);
 
 
- const style: React.CSSProperties =
-  width && height ? { display, width, height } : { display: "block" };
+  const wrapperClass = `ad-slot flex justify-center items-center overflow-hidden ${className || ""} ${
+    width && height ? "ad-fixed" : ""
+  }`;
 
-return (
-  <div
-    className={`flex justify-center items-center overflow-hidden ${className || ""}`}
-    style={{
-      minHeight: minHeight ? `${minHeight}px` : undefined,
-      width: width ? `${width}px` : "100%",
-      height: height ? `${height}px` : "auto",
-    }}
-  >
-    <ins
-      className="adsbygoogle"
+  return (
+    <div
+      className={wrapperClass}
       style={{
-        display: display || "block",
+        ["--ad-min" as any]: minHeight ? `${minHeight}px` : undefined,
         width: width ? `${width}px` : "100%",
         height: height ? `${height}px` : "auto",
-      }}
-      data-ad-client="ca-pub-1257499604453174"
-      data-ad-slot={slotId}
-      {...(format ? { "data-ad-format": format } : {})}
-      {...(responsive ? { "data-full-width-responsive": "true" } : {})}
-      {...(lazy ? { "data-loading-strategy": "lazy" } : {})}
-      ref={adRef as unknown as React.RefObject<HTMLModElement>}
-    ></ins>
-  </div>
-);
+      } as CSSProperties}
+    >
+      <ins
+        className="adsbygoogle"
+        style={{
+          display: display || "block",
+          width: width ? `${width}px` : "100%",
+          height: height ? `${height}px` : "auto",
+        }}
+        data-ad-client="ca-pub-1257499604453174"
+        data-ad-slot={slotId}
+        {...(format ? { "data-ad-format": format } : {})}
+        {...(responsive ? { "data-full-width-responsive": "true" } : {})}
+        {...(lazy ? { "data-loading-strategy": "lazy" } : {})}
+        ref={adRef as unknown as React.RefObject<HTMLModElement>}
+      ></ins>
+    </div>
+  );
 
 }

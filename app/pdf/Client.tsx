@@ -607,7 +607,7 @@ export default function PDFStudio() {
         <main className="grid gap-6">
           <div>
             {activeLabel && (
-              <h2 className="text-base font-semibold mb-1">{activeLabel}</h2>
+              <h2 className="text-2xl font-bold mb-4 text-center text-[#2B67F3]">{activeLabel}</h2>
             )}
             {tool === "reorder" && <ToolReorderUX />}
             {tool === "rotate" && <ToolRotateUX />}

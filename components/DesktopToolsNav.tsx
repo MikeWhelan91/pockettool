@@ -179,7 +179,7 @@ export default function DesktopToolsNav() {
           <Link
             href="/pdf"
             role="menuitem"
-            className="block w-full whitespace-nowrap px-3 py-2 rounded-lg text-base font-semibold hover:bg-[#2B67F3] hover:text-white"
+            className="block w-full whitespace-nowrap px-3 py-2 rounded-lg text-base font-semibold text-[#2B67F3] hover:bg-[#2B67F3] hover:text-white"
             onClick={() => setPdfOpen(false)}
           >
             PDF Home
@@ -189,7 +189,7 @@ export default function DesktopToolsNav() {
               key={t.key}
               href={`/pdf?tool=${encodeURIComponent(t.key)}`}
               role="menuitem"
-              className="block w-full whitespace-nowrap px-3 py-2 rounded-lg text-base font-semibold hover:bg-[#2B67F3] hover:text-white"
+              className="block w-full whitespace-nowrap px-3 py-2 rounded-lg text-base font-semibold text-[#2B67F3] hover:bg-[#2B67F3] hover:text-white"
               onClick={() => setPdfOpen(false)}
             >
               {t.label}
@@ -238,7 +238,7 @@ export default function DesktopToolsNav() {
           <Link
             href="/image-converter"
             role="menuitem"
-            className="block w-full whitespace-nowrap px-3 py-2 rounded-lg text-base font-semibold hover:bg-[#2B67F3] hover:text-white"
+            className="block w-full whitespace-nowrap px-3 py-2 rounded-lg text-base font-semibold text-[#2B67F3] hover:bg-[#2B67F3] hover:text-white"
             onClick={() => setImageOpen(false)}
           >
             Image Home
@@ -248,7 +248,7 @@ export default function DesktopToolsNav() {
               key={t.key}
               href={`/image-converter?tool=${encodeURIComponent(t.key)}`}
               role="menuitem"
-              className="block w-full whitespace-nowrap px-3 py-2 rounded-lg text-base font-semibold hover:bg-[#2B67F3] hover:text-white"
+              className="block w-full whitespace-nowrap px-3 py-2 rounded-lg text-base font-semibold text-[#2B67F3] hover:bg-[#2B67F3] hover:text-white"
               onClick={() => setImageOpen(false)}
             >
               {t.label}
@@ -299,16 +299,16 @@ export default function DesktopToolsNav() {
             "transition ease-out duration-150",
           ].join(" ")}
         >
-          <Link href="/case-converter" role="menuitem" className="px-3 py-2 rounded-lg text-base font-semibold hover:bg-[#2B67F3] hover:text-white" onClick={() => setMoreOpen(false)}>
+          <Link href="/case-converter" role="menuitem" className="px-3 py-2 rounded-lg text-base font-semibold text-[#2B67F3] hover:bg-[#2B67F3] hover:text-white" onClick={() => setMoreOpen(false)}>
             Case
           </Link>
-          <Link href="/base64" role="menuitem" className="px-3 py-2 rounded-lg text-base font-semibold hover:bg-[#2B67F3] hover:text-white" onClick={() => setMoreOpen(false)}>
+          <Link href="/base64" role="menuitem" className="px-3 py-2 rounded-lg text-base font-semibold text-[#2B67F3] hover:bg-[#2B67F3] hover:text-white" onClick={() => setMoreOpen(false)}>
             Base64
           </Link>
-          <Link href="/diff" role="menuitem" className="px-3 py-2 rounded-lg text-base font-semibold hover:bg-[#2B67F3] hover:text-white" onClick={() => setMoreOpen(false)}>
+          <Link href="/diff" role="menuitem" className="px-3 py-2 rounded-lg text-base font-semibold text-[#2B67F3] hover:bg-[#2B67F3] hover:text-white" onClick={() => setMoreOpen(false)}>
             Diff
           </Link>
-          <Link href="/regex" role="menuitem" className="px-3 py-2 rounded-lg text-base font-semibold hover:bg-[#2B67F3] hover:text-white" onClick={() => setMoreOpen(false)}>
+          <Link href="/regex" role="menuitem" className="px-3 py-2 rounded-lg text-base font-semibold text-[#2B67F3] hover:bg-[#2B67F3] hover:text-white" onClick={() => setMoreOpen(false)}>
             Regex
           </Link>
         </div>

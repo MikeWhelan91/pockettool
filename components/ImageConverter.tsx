@@ -79,8 +79,8 @@ export default function ImageConverter({
   return (
     <div className="space-y-6">
       <div className="card">
-        <h1 className="text-xl font-semibold mb-3">{title}</h1>
-        <p className="text-neutral-400 mb-4">{description}</p>
+        <h1 className="text-2xl md:text-3xl font-bold text-center text-[#2B67F3] mb-4">{title}</h1>
+        <p className="text-neutral-400 text-center mb-4">{description}</p>
 
         <div className="grid sm:grid-cols-2 gap-4">
           <div>

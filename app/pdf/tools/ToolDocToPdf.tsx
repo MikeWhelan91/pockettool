@@ -6,6 +6,7 @@ import { blobFromUint8, trackPdfAction, ToolHelp } from "../Client";
 
 export default function ToolDocToPdfUX() {
   const [busy, setBusy] = useState(false);
+  const [file, setFile] = useState<File | null>(null);
 
   async function handle(file: File) {
     setBusy(true);
@@ -66,7 +67,7 @@ export default function ToolDocToPdfUX() {
   }
 
   return (
-    <div className="card p-6 space-y-4">
+    <div className="card p-6 min-h-0 space-y-4">
       <ToolHelp>
         <>
           <p>
@@ -81,18 +82,32 @@ export default function ToolDocToPdfUX() {
           </ol>
         </>
       </ToolHelp>
-      <label className="block">
-        <span className="text-sm">Word document</span>
-        <input
-          type="file"
-          accept=".doc,.docx"
-          className="input mt-1"
-          onChange={(e) => {
-            const f = e.target.files?.[0];
-            if (f) handle(f);
-          }}
-        />
-      </label>
+      <div className="grid md:grid-cols-[1fr_auto] gap-3 items-end">
+        <label className="block">
+          <span className="text-sm">Word document</span>
+          <input
+            type="file"
+            accept=".doc,.docx"
+            className="input mt-1"
+            onChange={(e) => {
+              const f = e.target.files?.[0];
+              if (f) {
+                setFile(f);
+                handle(f);
+              }
+            }}
+          />
+        </label>
+        {file && (
+          <button
+            className="btn-ghost"
+            onClick={() => setFile(null)}
+            disabled={busy}
+          >
+            Clear
+          </button>
+        )}
+      </div>
       {busy && <p className="text-sm text-muted">Converting…</p>}
     </div>
   );

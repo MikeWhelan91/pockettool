@@ -2,6 +2,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { PDFDocument, StandardFonts, rgb, degrees } from "pdf-lib";
 import React from "react";
 import PdfPreview from "@/components/PdfPreview";
@@ -512,7 +513,31 @@ const TOOL_LIST: { key: ToolKey; label: string }[] = [
 ];
 
 export default function PDFStudio() {
-  const [tool, setTool] = useState<ToolKey>("batchMerge");
+  const router = useRouter();
+  const searchParams = useSearchParams();
+
+  function isToolKey(t: any): t is ToolKey {
+    return TOOL_LIST.some((tool) => tool.key === t);
+  }
+
+  const [tool, setTool] = useState<ToolKey>(() => {
+    const t = searchParams.get("tool");
+    return isToolKey(t) ? t : "batchMerge";
+  });
+
+  useEffect(() => {
+    const t = searchParams.get("tool");
+    if (isToolKey(t) && t !== tool) {
+      setTool(t);
+    }
+  }, [searchParams, tool]);
+
+  const changeTool = (next: ToolKey) => {
+    setTool(next);
+    const sp = new URLSearchParams(searchParams.toString());
+    sp.set("tool", next);
+    router.replace(`/pdf?${sp.toString()}`, { scroll: false });
+  };
 
   const activeLabel = useMemo(
     () => TOOL_LIST.find((t) => t.key === tool)?.label ?? "",
@@ -570,7 +595,7 @@ export default function PDFStudio() {
         <select
           className="input w-full"
           value={tool}
-          onChange={(e) => setTool(e.target.value as ToolKey)}
+          onChange={(e) => changeTool(e.target.value as ToolKey)}
         >
           {TOOL_LIST.map((t) => (
             <option key={t.key} value={t.key}>
@@ -592,7 +617,7 @@ export default function PDFStudio() {
                     ? "ring-2 ring-[color:var(--accent)] ring-offset-1 ring-offset-[color:var(--bg)] bg-[color:var(--bg-lift)] border-[color:var(--accent)]/40"
                     : ""
                 }`}
-              onClick={() => setTool(t.key)}
+              onClick={() => changeTool(t.key)}
               aria-current={tool === t.key ? "page" : undefined}
             >
               <div className="text-sm">{t.label}</div>

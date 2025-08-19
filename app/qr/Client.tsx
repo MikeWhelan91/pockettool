@@ -246,6 +246,7 @@ export default function QRTool() {
           ) : (
             <div className="text-sm text-muted">Enter Wi-Fi details to generate a QR code.</div>
           )}
+
         </div>
       </div>
     </>

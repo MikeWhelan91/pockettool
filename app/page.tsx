@@ -287,7 +287,7 @@ export default function HomePage() {
 
       {/* Homepage bottom ad: Multiplex, out of the way */}
       <section className="mt-6">
-        <Ad slot="homeMultiplex" format="autorelaxed" minHeight={200} />
+        <Ad slot="homeMultiplex" format="autorelaxed" minHeight={150} />
       </section>
     </div>
   );

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Hero from "./Hero";
 import Client from "./Client";
 import { Suspense } from "react";
+import ToolLayout from "@/components/ToolLayout";
 
 export const metadata: Metadata = {
   title:
@@ -30,12 +31,12 @@ export const metadata: Metadata = {
 
 export default function Page() {
   return (
-    <>
+    <ToolLayout align="center" hideHeader data-image>
       <Hero />
       <Suspense fallback={<div className="p-4 text-sm text-muted">Loading image tool…</div>}>
         <Client />
       </Suspense>
-    </>
+    </ToolLayout>
   );
 }
 

@@ -369,6 +369,11 @@ const TOOLS: { id: ToolId; label: string }[] = [
   { id: "pdf", label: "Images → PDF" },
 ];
 
+const TOOL_LABELS = TOOLS.reduce(
+  (acc, t) => ({ ...acc, [t.id]: t.label }),
+  {} as Record<ToolId, string>,
+);
+
 type Picked = { file: File; name: string; url: string };
 
 // FAQ content for SEO and on-page questions
@@ -570,17 +575,23 @@ export default function Client() {
 
     // uploader
     function onPick(files: File[]) {
-    const arr = files.map((f) => ({
-      file: f,
-      name: f.name.replace(/\.[^.]+$/, ""),
-      url: URL.createObjectURL(f),
-    }));
-    picked.forEach((p) => URL.revokeObjectURL(p.url));
-    setPicked(arr);
-    setActiveIdx(0);
-    setResults([]);
-    setLog([]);
-  }
+      const arr = files.map((f) => ({
+        file: f,
+        name: f.name.replace(/\.[^.]+$/, ""),
+        url: URL.createObjectURL(f),
+      }));
+      picked.forEach((p) => URL.revokeObjectURL(p.url));
+      setPicked(arr);
+      setActiveIdx(0);
+      setResults([]);
+      setLog([]);
+      if (files.length) {
+        (window as any).gtag?.("event", "conversion_started", {
+          event_category: "Image Tools",
+          event_label: TOOL_LABELS[active],
+        });
+      }
+    }
 
   useEffect(() => {
     return () => {
@@ -825,6 +836,12 @@ export default function Client() {
           setResults((p) => [...p, { name: "images.pdf", url, blob }]);
           addLog("✔ images.pdf");
         }
+
+        (window as any).gtag?.("event", "conversion_completed", {
+          event_category: "Image Tools",
+          event_label: TOOL_LABELS[mode],
+          file_count: picked.length,
+        });
       } catch (e: any) {
         console.error(e);
         addLog(`❌ ${e?.message || e}`);

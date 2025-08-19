@@ -51,7 +51,7 @@ const ACTION_LABELS: Partial<Record<PdfAction, string>> = {
 function safeGtagEvent(sendTo: string) {
   try {
     if (typeof window === "undefined") return;
-    const g = (window as any).gtag;
+    const g =(window as any).gtag;
     if (typeof g === "function") g("event", "conversion", { send_to: sendTo });
   } catch {}
 }
@@ -1434,6 +1434,10 @@ function ToolFillFlatten() {
     setDoc(null); formRef.current = null;
     setThumbs([]);
     if (!f) return;
+    (window as any).gtag?.("event", "conversion_started", {
+      event_category: "PDF Tools",
+      event_label: "Fill & Flatten",
+    });
     setBusy(true);
     try {
       const ab = await f.arrayBuffer();
@@ -1586,6 +1590,10 @@ function ToolFillFlatten() {
     const { url } = await blobFromUint8(bytes, flatten ? "filled.pdf" : "filled-editable.pdf");
     dl(url, flatten ? "filled.pdf" : "filled-editable.pdf");
     trackPdfAction("fill_flatten_export");
+    (window as any).gtag?.("event", "conversion_completed", {
+      event_category: "PDF Tools",
+      event_label: "Fill & Flatten",
+    });
   }
 
   function downloadCSV() {
@@ -2126,6 +2134,11 @@ function ToolSplit() {
         dl(url, `split-${idx}.pdf`);
       }
       trackPdfAction("split");
+      (window as any).gtag?.("event", "conversion_completed", {
+        event_category: "PDF Tools",
+        event_label: "Split PDF",
+        mode: "count",
+      });
       return;
     }
 
@@ -2144,6 +2157,11 @@ function ToolSplit() {
         dl(url, `chunk-${idx}.pdf`);
       }
       trackPdfAction("split");
+      (window as any).gtag?.("event", "conversion_completed", {
+        event_category: "PDF Tools",
+        event_label: "Split PDF",
+        mode: "max",
+      });
       return;
     }
 
@@ -2180,6 +2198,11 @@ function ToolSplit() {
         dl(url, `${safe}.pdf`);
       }
       trackPdfAction("split");
+      (window as any).gtag?.("event", "conversion_completed", {
+        event_category: "PDF Tools",
+        event_label: "Split PDF",
+        mode: "bookmarks",
+      });
     } catch {
       alert("Could not read bookmarks in this PDF.");
     }
@@ -2194,7 +2217,16 @@ function ToolSplit() {
           type="file"
           accept="application/pdf"
           className="input"
-          onChange={(e) => setFile(e.target.files?.[0] ?? null)}
+          onChange={(e) => {
+            const f = e.target.files?.[0] ?? null;
+            setFile(f);
+            if (f) {
+              (window as any).gtag?.("event", "conversion_started", {
+                event_category: "PDF Tools",
+                event_label: "Split PDF",
+              });
+            }
+          }}
         />
         <div className="seg">
           {(["count", "max", "bookmarks"] as const).map((m) => (
@@ -2285,6 +2317,10 @@ function ToolStampQR() {
     const { url } = await blobFromUint8(bytes, "stamped.pdf");
     dl(url, "stamped.pdf");
     trackPdfAction("stamp_qr");
+    (window as any).gtag?.("event", "conversion_completed", {
+      event_category: "PDF Tools",
+      event_label: "Stamp QR",
+    });
   };
 
   return (
@@ -2296,7 +2332,16 @@ function ToolStampQR() {
           type="file"
           accept="application/pdf"
           className="input"
-          onChange={(e) => setFile(e.target.files?.[0] ?? null)}
+          onChange={(e) => {
+            const f = e.target.files?.[0] ?? null;
+            setFile(f);
+            if (f) {
+              (window as any).gtag?.("event", "conversion_started", {
+                event_category: "PDF Tools",
+                event_label: "Stamp QR",
+              });
+            }
+          }}
         />
         <input
           className="input"
@@ -2349,6 +2394,11 @@ function ToolBatchMerge() {
     const { url } = await blobFromUint8(bytes, "merged.pdf");
     dl(url, "merged.pdf");
     trackPdfAction("merge");
+    (window as any).gtag?.("event", "conversion_completed", {
+      event_category: "PDF Tools",
+      event_label: "Merge PDFs",
+      file_count: files.length,
+    });
   };
 
   return (
@@ -2360,9 +2410,16 @@ function ToolBatchMerge() {
         multiple
         accept="application/pdf"
         className="input"
-        onChange={(e) =>
-          setFiles(e.target.files ? Array.from(e.target.files) : [])
-        }
+        onChange={(e) => {
+          const picked = e.target.files ? Array.from(e.target.files) : [];
+          setFiles(picked);
+          if (picked.length) {
+            (window as any).gtag?.("event", "conversion_started", {
+              event_category: "PDF Tools",
+              event_label: "Merge PDFs",
+            });
+          }
+        }}
       />
       <button className="btn" onClick={run} disabled={!files.length}>
         Merge & Download
@@ -2402,8 +2459,13 @@ function ToolMetadata() {
     const f = e.target.files?.[0] ?? null;
     setFile(f);
     // Prefill fields from the picked PDF (if any)
-    if (f) await readMetadata(f);
-    else {
+    if (f) {
+      (window as any).gtag?.("event", "conversion_started", {
+        event_category: "PDF Tools",
+        event_label: "Edit Metadata",
+      });
+      await readMetadata(f);
+    } else {
       setTitle("");
       setAuthor("");
       setSubject("");
@@ -2431,6 +2493,10 @@ function ToolMetadata() {
       const { url } = await blobFromUint8(bytes, "metadata.pdf");
       dl(url, "metadata.pdf");
       trackPdfAction("edit_metadata");
+      (window as any).gtag?.("event", "conversion_completed", {
+        event_category: "PDF Tools",
+        event_label: "Edit Metadata",
+      });
     } finally {
       setLoading(false);
     }
@@ -2656,6 +2722,11 @@ function ToolBatchMergeUX() {
       const { url } = await blobFromUint8(bytes, "merged.pdf");
       dl(url, "merged.pdf");
       trackPdfAction("merge");
+      (window as any).gtag?.("event", "conversion_completed", {
+        event_category: "PDF Tools",
+        event_label: "Merge PDFs",
+        file_count: files.length,
+      });
     } catch (e) {
       console.error(e);
       alert("Merge failed");
@@ -2676,9 +2747,16 @@ function ToolBatchMergeUX() {
             accept="application/pdf"
             multiple
             className="input mt-1"
-            onChange={(e) =>
-              e.target.files && setFiles(Array.from(e.target.files))
-            }
+            onChange={(e) => {
+              const picked = e.target.files ? Array.from(e.target.files) : [];
+              setFiles(picked);
+              if (picked.length) {
+                (window as any).gtag?.("event", "conversion_started", {
+                  event_category: "PDF Tools",
+                  event_label: "Merge PDFs",
+                });
+              }
+            }}
           />
         </label>
         {files.length > 0 && (
@@ -2833,6 +2911,11 @@ function ToolSplitUX() {
       }
     }
     trackPdfAction("split");
+    (window as any).gtag?.("event", "conversion_completed", {
+      event_category: "PDF Tools",
+      event_label: "Split PDF",
+      mode: combine ? "combine" : "separate",
+    });
   }
 
   async function runRanges() {
@@ -2868,7 +2951,16 @@ function ToolSplitUX() {
             type="file"
             accept="application/pdf"
             className="input mt-1"
-            onChange={(e) => setFile(e.target.files?.[0] ?? null)}
+            onChange={(e) => {
+              const f = e.target.files?.[0] ?? null;
+              setFile(f);
+              if (f) {
+                (window as any).gtag?.("event", "conversion_started", {
+                  event_category: "PDF Tools",
+                  event_label: "Split PDF",
+                });
+              }
+            }}
           />
         </label>
         {file && (
@@ -3055,6 +3147,10 @@ function ToolRotateUX() {
       const { url } = await blobFromUint8(bytes, "rotated.pdf");
       dl(url, "rotated.pdf");
       trackPdfAction("rotate");
+      (window as any).gtag?.("event", "conversion_completed", {
+        event_category: "PDF Tools",
+        event_label: "Rotate Pages",
+      });
     } finally {
       setBusy(false);
     }
@@ -3064,15 +3160,24 @@ function ToolRotateUX() {
     <div className="card p-6 space-y-4">
       <ToolHelp>{HELP.rotate}</ToolHelp>
       <div className="grid md:grid-cols-[1fr_auto] gap-3 items-end">
-        <label className="block">
-          <span className="text-sm">PDF file</span>
-          <input
-            type="file"
-            accept="application/pdf"
-            className="input mt-1"
-            onChange={(e) => setFile(e.target.files?.[0] ?? null)}
-          />
-        </label>
+      <label className="block">
+        <span className="text-sm">PDF file</span>
+        <input
+          type="file"
+          accept="application/pdf"
+          className="input mt-1"
+          onChange={(e) => {
+            const f = e.target.files?.[0] ?? null;
+            setFile(f);
+            if (f) {
+              (window as any).gtag?.("event", "conversion_started", {
+                event_category: "PDF Tools",
+                event_label: "Rotate Pages",
+              });
+            }
+          }}
+        />
+      </label>
         {file && (
           <button className="btn-ghost" onClick={() => setFile(null)}>
             Clear
@@ -3172,6 +3277,10 @@ function ToolReorderUX() {
       const { url } = await blobFromUint8(bytes, "reordered.pdf");
       dl(url, "reordered.pdf");
       trackPdfAction("reorder");
+      (window as any).gtag?.("event", "conversion_completed", {
+        event_category: "PDF Tools",
+        event_label: "Reorder",
+      });
     } finally {
       setBusy(false);
     }
@@ -3187,7 +3296,16 @@ function ToolReorderUX() {
             type="file"
             accept="application/pdf"
             className="input mt-1"
-            onChange={(e) => setFile(e.target.files?.[0] ?? null)}
+            onChange={(e) => {
+              const f = e.target.files?.[0] ?? null;
+              setFile(f);
+              if (f) {
+                (window as any).gtag?.("event", "conversion_started", {
+                  event_category: "PDF Tools",
+                  event_label: "Reorder",
+                });
+              }
+            }}
           />
         </label>
         {file && (
@@ -3279,6 +3397,11 @@ function ToolImagesToPdfUX() {
       const { url } = await blobFromUint8(out, "images.pdf");
       dl(url, "images.pdf");
       trackPdfAction("images_to_pdf");
+      (window as any).gtag?.("event", "conversion_completed", {
+        event_category: "PDF Tools",
+        event_label: "Images → PDF",
+        file_count: images.length,
+      });
     } finally {
       setBusy(false);
     }
@@ -3295,9 +3418,16 @@ function ToolImagesToPdfUX() {
             multiple
             accept="image/*"
             className="input mt-1"
-            onChange={(e) =>
-              e.target.files && setImages(Array.from(e.target.files))
-            }
+            onChange={(e) => {
+              const picked = e.target.files ? Array.from(e.target.files) : [];
+              setImages(picked);
+              if (picked.length) {
+                (window as any).gtag?.("event", "conversion_started", {
+                  event_category: "PDF Tools",
+                  event_label: "Images → PDF",
+                });
+              }
+            }}
           />
         </label>
         {images.length > 0 && (
@@ -3396,6 +3526,12 @@ function ToolPdfToImagesUX() {
       const out = await zip.generateAsync({ type: "blob" });
       const url = URL.createObjectURL(out);
       dl(url, "images.zip");
+      trackPdfAction("pdf_to_images");
+      (window as any).gtag?.("event", "conversion_completed", {
+        event_category: "PDF Tools",
+        event_label: "PDF → Images",
+        file_count: thumbs.length,
+      });
     } finally {
       setBusy(false);
     }
@@ -3411,7 +3547,16 @@ function ToolPdfToImagesUX() {
             type="file"
             accept="application/pdf"
             className="input mt-1"
-            onChange={(e) => setFile(e.target.files?.[0] ?? null)}
+            onChange={(e) => {
+              const f = e.target.files?.[0] ?? null;
+              setFile(f);
+              if (f) {
+                (window as any).gtag?.("event", "conversion_started", {
+                  event_category: "PDF Tools",
+                  event_label: "PDF → Images",
+                });
+              }
+            }}
           />
         </label>
         {file && (
@@ -3492,6 +3637,10 @@ function ToolExtractTextUX() {
       }
       setText(out.trim());
       trackPdfAction("extract_text");
+      (window as any).gtag?.("event", "conversion_completed", {
+        event_category: "PDF Tools",
+        event_label: "Extract Text",
+      });
     } finally {
       setBusy(false);
     }
@@ -3507,7 +3656,16 @@ function ToolExtractTextUX() {
             type="file"
             accept="application/pdf"
             className="input mt-1"
-            onChange={(e) => setFile(e.target.files?.[0] ?? null)}
+            onChange={(e) => {
+              const f = e.target.files?.[0] ?? null;
+              setFile(f);
+              if (f) {
+                (window as any).gtag?.("event", "conversion_started", {
+                  event_category: "PDF Tools",
+                  event_label: "Extract Text",
+                });
+              }
+            }}
           />
         </label>
         {file && (
@@ -3589,6 +3747,12 @@ function ToolCompressUX() {
       const { url } = await blobFromUint8(bytes, "compressed.pdf");
       dl(url, "compressed.pdf");
       trackPdfAction("compress");
+      (window as any).gtag?.("event", "conversion_completed", {
+        event_category: "PDF Tools",
+        event_label: "Compress",
+        original_size_kb: Math.round(file.size / 1024),
+        file_size_kb: Math.round(bytes.length / 1024),
+      });
     } finally {
       setBusy(false);
     }
@@ -3604,7 +3768,16 @@ function ToolCompressUX() {
             type="file"
             accept="application/pdf"
             className="input mt-1"
-            onChange={(e) => setFile(e.target.files?.[0] ?? null)}
+            onChange={(e) => {
+              const f = e.target.files?.[0] ?? null;
+              setFile(f);
+              if (f) {
+                (window as any).gtag?.("event", "conversion_started", {
+                  event_category: "PDF Tools",
+                  event_label: "Compress",
+                });
+              }
+            }}
           />
         </label>
         {file && (
@@ -3763,6 +3936,10 @@ function ToolRedactUX() {
       const { url } = await blobFromUint8(bytes, "redacted.pdf");
       dl(url, "redacted.pdf");
       trackPdfAction("redact_apply");
+      (window as any).gtag?.("event", "conversion_completed", {
+        event_category: "PDF Tools",
+        event_label: "Redact",
+      });
     } finally {
       setBusy(false);
     }
@@ -3778,7 +3955,16 @@ function ToolRedactUX() {
             type="file"
             accept="application/pdf"
             className="input mt-1"
-            onChange={(e) => setFile(e.target.files?.[0] ?? null)}
+            onChange={(e) => {
+              const f = e.target.files?.[0] ?? null;
+              setFile(f);
+              if (f) {
+                (window as any).gtag?.("event", "conversion_started", {
+                  event_category: "PDF Tools",
+                  event_label: "Redact",
+                });
+              }
+            }}
           />
         </label>
         {file && (
@@ -4017,6 +4203,10 @@ const bytes = await pdf.save({ useObjectStreams: true });
       const { url } = await blobFromUint8(bytes, "annotated.pdf");
       dl(url, "annotated.pdf");
       trackPdfAction("numbers_header_footer_watermark");
+      (window as any).gtag?.("event", "conversion_completed", {
+        event_category: "PDF Tools",
+        event_label: "Stamp",
+      });
     } finally {
       setBusy(false);
     }
@@ -4029,7 +4219,21 @@ const bytes = await pdf.save({ useObjectStreams: true });
       <div className="grid md:grid-cols-3 gap-3">
         <label className="block">
           <span className="text-sm">PDF file</span>
-          <input type="file" accept="application/pdf" className="input mt-1" onChange={e=> setFile(e.target.files?.[0] ?? null)} />
+          <input
+            type="file"
+            accept="application/pdf"
+            className="input mt-1"
+            onChange={e => {
+              const f = e.target.files?.[0] ?? null;
+              setFile(f);
+              if (f) {
+                (window as any).gtag?.("event", "conversion_started", {
+                  event_category: "PDF Tools",
+                  event_label: "Stamp",
+                });
+              }
+            }}
+          />
         </label>
         <label className="block">
           <span className="text-sm">Mode</span>
@@ -4181,6 +4385,10 @@ function ToolFillFlattenUX() {
     setDoc(null); formRef.current = null;
     setThumbs([]);
     if (!f) return;
+    (window as any).gtag?.("event", "conversion_started", {
+      event_category: "PDF Tools",
+      event_label: "Fill & Flatten",
+    });
     setBusy(true);
     try {
       const ab = await f.arrayBuffer();
@@ -4333,6 +4541,10 @@ function ToolFillFlattenUX() {
     const { url } = await blobFromUint8(bytes, flatten ? "filled.pdf" : "filled-editable.pdf");
     dl(url, flatten ? "filled.pdf" : "filled-editable.pdf");
     trackPdfAction("fill_flatten_export");
+    (window as any).gtag?.("event", "conversion_completed", {
+      event_category: "PDF Tools",
+      event_label: "Fill & Flatten",
+    });
   }
 
   function downloadCSV() {

@@ -44,7 +44,7 @@ export default function ToolLayout({
       transition={{ duration: 0.3 }}
     >
       {/* Header: same width as content */}
-      <div className="mx-auto w-full max-w-7xl px-4 md:px-6 lg:px-8">
+      <div className="container-wrap px-4 md:px-6 lg:px-8">
         <div
           className={
             center
@@ -66,7 +66,7 @@ export default function ToolLayout({
       </div>
 
       {/* Panels wrapper */}
-      <div className="mx-auto w-full max-w-7xl px-4 md:px-6 lg:px-8 mt-6">
+      <div className="container-wrap px-4 md:px-6 lg:px-8 mt-6">
         <div className="tool-panels">{items}</div>
       </div>
     </motion.section>

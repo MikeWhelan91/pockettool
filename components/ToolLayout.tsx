@@ -1,6 +1,9 @@
+"use client";
+
 // components/ToolLayout.tsx
 import React, { ReactElement, ReactNode } from "react";
 import ShareButton from "./ShareButton";
+import { motion } from "framer-motion";
 
 /**
  * ToolLayout
@@ -34,7 +37,12 @@ export default function ToolLayout({
   const center = align === "center";
 
   return (
-    <section className="w-full">
+    <motion.section
+      className="w-full"
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.3 }}
+    >
       {/* Header: same width as content */}
       <div className="mx-auto w-full max-w-7xl px-4 md:px-6 lg:px-8">
         <div
@@ -61,6 +69,6 @@ export default function ToolLayout({
       <div className="mx-auto w-full max-w-7xl px-4 md:px-6 lg:px-8 mt-6">
         <div className="tool-panels">{items}</div>
       </div>
-    </section>
+    </motion.section>
   );
 }

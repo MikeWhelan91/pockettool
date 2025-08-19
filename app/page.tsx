@@ -14,6 +14,10 @@ export const metadata: Metadata = {
     "JSON formatter",
     "random generators",
     "regex tester",
+    "password generator",
+    "base64 encoder",
+    "case converter",
+    "text diff checker",
     "free online tools",
     "no sign up",
     "no pop ups",
@@ -41,47 +45,47 @@ const tools = [
   {
     href: "/pdf",
     title: "PDF Studio",
-    desc: "Reorder, rotate, merge, split, numbers, watermark, extract, redact — locally.",
+    desc: "Reorder, rotate, merge and split PDFs, add numbers and watermarks — all local.",
   },
   {
     href: "/image-converter",
     title: "Image Studio",
-    desc: "Convert HEIC/JPG/PNG/WebP/AVIF.",
+    desc: "Convert and optimize HEIC, JPG, PNG, WebP and AVIF images.",
   },
   {
     href: "/random",
     title: "Password Generator",
-    desc: "Strong passwords, UUIDs, colors, lorem, slugs.",
+    desc: "Generate passwords, UUIDs, colors, lorem and slugs.",
   },
   {
     href: "/qr",
     title: "QR & Wi‑Fi",
-    desc: "Create QR codes. Export PNG/SVG.",
+    desc: "Make Wi‑Fi and custom QR codes, export PNG or SVG.",
   },
   {
     href: "/format",
     title: "JSON / YAML / XML",
-    desc: "Format, validate and convert.",
+    desc: "Format, validate and convert between JSON, YAML and XML.",
   },
   {
     href: "/case-converter",
     title: "Case Converter",
-    desc: "Title, sentence, snake, kebab, camel, pascal.",
+    desc: "Convert text to title, sentence, snake, kebab, camel or Pascal case.",
   },
   {
     href: "/base64",
     title: "Base64",
-    desc: "Encode or decode text and files.",
+    desc: "Encode or decode text and files using Base64.",
   },
   {
     href: "/diff",
     title: "Text Diff",
-    desc: "Compare two texts and see changes.",
+    desc: "Compare two texts and highlight differences.",
   },
   {
     href: "/regex",
     title: "Regex Tester",
-    desc: "Experiment with regular expressions, replace and split, and see matches instantly.",
+    desc: "Test regular expressions with instant match, replace and split.",
   },
 ];
 
@@ -211,7 +215,7 @@ export default function HomePage() {
           slot="belowHero"
           format="auto" // auto size
           responsive={true} // full-width responsive
-          minHeight={120} // reserve enough space without a huge gap
+          minHeight={60} // smaller reserved space when ads don't fill
           className="mx-auto w-full"
         />
       </section>
@@ -282,8 +286,8 @@ export default function HomePage() {
       </section>
 
       {/* Homepage bottom ad: Multiplex, out of the way */}
-      <section className="mt-10">
-        <Ad slot="homeMultiplex" format="autorelaxed" minHeight={320} />
+      <section className="mt-6">
+        <Ad slot="homeMultiplex" format="autorelaxed" minHeight={200} />
       </section>
     </div>
   );

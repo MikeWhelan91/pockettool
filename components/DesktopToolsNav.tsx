@@ -7,8 +7,10 @@ import * as React from "react";
 
 const PDF_TOOLS: { key: string; label: string }[] = [
   { key: "batchMerge", label: "Merge" },
-  { key: "reorder", label: "Reorder / Delete" },
+  { key: "reorder", label: "Reorder" },
   { key: "rotate", label: "Rotate Pages" },
+    { key: "docToPdf", label: "Word → PDF" },
+  { key: "pdfToDoc", label: "PDF → Word" },
   { key: "imagesToPdf", label: "Images → PDF" },
   { key: "pdfToImages", label: "PDF → Images" },
   { key: "extractText", label: "Extract Text" },
@@ -19,8 +21,7 @@ const PDF_TOOLS: { key: string; label: string }[] = [
   { key: "stampQR", label: "Stamp QR" },
   { key: "meta", label: "Edit Metadata" },
   { key: "compress", label: "Compress" },
-  { key: "docToPdf", label: "Word → PDF" },
-  { key: "pdfToDoc", label: "PDF → Word" },
+
 ];
 
 const IMAGE_TOOLS: { key: string; label: string }[] = [

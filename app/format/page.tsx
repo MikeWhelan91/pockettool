@@ -61,7 +61,7 @@ export default function Page() {
   return (
     <ToolLayout
       title="JSON / YAML / XML Formatter"
-      description="Paste code, auto-detect the format, and pretty-print or minify — all client-side."
+      description="Paste code, auto-detect the format, and pretty-print or minify — everything runs locally."
     >
       <div className="md:col-span-2">
         <details className="hidden md:block card p-4 md:p-6" open>

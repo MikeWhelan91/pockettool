@@ -67,7 +67,7 @@ export default function Page() {
   return (
     <ToolLayout
       title="Base64 Encoder / Decoder"
-      description="Encode or decode Base64 strings or files — all locally, nothing is uploaded."
+      description="Encode or decode Base64 strings or files — everything runs locally, nothing is uploaded."
     >
       <div className="md:col-span-2">
         <details className="hidden md:block card p-4 md:p-6" open>

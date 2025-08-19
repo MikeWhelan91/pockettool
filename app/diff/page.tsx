@@ -72,7 +72,7 @@ export default function Page() {
   return (
     <ToolLayout
       title="Text Difference Checker"
-      description="Paste the original text on the left and the changed text on the right. See what’s been added and removed."
+      description="Compare two texts and highlight additions and deletions — everything runs locally."
     >
       <div className="md:col-span-2">
         <details className="hidden md:block card p-4 md:p-6" open>

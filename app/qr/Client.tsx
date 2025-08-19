@@ -231,7 +231,7 @@ export default function QRTool() {
       </div>
 
       {/* Right: live preview (sticky) */}
-      <div className="card p-4 md:p-6 md:sticky md:top-[88px]">
+      <div className="card p-4 md:p-6 sticky top-[88px]">
         <div className="grid place-items-center min-h-[320px]">
           {pngUrl ? (
             <img

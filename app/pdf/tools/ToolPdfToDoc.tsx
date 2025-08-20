@@ -101,6 +101,10 @@ export default function ToolPdfToDocUX() {
           </ol>
         </>
       </ToolHelp>
+      <p className="text-xs text-yellow-400">
+        <b>Warning</b>: Runs fully in your browser. Complex PDFs or
+        formatting may export poorly or fail to convert.
+      </p>
       <div className="grid md:grid-cols-[1fr_auto_auto] gap-3 items-end">
         <label className="block">
           <span className="text-sm">PDF file</span>

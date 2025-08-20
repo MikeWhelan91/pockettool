@@ -1,7 +1,7 @@
 import Link from "next/link";
 import ToolLayout from "@/components/ToolLayout";
 import Client from "./Client";
-import Ad from "@/components/ads/Ad";
+// import Ad from "@/components/ads/Ad"; // ads disabled
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {

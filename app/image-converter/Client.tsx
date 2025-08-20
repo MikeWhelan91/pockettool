@@ -880,8 +880,7 @@ export default function Client() {
             {TOOLS.map((t) => (
               <button
                 key={t.id}
-                className={`group text-left px-3 py-3 rounded-xl border border-[color:var(--line)] bg-[color:var(--bg)]/70 hover:bg-[color:var(--bg-lift)] transition-colors
-                  ${active === t.id ? "ring-2 ring-[color:var(--accent)] ring-offset-1 ring-offset-[color:var(--bg)] bg-[color:var(--bg-lift)] border-[color:var(--accent)]/40" : ""}`}
+                className="group text-left px-3 py-3 rounded-xl border border-[color:var(--line)] bg-[color:var(--bg)]/70 hover:bg-[color:var(--bg-lift)] transition-colors"
                 onClick={() => changeTool(t.id)}
                 aria-current={active === t.id ? "page" : undefined}
               >

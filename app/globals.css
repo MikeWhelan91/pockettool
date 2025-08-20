@@ -290,16 +290,21 @@ textarea.input { width: 100%; min-width: 0; overflow-wrap: anywhere; }
 }
 
 /* --- 2) Boxed sidebar items with clear active highlight --- */
-.tool-panels aside .grid > .group{
+.tool-panels aside .grid > .group,
+[data-image] aside .grid > .group{
   border: 1px solid hsl(var(--line));
   background: hsl(var(--card));
   border-radius: 12px;
+  transition: background .18s ease, box-shadow .18s ease, border-color .18s ease;
 }
-.tool-panels aside .grid > .group:hover{
+.tool-panels aside .grid > .group:hover,
+[data-image] aside .grid > .group:hover{
   background: hsl(var(--elev));
+  box-shadow: 0 0 0 2px hsl(var(--accent) / .30);
 }
 /* active item (driven by aria-current="page" in your Client.tsx) */
-.tool-panels aside .grid > .group[aria-current="page"]{
+.tool-panels aside .grid > .group[aria-current="page"],
+[data-image] aside .grid > .group[aria-current="page"]{
   background: hsl(var(--elev));
   border-color: hsl(var(--accent) / .45);
   box-shadow: 0 0 0 2px hsl(var(--accent) / .50);

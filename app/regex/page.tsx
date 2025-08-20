@@ -90,11 +90,12 @@ export default function Page() {
       <ToolLayout
         title="Regex Tester"
         description="Build, replace, and test regex patterns — everything runs locally."
+        align="center"
       >
         {/* What this does & how to use it — top, collapsible, default-open on desktop */}
         <div className="md:col-span-2">
           {/* Desktop (open) */}
-          <details className="hidden md:block card p-4 md:p-6" open>
+          <details className="hidden md:block card p-4 md:p-6 text-center" open>
             <summary className="cursor-pointer select-none text-base font-medium">
               What this does & how to use it
             </summary>
@@ -105,7 +106,7 @@ export default function Page() {
                 The tool instantly shows <strong>matches</strong>, a <strong>highlighted</strong> preview,
                 and lets you <strong>replace</strong> or <strong>split</strong> text.
               </p>
-              <ul className="list-disc pl-5 mt-3 space-y-1">
+              <ul className="list-disc list-inside mt-3 space-y-1">
                 <li><strong>Matches</strong> lists each hit, index, and captured groups.</li>
                 <li><strong>Replace</strong> shows output after applying your pattern and replacement.</li>
                 <li><strong>Split</strong> breaks the text into parts wherever the pattern matches.</li>
@@ -119,7 +120,7 @@ export default function Page() {
             </div>
           </details>
           {/* Mobile (collapsed) */}
-          <details className="block md:hidden card p-4 md:p-6">
+          <details className="block md:hidden card p-4 md:p-6 text-center">
             <summary className="cursor-pointer select-none text-base font-medium">
               What this does & how to use it
             </summary>
@@ -130,7 +131,7 @@ export default function Page() {
                 The tool instantly shows <strong>matches</strong>, a <strong>highlighted</strong> preview,
                 and lets you <strong>replace</strong> or <strong>split</strong> text.
               </p>
-              <ul className="list-disc pl-5 mt-3 space-y-1">
+              <ul className="list-disc list-inside mt-3 space-y-1">
                 <li><strong>Matches</strong> lists each hit, index, and captured groups.</li>
                 <li><strong>Replace</strong> shows output after applying your pattern and replacement.</li>
                 <li><strong>Split</strong> breaks the text into parts wherever the pattern matches.</li>

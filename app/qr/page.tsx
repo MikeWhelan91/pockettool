@@ -66,9 +66,10 @@ export default function Page() {
     <ToolLayout
       title="Wi-Fi QR Code Generator"
       description="Share your network instantly: scan to connect. Adjust size, margin, and colors, then export PNG or SVG — everything runs locally."
+      align="center"
     >
       <div className="md:col-span-2">
-        <details className="hidden md:block card p-4 md:p-6" open>
+        <details className="hidden md:block card p-4 md:p-6 text-center" open>
           <summary className="cursor-pointer select-none text-base font-medium">
             What this does & how to use it
           </summary>
@@ -77,7 +78,7 @@ export default function Page() {
               Enter Wi‑Fi credentials or standard text and the QR code updates instantly.
               Scan with a phone to connect or view the content.
             </p>
-            <ul className="list-disc pl-5 mt-3 space-y-1">
+            <ul className="list-disc list-inside mt-3 space-y-1">
               <li>Choose Wi‑Fi, text, URL, email or SMS modes.</li>
               <li>Customize colors, margin and size.</li>
               <li>Download the code as PNG or SVG.</li>
@@ -85,7 +86,7 @@ export default function Page() {
             <p className="mt-3">Tip: keep contrast high for reliable scanning.</p>
           </div>
         </details>
-        <details className="block md:hidden card p-4 md:p-6">
+        <details className="block md:hidden card p-4 md:p-6 text-center">
           <summary className="cursor-pointer select-none text-base font-medium">
             What this does & how to use it
           </summary>
@@ -94,7 +95,7 @@ export default function Page() {
               Enter Wi‑Fi credentials or standard text and the QR code updates instantly.
               Scan with a phone to connect or view the content.
             </p>
-            <ul className="list-disc pl-5 mt-3 space-y-1">
+            <ul className="list-disc list-inside mt-3 space-y-1">
               <li>Choose Wi‑Fi, text, URL, email or SMS modes.</li>
               <li>Customize colors, margin and size.</li>
               <li>Download the code as PNG or SVG.</li>

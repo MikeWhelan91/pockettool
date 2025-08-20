@@ -73,9 +73,10 @@ export default function Page() {
     <ToolLayout
       title="Text Difference Checker"
       description="Compare two texts and highlight additions and deletions — everything runs locally."
+      align="center"
     >
       <div className="md:col-span-2">
-        <details className="hidden md:block card p-4 md:p-6" open>
+        <details className="hidden md:block card p-4 md:p-6 text-center" open>
           <summary className="cursor-pointer select-none text-base font-medium">
             What this does & how to use it
           </summary>
@@ -85,7 +86,7 @@ export default function Page() {
               <strong> changed</strong> text on the right. Differences appear instantly and
               stay on your device.
             </p>
-            <ul className="list-disc pl-5 mt-3 space-y-1">
+            <ul className="list-disc list-inside mt-3 space-y-1">
               <li>
                 <strong>Inline</strong> view shows additions and deletions within lines.
               </li>
@@ -101,7 +102,7 @@ export default function Page() {
             </p>
           </div>
         </details>
-        <details className="block md:hidden card p-4 md:p-6">
+        <details className="block md:hidden card p-4 md:p-6 text-center">
           <summary className="cursor-pointer select-none text-base font-medium">
             What this does & how to use it
           </summary>
@@ -111,7 +112,7 @@ export default function Page() {
               <strong> changed</strong> text on the right. Differences appear instantly and
               stay on your device.
             </p>
-            <ul className="list-disc pl-5 mt-3 space-y-1">
+            <ul className="list-disc list-inside mt-3 space-y-1">
               <li>
                 <strong>Inline</strong> view shows additions and deletions within lines.
               </li>

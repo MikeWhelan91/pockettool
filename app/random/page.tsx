@@ -65,9 +65,10 @@ export default function Page() {
     <ToolLayout
       title="Password Generator & Random Tools"
       description="Create strong passwords, UUIDs, colors, slugs, and lorem ipsum — everything runs locally."
+      align="center"
     >
       <div className="md:col-span-2">
-        <details className="hidden md:block card p-4 md:p-6" open>
+        <details className="hidden md:block card p-4 md:p-6 text-center" open>
           <summary className="cursor-pointer select-none text-base font-medium">
             What this does & how to use it
           </summary>
@@ -77,7 +78,7 @@ export default function Page() {
               configure the options. Results appear instantly with nothing sent
               online.
             </p>
-            <ul className="list-disc pl-5 mt-3 space-y-1">
+            <ul className="list-disc list-inside mt-3 space-y-1">
               <li>Create strong passwords with chosen length and character sets.</li>
               <li>Generate v4 UUIDs or random colors.</li>
               <li>Produce slugs and filler text for prototypes.</li>
@@ -85,7 +86,7 @@ export default function Page() {
             <p className="mt-3">Tip: copy results with one click on each panel.</p>
           </div>
         </details>
-        <details className="block md:hidden card p-4 md:p-6">
+        <details className="block md:hidden card p-4 md:p-6 text-center">
           <summary className="cursor-pointer select-none text-base font-medium">
             What this does & how to use it
           </summary>
@@ -95,7 +96,7 @@ export default function Page() {
               configure the options. Results appear instantly with nothing sent
               online.
             </p>
-            <ul className="list-disc pl-5 mt-3 space-y-1">
+            <ul className="list-disc list-inside mt-3 space-y-1">
               <li>Create strong passwords with chosen length and character sets.</li>
               <li>Generate v4 UUIDs or random colors.</li>
               <li>Produce slugs and filler text for prototypes.</li>

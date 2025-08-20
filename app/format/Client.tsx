@@ -3,7 +3,7 @@
 import { useState, useCallback, useMemo } from 'react';
 import yaml from 'js-yaml';
 import { XMLParser, XMLBuilder } from 'fast-xml-parser';
-import Ad from '@/components/ads/Ad';
+// import Ad from '@/components/ads/Ad'; // ads disabled
 
 type Mode = 'auto' | 'json' | 'yaml' | 'xml';
 

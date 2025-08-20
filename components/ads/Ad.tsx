@@ -26,6 +26,8 @@ export default function Ad({
   height,
   display,
 }: Props) {
+  return null; // ads disabled
+  /*
   return (
     <AdSlot
       slotId={SLOTS[slot]}
@@ -39,4 +41,5 @@ export default function Ad({
       display={display}
     />
   );
+  */
 }

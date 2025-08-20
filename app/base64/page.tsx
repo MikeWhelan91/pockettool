@@ -68,9 +68,10 @@ export default function Page() {
     <ToolLayout
       title="Base64 Encoder / Decoder"
       description="Encode or decode Base64 strings or files — everything runs locally, nothing is uploaded."
+      align="center"
     >
       <div className="md:col-span-2">
-        <details className="hidden md:block card p-4 md:p-6" open>
+        <details className="hidden md:block card p-4 md:p-6 text-center" open>
           <summary className="cursor-pointer select-none text-base font-medium">
             What this does & how to use it
           </summary>
@@ -80,7 +81,7 @@ export default function Page() {
               <strong> Decode</strong>. The converted output appears instantly with nothing
               sent to a server.
             </p>
-            <ul className="list-disc pl-5 mt-3 space-y-1">
+            <ul className="list-disc list-inside mt-3 space-y-1">
               <li>
                 <strong>Encode</strong> turns text or files into a Base64 string.
               </li>
@@ -97,7 +98,7 @@ export default function Page() {
             </p>
           </div>
         </details>
-        <details className="block md:hidden card p-4 md:p-6">
+        <details className="block md:hidden card p-4 md:p-6 text-center">
           <summary className="cursor-pointer select-none text-base font-medium">
             What this does & how to use it
           </summary>
@@ -107,7 +108,7 @@ export default function Page() {
               <strong> Decode</strong>. The converted output appears instantly with nothing
               sent to a server.
             </p>
-            <ul className="list-disc pl-5 mt-3 space-y-1">
+            <ul className="list-disc list-inside mt-3 space-y-1">
               <li>
                 <strong>Encode</strong> turns text or files into a Base64 string.
               </li>

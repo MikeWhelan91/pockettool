@@ -65,7 +65,7 @@ export default function Page() {
       align="center"
     >
       <div className="md:col-span-2">
-        <details className="hidden md:block card p-4 md:p-6" open>
+        <details className="hidden md:block card p-4 md:p-6 text-center" open>
           <summary className="cursor-pointer select-none text-base font-medium">
             What this does & how to use it
           </summary>
@@ -75,7 +75,7 @@ export default function Page() {
               <strong> XML</strong>. The tool detects the format and instantly
               pretty-prints or minifies it locally.
             </p>
-            <ul className="list-disc pl-5 mt-3 space-y-1">
+            <ul className="list-disc list-inside mt-3 space-y-1">
               <li>Validate structure and highlight errors.</li>
               <li>Convert between JSON, YAML and XML.</li>
               <li>Copy formatted or minified output with one click.</li>
@@ -83,7 +83,7 @@ export default function Page() {
             <p className="mt-3">Tip: large documents may take longer to process.</p>
           </div>
         </details>
-        <details className="block md:hidden card p-4 md:p-6">
+        <details className="block md:hidden card p-4 md:p-6 text-center">
           <summary className="cursor-pointer select-none text-base font-medium">
             What this does & how to use it
           </summary>
@@ -93,7 +93,7 @@ export default function Page() {
               <strong> XML</strong>. The tool detects the format and instantly
               pretty-prints or minifies it locally.
             </p>
-            <ul className="list-disc pl-5 mt-3 space-y-1">
+            <ul className="list-disc list-inside mt-3 space-y-1">
               <li>Validate structure and highlight errors.</li>
               <li>Convert between JSON, YAML and XML.</li>
               <li>Copy formatted or minified output with one click.</li>

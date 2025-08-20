@@ -67,7 +67,7 @@ export default function Page() {
       align="center"
     >
       <div className="md:col-span-2">
-        <details className="hidden md:block card p-4 md:p-6" open>
+        <details className="hidden md:block card p-4 md:p-6 text-center" open>
           <summary className="cursor-pointer select-none text-base font-medium">
             What this does & how to use it
           </summary>
@@ -76,7 +76,7 @@ export default function Page() {
               Paste text, pick a <strong>case style</strong>, and the transformed text
               updates instantly without leaving your device.
             </p>
-            <ul className="list-disc pl-5 mt-3 space-y-1">
+            <ul className="list-disc list-inside mt-3 space-y-1">
               <li>
                 Convert between upper, lower, title, sentence and more.
               </li>
@@ -90,7 +90,7 @@ export default function Page() {
             <p className="mt-3">Tip: you can edit the output further before copying.</p>
           </div>
         </details>
-        <details className="block md:hidden card p-4 md:p-6">
+        <details className="block md:hidden card p-4 md:p-6 text-center">
           <summary className="cursor-pointer select-none text-base font-medium">
             What this does & how to use it
           </summary>
@@ -99,7 +99,7 @@ export default function Page() {
               Paste text, pick a <strong>case style</strong>, and the transformed text
               updates instantly without leaving your device.
             </p>
-            <ul className="list-disc pl-5 mt-3 space-y-1">
+            <ul className="list-disc list-inside mt-3 space-y-1">
               <li>
                 Convert between upper, lower, title, sentence and more.
               </li>

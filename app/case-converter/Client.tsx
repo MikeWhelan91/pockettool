@@ -1,7 +1,7 @@
 'use client';
 
 import { useMemo, useState } from 'react';
-import Ad from '@/components/ads/Ad';
+// import Ad from '@/components/ads/Ad'; // ads disabled
 
 type Mode =
   | 'upper'

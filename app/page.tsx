@@ -1,6 +1,6 @@
 import Link from "next/link";
 import type { Metadata } from "next";
-import Ad from "@/components/ads/Ad"; // Multiplex wrapper
+// Ads temporarily disabled
 
 export const metadata: Metadata = {
   title: "PDF Studio & Web Tools — Utilixy",
@@ -209,16 +209,18 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* NEW: Ad between hero and tools (outside hero) */}
-      <section className="mt-2">
-        <Ad
-          slot="belowHero"
-          format="auto" // auto size
-          responsive={true} // full-width responsive
-          minHeight={60} // smaller reserved space when ads don't fill
-          className="mx-auto w-full"
-        />
-      </section>
+      {/* Ad removed for now */}
+      {false && (
+        <section className="mt-2">
+          {/* <Ad
+            slot="belowHero"
+            format="auto"
+            responsive={true}
+            minHeight={60}
+            className="mx-auto w-full"
+          /> */}
+        </section>
+      )}
 
       {/* Tools grid */}
       <section id="tools" className="grid gap-5">
@@ -285,10 +287,12 @@ export default function HomePage() {
         />
       </section>
 
-      {/* Homepage bottom ad: Multiplex, out of the way */}
-      <section className="mt-6">
-        <Ad slot="homeMultiplex" format="autorelaxed" minHeight={150} />
-      </section>
+      {/* Bottom ad removed for now */}
+      {false && (
+        <section className="mt-6">
+          {/* <Ad slot="homeMultiplex" format="autorelaxed" minHeight={150} /> */}
+        </section>
+      )}
     </div>
   );
 }

@@ -9,7 +9,7 @@ import { Analytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import ToolMenuWrapper from "@/components/ToolMenuWrapper";
 import ThemeToggle from "@/components/ThemeToggle";
-import FooterMultiplex from "@/components/ads/FooterMultiplex";
+// import FooterMultiplex from "@/components/ads/FooterMultiplex"; // ads disabled
 import { Suspense } from "react";
 import AnimatedMain from "@/components/AnimatedMain";
 
@@ -229,8 +229,8 @@ export default function RootLayout({
             {children}
           </AnimatedMain>
 
-          {/* Multiplex above footer on tool pages */}
-          <FooterMultiplex />
+          {/* Multiplex ad removed for now */}
+          {false && <FooterMultiplex />}
 
           {/* Neutral footer */}
           <footer className="border-t border-line bg-[hsl(var(--card))]">

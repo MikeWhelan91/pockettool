@@ -1,7 +1,7 @@
 import ToolLayout from "@/components/ToolLayout";
 import type { Metadata } from "next";
 import Client from "./Client";
-import Ad from "@/components/ads/Ad"; // multiplex wrapper
+// import Ad from "@/components/ads/Ad"; // ads disabled
 
 export const metadata: Metadata = {
   title: "Wi-Fi QR Code Generator — Utilixy",

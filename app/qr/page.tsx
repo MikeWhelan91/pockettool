@@ -66,6 +66,7 @@ export default function Page() {
     <ToolLayout
       title="Wi-Fi QR Code Generator"
       description="Share your network instantly: scan to connect. Adjust size, margin, and colors, then export PNG or SVG — everything runs locally."
+      align="center"
     >
       <div className="md:col-span-2">
         <details className="hidden md:block card p-4 md:p-6" open>

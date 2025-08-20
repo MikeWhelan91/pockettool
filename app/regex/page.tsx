@@ -90,6 +90,7 @@ export default function Page() {
       <ToolLayout
         title="Regex Tester"
         description="Build, replace, and test regex patterns — everything runs locally."
+        align="center"
       >
         {/* What this does & how to use it — top, collapsible, default-open on desktop */}
         <div className="md:col-span-2">

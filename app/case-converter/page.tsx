@@ -64,6 +64,7 @@ export default function Page() {
     <ToolLayout
       title="Case Converter / Text Transformer"
       description="Paste text, choose a transform, and copy the result — everything runs locally."
+      align="center"
     >
       <div className="md:col-span-2">
         <details className="hidden md:block card p-4 md:p-6" open>

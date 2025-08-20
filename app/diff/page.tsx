@@ -73,6 +73,7 @@ export default function Page() {
     <ToolLayout
       title="Text Difference Checker"
       description="Compare two texts and highlight additions and deletions — everything runs locally."
+      align="center"
     >
       <div className="md:col-span-2">
         <details className="hidden md:block card p-4 md:p-6" open>

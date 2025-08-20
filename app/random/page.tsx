@@ -65,6 +65,7 @@ export default function Page() {
     <ToolLayout
       title="Password Generator & Random Tools"
       description="Create strong passwords, UUIDs, colors, slugs, and lorem ipsum — everything runs locally."
+      align="center"
     >
       <div className="md:col-span-2">
         <details className="hidden md:block card p-4 md:p-6" open>

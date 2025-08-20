@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import Ad from '@/components/ads/Ad';
+// import Ad from '@/components/ads/Ad';
 
 const tools = [
   { href: '/', label: 'Home' },
@@ -42,19 +42,21 @@ export default function ToolMenu({ onClose }: { onClose: () => void }) {
           </Link>
         ))}
 
-        {/* Tower ad renders only when menu is open, because ToolMenu mounts only then */}
-        <div className="mt-6 flex justify-center">
-          <Ad
-            slot="sidebarTower"
-            responsive={false}
-            format={null}           // omit data-ad-format for fixed size
-            width={250}
-            height={600}
-            display="inline-block"
-            minHeight={600}
-            lazy
-          />
-        </div>
+        {/* Tower ad removed for now */}
+        {false && (
+          <div className="mt-6 flex justify-center">
+            {/* <Ad
+              slot="sidebarTower"
+              responsive={false}
+              format={null}
+              width={250}
+              height={600}
+              display="inline-block"
+              minHeight={600}
+              lazy
+            /> */}
+          </div>
+        )}
       </nav>
 
       <div className="absolute bottom-0 left-0 right-0 border-t border-line p-3 text-xs text-muted">

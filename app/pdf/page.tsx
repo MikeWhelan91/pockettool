@@ -7,12 +7,12 @@ import Client from "./Client"; // (use your actual path)
 export const metadata = {
   title: "PDF Studio — Free Word ↔ PDF Conversion & Online PDF Tools (Private & Local-first)",
   description:
-    "Merge, split, reorder, rotate, add colored watermarks, handle Word ↔ PDF conversion, convert images, extract text, redact, fill forms, and compress — all in your browser. Free with no sign-up, pop-ups, redirects, or uploads.",
+    "Merge, split, reorder, rotate, add colored watermarks, handle Word ↔ PDF conversion, convert images, extract text, redact, fill forms, and compress — all in your browser. Free with no sign-up, pop-ups, redirects, or uploads. Client-side conversions may not preserve complex formatting.",
   alternates: { canonical: "https://utilixy.com/pdf" },
   openGraph: {
     title: "PDF Studio — Free Word ↔ PDF Conversion & Online PDF Tools",
     description:
-      "Free, fast, private PDF tools that run locally in your browser. Do Word ↔ PDF conversion and add colored watermarks with no sign-up, pop-ups, redirects, or uploads.",
+      "Free, fast, private PDF tools that run locally in your browser. Do Word ↔ PDF conversion and add colored watermarks with no sign-up, pop-ups, redirects, or uploads. Client-side conversions may not preserve complex formatting.",
     url: "https://utilixy.com/pdf",
     siteName: "Utilixy",
     type: "website",
@@ -21,7 +21,7 @@ export const metadata = {
     card: "summary_large_image",
     title: "PDF Studio — Free Word ↔ PDF Conversion & Online PDF Tools",
     description:
-      "Free, fast, private PDF tools that run locally in your browser. Do Word ↔ PDF conversion and add colored watermarks with no sign-up, pop-ups, redirects, or uploads.",
+      "Free, fast, private PDF tools that run locally in your browser. Do Word ↔ PDF conversion and add colored watermarks with no sign-up, pop-ups, redirects, or uploads. Client-side conversions may not preserve complex formatting.",
   },
 };
 

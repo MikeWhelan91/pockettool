@@ -94,7 +94,11 @@ export default function ToolDocToPdfUX() {
       </ol>
       </>
     </ToolHelp>
-    <div className="grid md:grid-cols-[1fr_auto_auto] gap-3 items-end">
+      <p className="text-xs text-yellow-400">
+        <b>Warning</b>: Conversion runs entirely in your browser. Complex
+        layouts, fonts, or images might not look the same in the PDF.
+      </p>
+      <div className="grid md:grid-cols-[1fr_auto_auto] gap-3 items-end">
       <label className="block">
         <span className="text-sm">Word document</span>
         <input

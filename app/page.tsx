@@ -5,7 +5,7 @@ import type { Metadata } from "next";
 export const metadata: Metadata = {
   title: "PDF Studio & Web Tools — Utilixy",
   description:
-    "Reorder, rotate, merge and split PDFs plus access quick tools like QR codes, image conversion and more — all local, private and free. No sign-up, pop-ups or redirects.",
+    "Reorder, rotate, merge and split PDFs plus access quick tools like QR codes, image conversion and more — all local, private and free. No sign-up, pop-ups or redirects. Need calculators? Visit QuickCalc for BMI, mortgage, loan, age and holiday calculators.",
   keywords: [
     "PDF Studio",
     "web tools",
@@ -22,11 +22,17 @@ export const metadata: Metadata = {
     "no sign up",
     "no pop ups",
     "no redirects",
+    "QuickCalc",
+    "BMI calculator",
+    "mortgage calculator",
+    "loan calculator",
+    "age calculator",
+    "holiday calculator",
   ],
   openGraph: {
     title: "PDF Studio & Web Tools — Utilixy",
     description:
-      "Reorder, rotate, merge and split PDFs plus access quick tools like QR codes, image conversion and more — all local, private and free. No sign-up, pop-ups or redirects.",
+      "Reorder, rotate, merge and split PDFs plus access quick tools like QR codes, image conversion and more — all local, private and free. No sign-up, pop-ups or redirects. Need calculators? Visit QuickCalc for BMI, mortgage, loan, age and holiday calculators.",
     url: "/",
     siteName: "Utilixy",
     images: [{ url: "/icons/icon-512.png", width: 512, height: 512 }],
@@ -36,7 +42,7 @@ export const metadata: Metadata = {
     card: "summary",
     title: "PDF Studio & Web Tools — Utilixy",
     description:
-      "Reorder, rotate, merge and split PDFs plus access quick tools like QR codes, image conversion and more — all local, private and free. No sign-up, pop-ups or redirects.",
+      "Reorder, rotate, merge and split PDFs plus access quick tools like QR codes, image conversion and more — all local, private and free. No sign-up, pop-ups or redirects. Need calculators? Visit QuickCalc for BMI, mortgage, loan, age and holiday calculators.",
     images: ["/icons/icon-512.png"],
   },
 };
@@ -150,20 +156,33 @@ export default function HomePage() {
               </b>
             </p>
             {/* CTAs */}
-            <div className="mt-4 flex flex-wrap items-center justify-center gap-3">
-              <Link href="/pdf" className="btn">
-                Open PDF Studio
-              </Link>
-              <Link href="/image-converter" className="btn">
-                Open Image Studio
-              </Link>
-              <a href="#tools" className="btn">
-                Browse all tools
-              </a>
-            </div>
+              <div className="mt-4 flex flex-wrap items-center justify-center gap-3">
+                <Link href="/pdf" className="btn">
+                  Open PDF Studio
+                </Link>
+                <Link href="/image-converter" className="btn">
+                  Open Image Studio
+                </Link>
+                <a href="#tools" className="btn">
+                  Browse all tools
+                </a>
+              </div>
 
-            {/* Mention other tools inline */}
-            <div className="mt-2 flex flex-wrap items-center justify-center gap-2 text-sm">
+              <p className="mx-auto mt-2 max-w-[70ch] text-sm">
+                Need calculators? Visit{" "}
+                <a
+                  href="https://quickcalc.me"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="underline"
+                >
+                  QuickCalc
+                </a>{" "}
+                for BMI, mortgage, loan, age and holiday calculators.
+              </p>
+
+              {/* Mention other tools inline */}
+              <div className="mt-2 flex flex-wrap items-center justify-center gap-2 text-sm">
               {[
                 { href: "/qr", label: "QR & Wi‑Fi" },
                 { href: "/image-converter", label: "Image converter" },

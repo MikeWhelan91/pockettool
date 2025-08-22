@@ -37,7 +37,7 @@ export const viewport: Viewport = {
 export const metadata: Metadata = {
   title: "Utilixy — Quick, private web tools",
   description:
-    "QR & Wi-Fi codes, image and PDF tools, formatters and random generators — all running locally in your browser.",
+    "QR & Wi-Fi codes, image and PDF tools, formatters and random generators — all running locally in your browser. Explore QuickCalc for BMI, mortgage, loan, age and holiday calculators.",
   manifest: "/manifest.json",
   themeColor: "#3B82F6",
   metadataBase: new URL("https://utilixy.com"),
@@ -53,11 +53,17 @@ export const metadata: Metadata = {
     "Base64 encoder",
     "random generator",
     "regex tester",
+    "QuickCalc",
+    "BMI calculator",
+    "mortgage calculator",
+    "loan calculator",
+    "age calculator",
+    "holiday calculator",
   ],
   openGraph: {
     title: "Utilixy — Quick, private web tools",
     description:
-      "All tools run locally. Generate QR codes, convert images, merge PDFs, format JSON/YAML/XML, and more.",
+      "All tools run locally. Generate QR codes, convert images, merge PDFs, format JSON/YAML/XML, and more. Explore QuickCalc for BMI, mortgage, loan, age and holiday calculators.",
     images: [{ url: "/icons/icon-512.png", width: 512, height: 512 }],
     type: "website",
   },
@@ -65,7 +71,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "Utilixy — Quick, private web tools",
     description:
-      "All tools run locally. Generate QR codes, convert images, merge PDFs, format JSON/YAML/XML, and more.",
+      "All tools run locally. Generate QR codes, convert images, merge PDFs, format JSON/YAML/XML, and more. Explore QuickCalc for BMI, mortgage, loan, age and holiday calculators.",
     images: ["/icons/icon-512.png"],
   },
 };
@@ -250,6 +256,14 @@ export default function RootLayout({
                   <Link href="/about" className="hover:underline leading-none">
                     About
                   </Link>
+                  <a
+                    href="https://quickcalc.me"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="hover:underline leading-none"
+                  >
+                    QuickCalc
+                  </a>
                 </nav>
                 <div className="flex items-center">
                   <ThemeToggle />
